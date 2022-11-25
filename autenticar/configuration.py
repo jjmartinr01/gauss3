@@ -94,5 +94,33 @@ PERMISOS = [{'code_nombre': 'sube_archivo_csv',
             {'code_nombre': 'modifica_pos_menu',
              'nombre': 'Tiene permiso para modificar la posición de un menú de la entidad',
              'menu': 'acceso_perfiles_permisos'
+             },
+            {'code_nombre': 'carga_alumnos_centro_educativo',
+             'nombre': 'Tiene permiso para cargar los alumnos de un centro educativo',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_alumnos_centros_educativos',
+             'nombre': 'Tiene permiso para cargar los alumnos de varios centros educativos a la vez',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_personal_centro_educativo',
+             'nombre': 'Tiene permiso para cargar al personal de un centro educativo',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_personal_centros_educativos',
+             'nombre': 'Tiene permiso para cargar al personal de varios centros educativos a la vez',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_datos_centros_educativos',
+             'nombre': 'Tiene permiso para cargar los datos de los centros educativos',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_horario_personal_centro_educativo',
+             'nombre': 'Tiene permiso para cargar los horarios del personal de un centro educativo',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_plantilla_organica_casiopea',
+             'nombre': 'Tiene permiso para cargar los datos de plantilla del servidor Casiopea',
+             'menu': 'acceso_carga_masiva'
              }
             ]

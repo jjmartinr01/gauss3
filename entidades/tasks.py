@@ -1178,6 +1178,13 @@ def ejecutar_crea_calalumce_cev():
             cuaderno = cav.ca.cp
             cevps = cav.ca.cie.cevps
             cev = cevps.cev
+            # Comprobamos que no hay más de un calalumce por alumno y cep. Borramos si hay más de uno.
+            calalumces = CalAlumCE.objects.filter(cp=cuaderno, alumno=alumno, cep=cevps.cepsec)
+            if calalumces.count() > 1:
+                for calalumce in calalumces:
+                    calalumce.calalumcev_set.all().delete()
+                calalumces.delete()
+            # Fin de la comprobación
             calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cevps.cepsec)
             calalumcev, c = CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevps)
             cas = cuaderno.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)

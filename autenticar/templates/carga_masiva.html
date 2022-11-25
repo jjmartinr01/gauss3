@@ -1,88 +1,365 @@
 {% extends "base.html" %}
 {% load my_templatetags %}
+{% block head %}
+    <style>
+        .panel_carga_masiva_racima {
+            display: none;
+            position: relative;
+        }
+    </style>
+{% endblock %}
 
 {% block contenido %}
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
-
         <div class="">
-            <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de usuarios</strong></h4>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de datos</strong></h4>
         </div>
-
         {% if request.session.gauser_extra|has_permiso:'carga_masiva_racima' %}
             <input type="hidden" name="action" value="carga_masiva_racima">
-            <div class="panel callout">
+            <div class="row">
+                <div class="columns large-8">
+                    <label>Selecciona el tipo de datos a cargar:
+                        <select id="select_tipo_carga" name="select_tipo_carga">
+                            {% if request.session.gauser_extra|has_permiso:'carga_alumnos_centro_educativo' %}
+                                <option value="ALUMN_CENTRO">Alumnos de su centro educativo</option>
+                            {% endif %}
+                            {% if request.session.gauser_extra|has_permiso:'carga_alumnos_centros_educativos' %}
+                                <option value="ALUMN_CENTROS">Alumnos de varios centros educativos</option>
+                            {% endif %}
+                            {% if request.session.gauser_extra|has_permiso:'carga_personal_centro_educativo' %}
+                                <option value="PERSONAL_CENTRO">Personal de su centro educativo</option>
+                            {% endif %}
+                            {% if request.session.gauser_extra|has_permiso:'carga_personal_centros_educativos' %}
+                                <option value="PERSONAL_CENTROS">Personal de varios centros educativos</option>
+                            {% endif %}
+                            {% if request.session.gauser_extra|has_permiso:'carga_datos_centros_educativos' %}
+                                <option value="DATOS_CENTROS">Datos de los centros educativos</option>
+                            {% endif %}
+                            {% if request.session.gauser_extra|has_permiso:'carga_horario_personal_centro_educativo' %}
+                                <option value="HORARIO_PERSONAL_CENTRO">Horarios del personal de su centro educativo
+                                </option>
+                            {% endif %}
+                            {% if request.session.gauser_extra|has_permiso:'carga_plantilla_organica_casiopea' %}
+                                <option value="DATOS_CASIOPEA">Datos sobre plantilla orgánica de Casiopea</option>
+                            {% endif %}
+                        </select>
+                </div>
+                <div class="columns large-4">
+                    <label>&nbsp;</label>
+                    <a class="button tiny" id="show_formulario_carga"><b>Mostrar formulario de carga</b></a>
+                </div>
+            </div>
+
+            {# Formulario de carga: ALUMN_CENTRO #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_ALUMN_CENTRO">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
                 <div class="row">
                     <div class="large-4 columns">
                         <b>Archivo xls (Racima):</b>
                     </div>
                     <div class="large-8 columns">
-                        <input type="file" name="file_masivo" id="file_masivo"/>
+                        <input type="file" name="file_masivo_ALUMN_CENTRO" id="file_masivo_ALUMN_CENTRO"/>
                     </div>
                 </div>
                 <hr>
                 <div class="row">
                     <div class="large-12 columns">
-                        <p>Este formulario sirve para cargar dos archivos diferentes: el del personal del centro y
-                            el de los alumnos.</p>
-                        <ol>
-                            <li><b>El archivo para cargar el personal del centro se obtiene de:</b>
-                                <ul>
-                                    <li>
-                                        Racima (Gestión)
-                                        <i class="fa fa-long-arrow-right"></i> Seguimiento
-                                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
-                                        <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
-                                        <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
-                                    </li>
-                                    <li>
-                                        En "año académico" escribir el año en el que comenzó este curso escolar
-                                    </li>
-                                    <li>
-                                        Finalmente, elegir exportar con formato "Hoja Microsoft Excel"
-                                    </li>
-                                </ul>
+                        <p>Este formulario sirve para cargar los datos de los alumnos de tu centro educativo.</p>
+                        <p><b>El archivo para cargar los alumnos del centro se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                Racima (Gestión)
+                                <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
+                                <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado
+                                matriculado
                             </li>
-                            <li><b>El archivo para cargar los alumnos del centro se obtiene de:</b>
-                                <ul>
-                                    <li>
-                                        Racima (Gestión)
-                                        <i class="fa fa-long-arrow-right"></i> Seguimiento
-                                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
-                                        <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
-                                        <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado matriculado
-                                    </li>
-                                    <li>
-                                        En "año académico" escribir el año en el que comenzó este curso escolar
-                                    </li>
-                                    <li>
-                                        Finalmente, elegir exportar con formato "Hoja Microsoft Excel"
-                                    </li>
-                                </ul>
+                            <li>
+                                En "Año académico" escribir el año en el que comenzó este curso escolar
                             </li>
-                        </ol>
-                        <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>
+                            <li>
+                                Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
                     </div>
                 </div>
-                {#                <div class="row">#}
-                {#                    <div class="large-12 columns">#}
-                {#                        <p>Este formulario sirve para cargar dos archivos diferentes: el del personal del centro y#}
-                {#                            el de los alumnos.</p>#}
-                {#                        <ol>#}
-                {#                            <li><b>El primero se obtiene de:</b> Racima <i class="fa fa-long-arrow-right"></i> Personal#}
-                {#                                <i class="fa fa-long-arrow-right"></i> Información del personal#}
-                {#                                <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
-                {#                            </li>#}
-                {#                            <li><b>El segundo de:</b> Racima <i class="fa fa-long-arrow-right"></i> Alumnado#}
-                {#                                <i class="fa fa-long-arrow-right"></i> Búsquedas <i class="fa fa-long-arrow-right"></i>#}
-                {#                                Alumnado del centro <i class="fa fa-long-arrow-right"></i> Con todos los campos en#}
-                {#                                blanco se#}
-                {#                                pulsa el "check" <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
-                {#                            </li>#}
-                {#                        </ol>#}
-                {#                        <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>#}
-                {#                    </div>#}
-                {#                </div>#}
+            </div>
+
+            {# Formulario de carga: ALUMN_CENTROS #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_ALUMN_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo_ALUMN_CENTROS" id="file_masivo_ALUMN_CENTROS"/>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para cargar los datos de los alumnos de todos los centros
+                            educativos.</p>
+                        <p><b>El archivo para cargar los alumnos de todos los centros se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                Racima (Gestión)
+                                <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
+                                <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado
+                                matriculado
+                            </li>
+                            <li>
+                                En "Año académico" escribir el año en el que comenzó este curso escolar
+                            </li>
+                            <li>
+                                En "Código de centro" escribir el número 0
+                            </li>
+                            <li>
+                                Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {# Formulario de carga: PERSONAL_CENTRO #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_PERSONAL_CENTRO">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo_PERSONAL_CENTRO" id="file_masivo_PERSONAL_CENTRO"/>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para cargar los datos del personal de su centro educativo.</p>
+                        <p><b>El archivo para cargar el personal de su centro educativo se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                Racima (Gestión)
+                                <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                                <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
+                            </li>
+                            <li>
+                                En "Año académico" escribir el año en el que comenzó este curso escolar
+                            </li>
+                            <li>
+                                Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {# Formulario de carga: PERSONAL_CENTROS #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_PERSONAL_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo_PERSONAL_CENTROS" id="file_masivo_PERSONAL_CENTROS"/>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para cargar los datos del personal todos los centros educativos.</p>
+                        <p><b>El archivo para cargar el personal de todos los centros se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                Racima (Gestión)
+                                <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                                <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
+                            </li>
+                            <li>
+                                En "Código de centro" escribir el número 0
+                            </li>
+                            <li>
+                                En "Año académico" escribir el año en el que comenzó este curso escolar
+                            </li>
+                            <li>
+                                Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {# Formulario de carga: DATOS_CENTROS #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_DATOS_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo_DATOS_CENTROS" id="file_masivo_DATOS_CENTROS"/>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para cargar los datos de todos los centros educativos.</p>
+                        <p><b>El archivo para cargar los datos de los centros se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                Racima (Gestión)
+                                <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                <i class="fa fa-long-arrow-right"></i> Módulo: Centro
+                                <i class="fa fa-long-arrow-right"></i> Consulta: Datos de los centros
+                            </li>
+                            <li>
+                                En "Año académico" escribir el año en el que comenzó este curso escolar
+                            </li>
+                            <li>
+                                Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {# Formulario de carga: HORARIO_PERSONAL_CENTRO #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_HORARIO_PERSONAL_CENTRO">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo_HORARIO_PERSONAL_CENTRO"
+                               id="file_masivo_HORARIO_PERSONAL_CENTRO"/>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para cargar los horarios del personal de su centro educativo.</p>
+                        <p><b>El archivo para cargar los datos se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                Racima (Gestión)
+                                <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                                <i class="fa fa-long-arrow-right"></i> Consulta: Horario del profesorado del centro con
+                                sus materias
+                            </li>
+                            <li>
+                                En "Año académico" escribir el año en el que comenzó este curso escolar
+                            </li>
+                            <li>
+                                En "Código de centro" escribir el código del centro educativo
+                            </li>
+                            <li>
+                                Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {# Formulario de carga: DATOS_CASIOPEA #}
+            <div class="panel callout panel_carga_masiva_racima" id="panel_DATOS_CASIOPEA">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Casiopea):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo_DATOS_CASIOPEA" id="file_masivo_DATOS_CASIOPEA"/>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para cargar los datos de plantilla orgánica de los centros que se
+                            almacenan en el servidor Casiopea (Consejería de Eduación).</p>
+                        <p><b>El archivo para cargar los datos se obtiene de:</b></p>
+                        <ul>
+                            <li>
+                                <p>Página web: <a href="https://casiopea.larioja.org/sgti/" target="_blank">
+                                    https://casiopea.larioja.org/sgti/</a></p>
+                                <p>Una vez en el servidor de Casiopea, el archivo excel se obtiene: "Consultas"
+                                    <i class="fa fa-long-arrow-right"></i> "Plantilla".</p>
+                            </li>
+                            <li>
+                                Finalmente, cargar el archivo en este formulario y pulsar en
+                                <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                                superior de la pantalla)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         {% else %}
             <input type="hidden" name="action" value="carga_masiva_csv">
@@ -231,6 +508,17 @@
                         'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
                 })
             }
+        });
+
+        $('#show_formulario_carga').click(function (e) {
+            e.preventDefault();
+            var tipo = $('#select_tipo_carga').val();
+            $('.panel_carga_masiva_racima').hide();
+            $('#panel_' + tipo).show();
+        });
+        $('.hide_formulario_carga').click(function (e) {
+            e.preventDefault();
+            $('.panel_carga_masiva_racima').hide();
         });
 
 

@@ -812,7 +812,7 @@ class CEProgSec(models.Model):
                ('20ESO1', '1º de ESO'), ('20ESO2', '2º de ESO'), ('20ESO3', '3º de ESO'), ('20ESO4', '4º de ESO'))
     GRADOS = ((5, '5%'), (10, '10%'), (15, '15%'), (20, '20%'), (25, '25%'), (30, '30%'), (35, '35%'),
               (40, '40%'), (45, '45%'), (50, '50%'), (55, '55%'), (60, '60%'), (65, '65%'), (70, '70%'),
-              (75, '75%'), (80, '80%'), (85, '85%'), (90, '90%'), (95, '95%'), (100, '100%'), )
+              (75, '75%'), (80, '80%'), (85, '85%'), (90, '90%'), (95, '95%'), (100, '100%'),)
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
@@ -1291,12 +1291,22 @@ class CuadernoProf(models.Model):
                     calalumnces.delete()
                     calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
                     for calalumvalor in calalumvalores:
-                    #     El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                        # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
                         # De esta forma regeneramos todos los valores:
                         calalumvalor.save()
                     # Registramos el error:
                     aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
                     Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
+                elif calalumnces.count() == 0:
+                    calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
+                    for calalumvalor in calalumvalores:
+                        # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                        # De esta forma regeneramos todos los valores:
+                        calalumvalor.save()
+                    # Registramos el error:
+                    aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
+                    Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
+                    return 0
                 try:
                     return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
                 except:

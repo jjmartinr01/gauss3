@@ -984,6 +984,17 @@ def carga_masiva(request):
                         gauser_extra.tutor2 = tutor2
                         gauser_extra.save()
         if action == 'carga_masiva_racima':
+            tipo2permiso = {'ALUMN_CENTRO': 'carga_alumnos_centro_educativo',
+                            'ALUMN_CENTROS': 'carga_alumnos_centros_educativos',
+                            'PERSONAL_CENTRO': 'carga_personal_centro_educativo',
+                            'PERSONAL_CENTROS': 'carga_personal_centros_educativos',
+                            'DATOS_CENTROS': 'carga_datos_centros_educativos',
+                            'HORARIO_PERSONAL_CENTRO': 'carga_horario_personal_centro_educativo',
+                            }
+            if not g_e.has_permiso(tipo2permiso[request.POST['select_tipo_carga']]):
+                return render(request, "enlazar.html", {'page': '/', })
+
+
             if 'excel' in request.FILES['file_masivo'].content_type:
                 CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
                 try:
