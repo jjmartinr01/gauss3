@@ -950,12 +950,14 @@ def create_usuario(datos, request, tipo):
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
-        logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
+        tipo_carga = request.POST['tipo_carga']
+        file_masivo = request.FILES['file_masivo_' + tipo_carga]
+        logger.info('Carga de archivo de tipo: ' + file_masivo.content_type)
         ronda = request.session['gauser_extra'].ronda
         action = request.POST['action']
         if action == 'carga_masiva_csv':
-            if 'csv' in request.FILES['file_masivo'].content_type:
-                fichero = request.FILES['file_masivo']
+            if 'csv' in file_masivo.content_type:
+                fichero = file_masivo
                 # if fichero.multiple_chunks():
                 # csv_file = ''
                 csv_file = ''
@@ -994,9 +996,8 @@ def carga_masiva(request):
             if not g_e.has_permiso(tipo2permiso[request.POST['select_tipo_carga']]):
                 return render(request, "enlazar.html", {'page': '/', })
 
-
-            if 'excel' in request.FILES['file_masivo'].content_type:
-                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
+            if 'excel' in file_masivo.content_type:
+                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga)
                 try:
                     carga_masiva_from_excel.apply_async(expires=300)
                     crear_aviso(request, True, 'cmexcel_automatica')
@@ -1004,6 +1005,9 @@ def carga_masiva(request):
                 except:
                     crear_aviso(request, False,
                                 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+            else:
+                crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
+                            '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
         else:
             crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
 

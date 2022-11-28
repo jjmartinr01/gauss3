@@ -70,7 +70,7 @@
                 <hr>
                 <div class="row">
                     <div class="large-12 columns">
-                        <p>Este formulario sirve para cargar los datos de los alumnos de tu centro educativo.</p>
+                        <p>Este formulario sirve para cargar los datos de los alumnos de su centro educativo.</p>
                         <p><b>El archivo para cargar los alumnos del centro se obtiene de:</b></p>
                         <ul>
                             <li>
@@ -206,7 +206,7 @@
                 <hr>
                 <div class="row">
                     <div class="large-12 columns">
-                        <p>Este formulario sirve para cargar los datos del personal todos los centros educativos.</p>
+                        <p>Este formulario sirve para cargar los datos del personal de todos los centros educativos.</p>
                         <p><b>El archivo para cargar el personal de todos los centros se obtiene de:</b></p>
                         <ul>
                             <li>
@@ -499,7 +499,6 @@
 {% block final %}
     <script>
 
-        habilita(['s_check']);
         $('#check_sign').click(function (e) {
             e.preventDefault();
             var tipo_carga = $('#tipo_carga').val();
@@ -519,10 +518,12 @@
             $('.panel_carga_masiva_racima').hide();
             $('#panel_' + tipo).show();
             $('#tipo_carga').val(tipo);
+            habilita(['s_check']);
         });
         $('.hide_formulario_carga').click(function (e) {
             e.preventDefault();
             $('.panel_carga_masiva_racima').hide();
+            habilita(['h_check']);
         });
 
 

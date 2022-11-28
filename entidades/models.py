@@ -913,12 +913,21 @@ class CargaMasiva(models.Model):
              ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'),
              ('CENTROSRACIMA', 'Consulta -> Centro -> Datos de los centros'),
              ('PLANTILLAXLS', 'Sesiones cargadas desde el archivo excel de Racima PXLS'),
-             ('DOCENTES_RACIMA', 'Docentes cargados desde consulta general'))
+             ('DOCENTES_RACIMA', 'Docentes cargados desde consulta general'),
+             # Estas son los nuevos tipos de carga. Las anteriores habrá que borrarlas.
+             ('ALUMN_CENTRO', 'Carga de alumnos de un centro educativo'),
+             ('ALUMN_CENTROS', 'Carga de alumnos de varios centros educativos'),
+             ('PERSONAL_CENTRO', 'Carga del personal de un centro educativo'),
+             ('PERSONAL_CENTROS', 'Carga del personal de varios centros educativos'),
+             ('DATOS_CENTROS', 'Carga de los datos los centros educativos'),
+             ('HORARIO_PERSONAL_CENTRO', 'Carga de los horarios de los docentes'),
+             ('DATOS_CASIOPEA', 'Carga de plantillas orgánicas desde Casiopea'),
+             )
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE, blank=True, null=True)
     # Persona que ha realizado la carga masiva
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
     fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
-    tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
+    tipo = models.CharField("Tipo de archivo", max_length=25, choices=TIPOS)
     incidencias = models.TextField("Incidencias producidas", blank=True, null=True, default='')
     cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
     error = models.BooleanField("¿Se ha producido un error en la carga del archivo archivo?", default=False)

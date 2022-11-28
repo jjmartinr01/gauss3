@@ -171,8 +171,10 @@
                             <i class="fa fa-users"></i> Gestionar alumnos
                         </a>
                     </th>
-                    <th>Calificación</th>
                     {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                        {% ifchanged cep.ce.asignatura %}
+                            <th>Calificación<br>{{ cep.ce.asignatura }}</th>
+                        {% endifchanged %}
                         <th id="cep_title{{ cep.id }}"
                             title="{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}<br>
                             {{ cep.ce.texto|truncatechars:20 }}</th>
