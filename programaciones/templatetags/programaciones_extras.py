@@ -65,6 +65,20 @@ def calificacion_alumno(cuaderno, alumno):
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
 ########  Observarlas en cuadernodocente_accordion_content.html
+########  cuaderno|get_asignatura:asignatura|calificacion_alumno_asignatura:alumno
+@register.filter
+def get_asignatura(cuaderno, asignatura):
+    return cuaderno, asignatura
+@register.filter
+def calificacion_alumno_asignatura(cuaderno_asignatura, alumno):
+    try:
+        cuaderno, asignatura = cuaderno_asignatura
+        return cuaderno.calificacion_alumno_asignatura(alumno, asignatura)
+    except Exception as msg:
+        return str(msg)
+#################################################
+########  Estas dos funciones trabajan juntas para crear una función de tres variables
+########  Observarlas en cuadernodocente_accordion_content.html
 ########  cuaderno|get_cep:cep|get_calalumce:alumno
 @register.filter
 def get_cep(cuaderno, cep):

@@ -189,7 +189,8 @@
                         </td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged cep.ce.asignatura %}
-                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
+{#                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>#}
+                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|get_asignatura:cep.ce.asignatura|calificacion_alumno_asignatura:alumno }}</td>
                             {% endifchanged %}
                             {% with calalumce=cuaderno|get_cep:cep|get_calalumce:alumno %}
                                 {#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
