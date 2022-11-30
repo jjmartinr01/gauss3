@@ -12,9 +12,11 @@ from django.utils.timezone import timedelta, datetime, now
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
+
+from cupo.models import PlantillaOrganica, PlantillaXLS
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula, Curso
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad, EntidadExtra, \
-    EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field, DocConfEntidad
+    EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field, DocConfEntidad, Organization
 from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR, CARGOS_CENTROS
@@ -291,12 +293,14 @@ def carga_masiva_alumnos(carga, entidad):
             for col_index in range(sheet.ncols):
                 try:
                     d[kra[key_columns[col_index]]] = sheet.cell(row_index, col_index).value
-                except:
-                    pass
+                except Exception as msg:
+                    carga.log += '<p>Lectura columnas: %s</p>' % str(msg)
+                    carga.save()
             try:
                 entidad_archivo = Entidad.objects.get(code=d['centro'].replace(')', '').split(sep='(')[1])
                 if entidad:
                     if entidad != entidad_archivo:
+                        carga.log += 'La entidad de carga y la información del archivo no coinciden.'
                         carga.cargado = True
                         carga.save()
                         return False
@@ -308,12 +312,14 @@ def carga_masiva_alumnos(carga, entidad):
                     cargoa = Cargo.objects.create(cargo='Alumno/a', entidad=entidad, borrable=False,
                                                   clave_cargo='g_alumno')
                     carga.log += '<p>Crear cargo g_alumno - %s</p>' % ronda
+                    carga.save()
                 try:
                     cargop = Cargo.objects.get(entidad=entidad, borrable=False, clave_cargo='g_madre_padre')
                 except:
                     cargop = Cargo.objects.create(cargo='Madre/Padre/Tutor/a legal', entidad=entidad,
                                                   borrable=False, clave_cargo='g_madre_padre')
                     carga.log += '<p>Crear cargo g_madre_padre - %s</p>' % ronda
+                    carga.save()
                 # Definición de los datos que permiten definir los usuarios:
                 d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
                 d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
@@ -324,12 +330,15 @@ def carga_masiva_alumnos(carga, entidad):
                 except:
                     x_curso = ''
                     carga.log += '<p>x_curso: %s - %s</p>' % (d['x_curso'], ronda)
+                    carga.save()
                 try:
                     curso = Curso.objects.get(ronda=ronda, clave_ex=x_curso)
-                except:
+                except Exception as msg:
+                    carga.log += '<p>Error: %s</p>' % str(msg)
                     cursos = Curso.objects.filter(ronda=ronda, clave_ex=x_curso)
                     if cursos.count() > 0:
                         carga.log += '<p>cursos iguales (%s): %s - %s</p>' % (cursos.count(), d['x_curso'], ronda)
+                        carga.save()
                         curso = cursos[0]
                     else:
                         curso = Curso.objects.create(clave_ex=x_curso, ronda=ronda)
@@ -343,12 +352,14 @@ def carga_masiva_alumnos(carga, entidad):
                 except:
                     x_unidad = ''
                     carga.log += '<p>x_unidad: %s - %s</p>' % (d['x_unidad'], ronda)
+                    carga.save()
                 try:
                     grupo = Grupo.objects.get(ronda=ronda, clave_ex=x_unidad)
-                except:
+                except Exception as msg:
                     grupos = Grupo.objects.filter(ronda=ronda, clave_ex=x_unidad)
                     if grupos.count() > 0:
                         carga.log += '<p>grupos iguales (%s): %s - %s</p>' % (grupos.count(), d['x_unidad'], ronda)
+                        carga.save()
                         grupo = grupos[0]
                     else:
                         grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
@@ -392,85 +403,153 @@ def carga_masiva_alumnos(carga, entidad):
                 gauser_extra.gauser_extra_estudios.grupo = grupo
                 gauser_extra.gauser_extra_estudios.save()
             except Exception as msg:
-                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros0: %s - %s' % (str(msg), d['centro']),
-                                     fecha=now())
+                carga.log += '<p>carga_centros0: %s - %s</p>' % (str(msg), d['centro'])
+                carga.save()
     carga.cargado = True
     carga.save()
     return True
 
 def carga_masiva_personal(carga, entidad):
+    centros_cargados = []
+    docentes_cargados = {}
+    carga.log += '<p>Comienza carga de docentes</p>'
+    errores = {}
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
     sheet = book.sheet_by_index(0)
     # Get the keys from line 5 of excel file:
-    keys = [slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)]
-    key_columns = {col_index: slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
-    if int(sheet.ncols) == 13:  # En este caso es el archivo es del personal
-        errores = {}
-        # Get the keys from line 5 of 'excel' file:
-        dict_names = {}
-        for col_index in range(sheet.ncols):
-            dict_names[str(sheet.cell(4, col_index).value).strip()] = col_index
-        for row_index in range(5, sheet.nrows):
+    dict_names = {}
+    for col_index in range(sheet.ncols):
+        dict_names[sheet.cell(4, col_index).value] = col_index
+    for row_index in range(5, sheet.nrows):
+        try:
+            code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
+            entidad_archivo = Entidad.objects.get(code=code_entidad)
+            if entidad:
+                if entidad != entidad_archivo:
+                    carga.cargado = True
+                    carga.log += '<p>Se interrumpe la carga porque no corresponde al centro educativo.</p>'
+                    carga.save()
+                    return False
+            entidad = entidad_archivo
+            if code_entidad not in centros_cargados:
+                centros_cargados.append(code_entidad)
+            if code_entidad not in docentes_cargados:
+                docentes_cargados[code_entidad] = []
             try:
-                code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
-                entidad_archivo = Entidad.objects.get(code=code_entidad)
-                if entidad:
-                    if entidad != entidad_archivo:
-                        carga.cargado = True
-                        carga.save()
-                        return False
-                entidad = entidad_archivo
-                dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
-                nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
-                apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
-                email = sheet.cell(row_index, dict_names['Correo-e']).value
-                username = sheet.cell(row_index, dict_names['Usuario']).value
-                clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip().split('.')[0]
-                puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
-                xpuesto = str(sheet.cell(row_index, dict_names['X_PUESTO']).value).strip()
-                tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
-                jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
-
-                if 'No Docente' in tipo_personal and jornada_contratada == '0:00':
-                    try:
-                        cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
-                    except:
-                        cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
-                                                     cargo='No docente')
-                else:
-                    try:
-                        cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
-                    except:
-                        cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
-                                                     cargo='Docente')
+                cargo_d = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
+            except:
+                cargo_d = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
+                                               cargo='Docente')
+            try:
+                cargo_nd = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
+            except:
+                cargo_nd = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
+                                                cargo='No docente')
+            dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
+            nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
+            apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
+            email = sheet.cell(row_index, dict_names['Correo-e']).value
+            username = sheet.cell(row_index, dict_names['Usuario']).value
+            clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip().split('.')[0]
+            puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
+            jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
+            tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
+            if 'No Docente' in tipo_personal:
+                cargo = cargo_nd
+            else:
+                cargo = cargo_d
+            try:
                 try:
-                    try:
-                        gauser = Gauser.objects.get(dni=dni)
-                        gauser.email = email
-                        gauser.username = username
-                    except:
-                        gauser = Gauser.objects.get(username=username)
-                        gauser.email = email
-                        gauser.dni = dni
+                    gauser = Gauser.objects.get(username=username)
+                    gauser.dni = dni
+                    gauser.email = email
+                    gauser.first_name = nombre
+                    gauser.last_name = apellidos[:30]
+                    gauser.save()
+                except Exception as msg:
+                    carga.log += '<p>Error get Gauser por username: %s</p>\n' % (msg)
+                    carga.save()
+                    gauser = Gauser.objects.get(dni=dni)
+                    gauser.email = email
+                    gauser.username = username
+                    gauser.first_name = nombre
+                    gauser.last_name = apellidos
+                    gauser.save()
+                    carga.log += '<p>Se busca usuario %s por dni: %s</p>\n' % (username, dni)
+                    carga.save()
+            except:
+                carga.log += '<p>Se intenta crear usuario con username: %s</p>\n' % username
+                carga.save()
+                gauser = Gauser.objects.create_user(username, email=email, last_login=now(), dni=dni,
+                                                    password=pass_generator(size=9))
+            gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
+            gauser_extra.clave_ex = clave_ex
+            gauser_extra.id_organizacion = clave_ex
+            gauser_extra.activo = True
+            gauser_extra.puesto = puesto
+            gauser_extra.tipo_personal = tipo_personal
+            gauser_extra.jornada_contratada = jornada_contratada
+            gauser_extra.cargos.add(cargo)
+            gauser_extra.save()
+            docentes_cargados[code_entidad].append(clave_ex)
+            # carga.log += '<p>Carga de %s - %s - %s</p>\n' % (username, dni, gauser_extra.id_organizacion)
+            direc_apellidos, direc_nombre = entidad.entidadextra.director.split(', ')
+            if gauser_extra.gauser.first_name == direc_nombre and gauser_extra.gauser.last_name == direc_apellidos:
+                try:
+                    cargo_director = Cargo.objects.get(entidad=entidad, clave_cargo='g_director_centro')
                 except:
-                    gauser = Gauser.objects.create_user(username, email=email, last_login=now(), dni=dni,
-                                                        password=pass_generator(size=9))
-                gauser.first_name = nombre
-                gauser.last_name = apellidos
-                gauser.save()
-                gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
-                gauser_extra.clave_ex = clave_ex
+                    cargo_director = Cargo.objects.create(entidad=entidad, clave_cargo='g_director_centro',
+                                                          borrable=False, cargo='Director/a')
+                gauser_extra.cargos.add(cargo_director)
+            if entidad.entidadextra.depende_de:
+                nueva_entidad = entidad.entidadextra.depende_de
+                carga.log += '<p>Entidad depende de: %s</p>' % (nueva_entidad)
+                gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=nueva_entidad.ronda, gauser=gauser)
+                gauser_extra.clave_ex = 's-%s' % clave_ex
+                gauser_extra.id_organizacion = 's-%s' % clave_ex
                 gauser_extra.activo = True
                 gauser_extra.puesto = puesto
                 gauser_extra.tipo_personal = tipo_personal
                 gauser_extra.jornada_contratada = jornada_contratada
                 gauser_extra.cargos.add(cargo)
                 gauser_extra.save()
-            except Exception as msg:
-                apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
-                errores[row_index] = {'error': str(msg), 'apellidos': apellidos}
-                logger.info('Error carga general docentes %s -- %s' % (str(apellidos), msg))
+                carga.log += '<p>Carga de %s - %s - s-%s</p>' % (username, dni, gauser_extra.id_organizacion)
+                carga.save()
+        except Exception as msg:
+            apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
+            errores[row_index] = {'error': str(msg), 'apellidos': apellidos}
+            logger.info('Error carga general docentes %s -- %s' % (str(apellidos), msg))
+            carga.log += '<p>Error carga general docentes %s -- %s</p>' % (str(apellidos), msg)
+            carga.save()
+    # Líneas de código para eliminar usuarios que no están en el archivo de carga:
+    for centro_cargado in centros_cargados:
+        entidad = Entidad.objects.get(code=centro_cargado)
+        carga.log += '<p><b>%s</b></p>' % entidad
+        carga.log += '<p>Lista: %s</p>' % ', '.join(docentes_cargados[entidad.code])
+        cargo_d = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
+        cargo_nd = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
+        usuarios_activos = Gauser_extra.objects.filter(activo=True, cargos__in=[cargo_nd, cargo_d],
+                                                       ronda=entidad.ronda)
+        # Si se carga a un solo usuario implicaría la desactivación del resto. Por esta razón:
+        # Evitamos que se desactiven usuarios:
+        usuarios_activos = []
+        for usuario_activo in usuarios_activos:
+            if usuario_activo.clave_ex not in docentes_cargados[entidad.code]:
+                # Puede que existan usuarios activos correctamente por pertenecer a una sección
+                # Estos usuarios tienen una clave_ex que comienza por s-
+                try:
+                    if usuario_activo.clave_ex:
+                        if 's-' not in usuario_activo.clave_ex:
+                            usuario_activo.activo = False
+                            usuario_activo.save()
+                            carga.log += '<p>Desactivado usuario: %s con clave_ex: </p>\n' % (usuario_activo, clave_ex)
+                    else:
+                        usuario_activo.activo = False
+                        usuario_activo.save()
+                        carga.log += '<p>Desactivado usuario: %s, clave_ex: None</p>\n' % (usuario_activo)
+                except Exception as msg:
+                    carga.log += '<p>Error al desactivar a: %s - %s</p>\n' % (usuario_activo, str(msg))
     carga.cargado = True
     carga.save()
     return True
@@ -623,7 +702,77 @@ def carga_masiva_datos_centros(carga):
     return True
 
 def carga_masiva_horario_personal_centro(carga):
-    return True
+    # return True
+    # for curso in Curso.objects.filter(clave_ex__icontains='.0'):
+    #     curso.clave_ex = str(int(float(curso.clave_ex)))
+    #     curso.save()
+    # for grupo in Grupo.objects.filter(clave_ex__icontains='.0'):
+    #     grupo.clave_ex = str(int(float(grupo.clave_ex)))
+    #     grupo.save()
+    # for materia in Materia.objects.filter(clave_ex__icontains='.0'):
+    #     materia.clave_ex = str(int(float(materia.clave_ex)))
+    #     materia.save()
+    # for etapa in EtapaEscolar.objects.filter(clave_ex__icontains='.0'):
+    #     etapa.clave_ex = str(int(float(etapa.clave_ex)))
+    #     etapa.save()
+    try:
+        f = carga.fichero.read()
+        book = xlrd.open_workbook(file_contents=f)
+        sheet = book.sheet_by_index(0)
+        po = PlantillaOrganica.objects.create(g_e=carga.g_e)
+    except Exception as msg:
+        carga.log += 'Error y parada de carga: %s' % str(msg)
+        carga.save()
+        return False
+    # Get the keys from line 5 of excel file:
+    keys = {"CENTRO": "centro", "DOCENTE": "docente", "X_DOCENTE": "x_docente", "DEPARTAMENTO": "departamento",
+            "X_DEPARTAMENTO": "x_departamento", "FECHA INICIO": "fecha_inicio", "FECHA FIN": "fecha_fin",
+            "DÍA": "dia", "HORA INICIO": "hora_inicio", "AÑO": "year",
+            "HORA FIN": "hora_fin", "HORA INICIO CADENA": "hora_inicio_cadena",
+            "HORA FIN CADENA": "hora_fin_cadena", "X_ACTIVIDAD": "x_actividad", "Localidad Unidad": 'localidad',
+            "ACTIVIDAD": "actividad", "L_REQUNIDAD": "l_requnidad", "DOCENCIA": "docencia",
+            "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia", "X_OFERTAMATRIG": "x_curso",
+            "C_CODDEP": "c_coddep", "X_DEPENDENCIA2": "x_dependencia2", "C_CODDEP2": "c_coddep2",
+            "X_UNIDAD": "x_unidad", "UNIDAD": "unidad", "Grupo de materias": "grupo_materias",
+            "MATERIA": "materia", "X_MATERIOAOMG": "x_materiaomg", "CURSO": "curso", "OMC": "omc",
+            "Horas Semana mínimo": "horas_semana_min", "Horas Semana máximo": "horas_semana_max",
+            "DNI": "dni", "CORREO_E": "email", "PUESTO": "puesto", "X_PUESTO": "x_puesto",
+            "X_SESION": "x_sesion", "X_ETAPA": "x_etapa_escolar", "ETAPA": "etapa_escolar"}
+
+    for i, row_index in enumerate(range(5, sheet.nrows)):
+        pxls = PlantillaXLS.objects.create(po=po)
+        for col_index in range(sheet.ncols):
+            column_header = str(sheet.cell(4, col_index).value)
+            try:
+                # Al cargar un campo con valor '2', la hoja excel la devuelve como '2.0'
+                # para grabar exactamento '2' lo convertimos float -> int -> str :
+                if keys[column_header] == 'dni':
+                    dni = genera_nie(str(int(float(sheet.cell(row_index, col_index).value))))
+                    setattr(pxls, keys[column_header], dni)
+                else:
+                    setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
+            except Exception as msg:
+                setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
+                carga.log += 'Error: %s' % str(msg)
+                carga.save()
+        pxls.save()
+        if i == 0:  # Es la primera línea ejecutada del forloop. La primera fila leída del archivo XLS
+            nombre_centro, dash, code_centro = pxls.centro.rpartition('-')
+            entidad, c = Entidad.objects.get_or_create(code=int(code_centro))
+            entidad.name = nombre_centro
+            try:
+                entidad.organization = Organization.objects.get(organization__icontains='Gobierno')
+            except:
+                carga.log += 'No encuentra Gobierno. %s - PO: %s' % (entidad.name, po.id)
+                carga.save()
+            entidad.save()
+            po.ronda_centro = entidad.ronda
+            po.save()
+    carga.cargado = True
+    carga.save()
+    po.carga_plantilla_xls()
+    po.carga_completa = True
+    po.save()
 def carga_masiva_datos_casiopea(carga):
     return True
 
@@ -1261,7 +1410,7 @@ def carga_masiva_from_excel():
                 carga_masiva_datos_centros(carga=carga)
             elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
                 carga_masiva_horario_personal_centro(carga=carga)
-            elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
+            elif carga.tipo == 'DATOS_CASIOPEA':
                 carga_masiva_datos_casiopea(carga=carga)
             carga.log += '<p><b>Proceso de carga terminado (%s)</b></p>' % datetime.now()
             carga.cargado = True

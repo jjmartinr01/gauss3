@@ -352,7 +352,7 @@ class PlantillaOrganica(models.Model):
             cursos = Curso.objects.filter(clave_ex=x_curso, ronda=self.ronda_centro)
             if cursos.count() > 0:
                 curso = cursos[0]
-                cursos.exclude(pk__in=[curso.pk]).delete()
+                # cursos.exclude(pk__in=[curso.pk]).delete()
             else:
                 curso = Curso.objects.create(clave_ex=x_curso, ronda=self.ronda_centro)
         curso.nombre = data['curso']
@@ -369,7 +369,7 @@ class PlantillaOrganica(models.Model):
         cursos = self.plantillaxls_set.all().values('x_curso', 'curso', 'omc', 'x_etapa_escolar')
         for curso in cursos:
             self.carga_curso(curso)
-        Curso.objects.filter(ronda=self.ronda_centro, clave_ex='').delete()
+        # Curso.objects.filter(ronda=self.ronda_centro, clave_ex='').delete()
         return True
 
     ########################################################################
@@ -386,7 +386,7 @@ class PlantillaOrganica(models.Model):
             grupos = Grupo.objects.filter(clave_ex=x_unidad, ronda=self.ronda_centro)
             if grupos.count() > 0:
                 grupo = grupos[0]
-                grupos.exclude(pk__in=[grupo.pk]).delete()
+                # grupos.exclude(pk__in=[grupo.pk]).delete()
             else:
                 grupo = Grupo.objects.create(clave_ex=x_unidad, ronda=self.ronda_centro)
         grupo.nombre = data['unidad']
@@ -403,7 +403,7 @@ class PlantillaOrganica(models.Model):
         grupos = self.plantillaxls_set.all().values('x_curso', 'x_unidad', 'unidad')
         for grupo in grupos:
             self.carga_grupo(grupo)
-        Grupo.objects.filter(ronda=self.ronda_centro, clave_ex='').delete()
+        # Grupo.objects.filter(ronda=self.ronda_centro, clave_ex='').delete()
 
     ########################################################################
     ############ Cargamos materias:
@@ -422,7 +422,7 @@ class PlantillaOrganica(models.Model):
             materias = Materia.objects.filter(clave_ex=x_materiaomg, curso=curso)
             if materias.count() > 0:
                 materia = materias[0]
-                materias.exclude(pk__in=[materia.pk]).delete()
+                # materias.exclude(pk__in=[materia.pk]).delete()
             else:
                 materia = Materia.objects.create(clave_ex=x_materiaomg, curso=curso)
         horas, sc, minutos = data['horas_semana_min'].rpartition(':')
@@ -445,7 +445,7 @@ class PlantillaOrganica(models.Model):
                                                                         'materia').distinct()
         for materia in materias:
             self.carga_materia(materia)
-        Materia.objects.filter(curso__ronda=self.ronda_centro, clave_ex='').delete()
+        # Materia.objects.filter(curso__ronda=self.ronda_centro, clave_ex='').delete()
 
     ########################################################################
     ############ Cargamos departamentos:
@@ -523,7 +523,7 @@ class PlantillaOrganica(models.Model):
         try:
             cargo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)
         except:
-            Cargo.objects.filter(entidad=self.ronda_centro.entidad, clave_cargo='g_docente').delete()
+            # Cargo.objects.filter(entidad=self.ronda_centro.entidad, clave_cargo='g_docente').delete()
             cargo = Cargo.objects.create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)
         cargo.cargo = 'Docente'
         cargo.save()
