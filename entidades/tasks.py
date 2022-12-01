@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
 
-from cupo.models import PlantillaOrganica, PlantillaXLS
+# from cupo.models import PlantillaOrganica, PlantillaXLS
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula, Curso
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad, EntidadExtra, \
     EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field, DocConfEntidad, Organization
@@ -702,19 +702,8 @@ def carga_masiva_datos_centros(carga):
     return True
 
 def carga_masiva_horario_personal_centro(carga):
-    # return True
-    # for curso in Curso.objects.filter(clave_ex__icontains='.0'):
-    #     curso.clave_ex = str(int(float(curso.clave_ex)))
-    #     curso.save()
-    # for grupo in Grupo.objects.filter(clave_ex__icontains='.0'):
-    #     grupo.clave_ex = str(int(float(grupo.clave_ex)))
-    #     grupo.save()
-    # for materia in Materia.objects.filter(clave_ex__icontains='.0'):
-    #     materia.clave_ex = str(int(float(materia.clave_ex)))
-    #     materia.save()
-    # for etapa in EtapaEscolar.objects.filter(clave_ex__icontains='.0'):
-    #     etapa.clave_ex = str(int(float(etapa.clave_ex)))
-    #     etapa.save()
+    return True
+
     try:
         f = carga.fichero.read()
         book = xlrd.open_workbook(file_contents=f)
@@ -724,7 +713,6 @@ def carga_masiva_horario_personal_centro(carga):
         carga.log += 'Error y parada de carga: %s' % str(msg)
         carga.save()
         return False
-    # Get the keys from line 5 of excel file:
     keys = {"CENTRO": "centro", "DOCENTE": "docente", "X_DOCENTE": "x_docente", "DEPARTAMENTO": "departamento",
             "X_DEPARTAMENTO": "x_departamento", "FECHA INICIO": "fecha_inicio", "FECHA FIN": "fecha_fin",
             "DÍA": "dia", "HORA INICIO": "hora_inicio", "AÑO": "year",
