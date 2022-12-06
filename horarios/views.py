@@ -1577,10 +1577,19 @@ def guardias_ajax(request):
 def alumnos_horarios(request):
     g_e = request.session['gauser_extra']
     ronda = request.session['ronda']
-    horario = Horario.objects.get(entidad=g_e.ronda.entidad, ronda=ronda, predeterminado=True)
+    try:
+        horario = Horario.objects.get(entidad=g_e.ronda.entidad, ronda=ronda, predeterminado=True)
+    except:
+        entidad = g_e.ronda.entidad
+        horario = Horario.objects.create(entidad=entidad, ronda=g_e.ronda, nombre='Horario nuevo', predeterminado=True)
+        inicio = time(9, 0)
+        fin = time(10, 0)
+        Tramo_horario.objects.create(horario=horario, nombre='Nuevo tramo', inicio=inicio, fin=fin)
     grupos = Grupo.objects.filter(ronda=ronda)
-    usuarios = usuarios_ronda(g_e.ronda)
-    alumnos = Gauser_extra_estudios.objects.filter(grupo__in=grupos, ge__in=usuarios)
+    # usuarios = usuarios_ronda(g_e.ronda)
+    # alumnos = Gauser_extra_estudios.objects.filter(grupo__in=grupos, ge__in=usuarios)
+    cargo_a = Cargo.objects.get(clave_cargo='g_alumno', entidad=g_e.ronda.entidad)
+    alumnos = Gauser_extra_estudios.objects.filter(ge__cargos__in=[cargo_a])
     tutores_id = alumnos.values_list('tutor__id', flat=True).distinct()
     tutores = Gauser_extra.objects.filter(id__in=tutores_id)
     cotutores_id = alumnos.values_list('cotutor__id', flat=True).distinct()

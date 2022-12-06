@@ -1994,6 +1994,13 @@ def progsecundaria(request):
         pga, c = PGA.objects.get_or_create(ronda=ies.ronda)
     else:
         pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
+    # Las siguientes líneas son para asegurar que los creadores de una ProgSec siempre tendrán permiso 'X'
+    psecs_ge_propietario = ProgSec.objects.filter(pga=pga, gep=g_ep)
+    for psec in psecs_ge_propietario:
+        dps, c = DocProgSec.objects.get_or_create(psec=psec, gep=g_ep)
+        dps.permiso = 'X'
+        dps.save()
+    # Fin de las líneas que aseguran que el propietario tiene permiso 'X'
     if g_e.has_permiso('ve_todas_programaciones'):
         progsecs = ProgSec.objects.filter(pga=pga)
     else:
@@ -2425,8 +2432,16 @@ def progsecundaria(request):
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
+
                 permiso = progsec.get_permiso(g_ep)
-                if 'E' in permiso or 'X' in permiso:
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif 'E' in permiso or 'X' in permiso:
                     saber = progsec.saberbas_set.get(id=request.POST['saber'])
                     psec = saber.psec
                     # saber_id = saber.id
@@ -2584,7 +2599,16 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_sap':
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
-                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
+                progsec = sapren.sbas.psec
+                permiso = progsec.get_permiso(g_ep)
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
                     # if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     sapren.delete()
                     return JsonResponse({'ok': True})
@@ -2690,7 +2714,16 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_sap_actividad':
             try:
                 act = ActSitApren.objects.get(id=request.POST['id'])
-                if act.sapren.actsitapren_set.all().count() > 1:
+                progsec = act.sapren.sbas.psec
+                permiso = progsec.get_permiso(g_ep)
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif act.sapren.actsitapren_set.all().count() > 1:
                     if act.sapren.sbas == sb:
                         act.delete()
                     return JsonResponse({'ok': True})
@@ -2713,7 +2746,16 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_act_instrumento':
             try:
                 inst = InstrEval.objects.get(id=request.POST['id'])
-                if inst.asapren.instreval_set.all().count() > 1:
+                progsec = inst.asapren.sapren.sbas.psec
+                permiso = progsec.get_permiso(g_ep)
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif inst.asapren.instreval_set.all().count() > 1:
                     if inst.asapren.sapren.sbas == sb:
                         inst.delete()
                     return JsonResponse({'ok': True})
