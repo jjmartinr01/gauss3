@@ -820,6 +820,7 @@ class CEProgSec(models.Model):
                              null=True, choices=NIVELES)
     grado = models.IntegerField('Grado de adquisción de la competencia específica', default=100, choices=GRADOS)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    prueba = models.CharField('Prueba', max_length=12, default='4561')
 
     @property
     def cevrogsec_porcentajes(self):
