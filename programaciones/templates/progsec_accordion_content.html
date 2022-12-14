@@ -175,6 +175,18 @@
                 </label>
             </div>
         </div>
+        <div id="adaptacion_curricular">
+            {% if progsec.alumno %}
+                <div class="row">
+                    <div class="columns large-12">
+                        <label><b>Alumno/a al que va destinada la adaptación: </b>
+                            <br><span
+                                    style="font-variant: small-caps;font-weight: bold;">{{ progsec.alumno.gauser.get_full_name }}</span>
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
 {% endif %}
 <br>
@@ -386,7 +398,7 @@
                 {% for cevp in cep.cevprogsec_set.all %}
                     <tr>
                         <td>{{ cep.ce.orden }}.{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}
-                        <span style="color: green;">
+                            <span style="color: green;">
                                     <span title="Porcentaje sobre la calificación final de este criterio de evaluación"
                                           id="cev_porcentaje{{ cevp.id }}">
                                         {{ cep.cevrogsec_porcentajes|keyvalue:cevp.id }}</span>%

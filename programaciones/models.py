@@ -650,12 +650,14 @@ class Cont_unidad_modulo(models.Model):
 
 class ProgSec(models.Model):
     TIPOS = (('BOR', 'Borrador'), ('DEF', 'Definitiva'), ('RE', 'Refuerzo Educativo'),
-             ('AAC', 'Adaptación de Acceso al Currículo'), ('EC', 'Enriquecimiento Curricular'),
-             ('ACS', 'Adaptación Curricular Significativa'), ('PRE', 'Plan de Recuperación'),
-             ('PRT', 'Programa de Refuerzo Transitorio'), ('DIV', 'Diversificación Curricular'),)
+             ('AAC', 'Adaptación de Acceso al Currículo'), ('AC', 'Adaptación Curricular'),
+             ('ACS', 'Adaptación Curricular Significativa'), ('EC', 'Enriquecimiento Curricular'),
+             ('PRE', 'Plan de Recuperación'), ('PRT', 'Programa de Refuerzo Transitorio'),
+             ('DIV', 'Diversificación Curricular'),)
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre específico para la programación', blank=True, max_length=300)
     gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
+    alumno = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
     materia = models.ForeignKey(Materia_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
