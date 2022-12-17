@@ -220,6 +220,7 @@ def create_usuario(datos, ronda, tipo):
 
 
 def carga_masiva_alumnos(carga, entidad):
+    entidades = []
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
     sheet = book.sheet_by_index(0)
@@ -305,8 +306,10 @@ def carga_masiva_alumnos(carga, entidad):
                         carga.cargado = True
                         carga.save()
                         return False
-                    carga.log += 'Se carga archivo para: %s.' % entidad.name
-                    carga.save()
+                    if entidad_archivo not in entidades:
+                        entidades.append(entidad_archivo)
+                        carga.log += 'Se carga archivo para: %s.' % entidad.name
+                        carga.save()
                 entidad = entidad_archivo
                 ronda = entidad.ronda
                 try:
