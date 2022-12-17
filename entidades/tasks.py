@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
 
-# from cupo.models import PlantillaOrganica, PlantillaXLS
+from cupo.models import PlantillaOrganica, PlantillaXLS
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula, Curso
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad, EntidadExtra, \
     EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field, DocConfEntidad, Organization
@@ -702,8 +702,6 @@ def carga_masiva_datos_centros(carga):
     return True
 
 def carga_masiva_horario_personal_centro(carga):
-    return True
-
     try:
         f = carga.fichero.read()
         book = xlrd.open_workbook(file_contents=f)

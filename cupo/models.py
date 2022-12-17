@@ -5,8 +5,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
 
+from gauss.constantes import CARGOS_CENTROS
 from cupo.habilitar_permisos import Miembro_Equipo_Directivo
-from entidades.views import get_entidad_general
 from gauss.funciones import pass_generator, genera_nie
 from autenticar.models import Gauser, Permiso, Menu_default
 from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento, Menu, \
@@ -516,20 +516,24 @@ class PlantillaOrganica(models.Model):
         return True
 
     ########################################################################
-    ############ Cargamos docentes:
-    def carga_cargo_g_docente(self):
-        egeneral, errores = get_entidad_general()
-        cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
-        try:
-            cargo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)
-        except:
-            # Cargo.objects.filter(entidad=self.ronda_centro.entidad, clave_cargo='g_docente').delete()
-            cargo = Cargo.objects.create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)
-        cargo.cargo = 'Docente'
-        cargo.save()
-        for code_nombre in cargo_data['permisos']:
-            cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
-        return cargo
+    ############ Creamos cargos en el centro:
+    def crea_cargos_entidad(self):
+        e = self.ronda_centro.entidad
+        # Se comprueba que todos los cargos de un centro están creados. Si no es así se crean:
+        for c in CARGOS_CENTROS:
+            cargo, creado = Cargo.objects.get_or_create(entidad=e, borrable=False, clave_cargo=c['clave_cargo'])
+            if creado:
+                cargo.cargo = c['cargo']
+                cargo.nivel = c['nivel']
+                cargo.save()
+                for code_nombre in c['permisos']:
+                    try:
+                        cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+                    except Exception as msg:
+                        log = '<br>Permiso: %s -- %s' % (code_nombre, str(msg))
+                        LogCarga.objects.create(g_e=self.g_e, log=log)
+        return True
+
 
     def get_gex_docente(self, gauser, clave_ex, puesto, x_puesto, x_departamento, cargo):
         try:
@@ -569,7 +573,7 @@ class PlantillaOrganica(models.Model):
                                                  'x_departamento').distinct()
         x_docentes = []
         docentes = []
-        cargo = self.carga_cargo_g_docente()
+        cargo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente')
         for ge in ges:
             if not ge['x_docente'] in x_docentes:
                 x_docentes.append(ge['x_docente'])
@@ -774,6 +778,7 @@ class PlantillaOrganica(models.Model):
                 pass
 
     def carga_plantilla_xls(self):
+        self.crea_cargos_entidad()
         LogCarga.objects.create(g_e=self.g_e, log="Inicio carga dependencias")
         self.carga_dependencias()
         LogCarga.objects.create(g_e=self.g_e, log="Inicio carga etapas")
