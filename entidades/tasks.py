@@ -218,6 +218,7 @@ def create_usuario(datos, ronda, tipo):
         Gauser_extra_estudios.objects.get_or_create(ge=gauser_extra)
     return gauser_extra
 
+
 def carga_masiva_alumnos(carga, entidad):
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
@@ -304,6 +305,8 @@ def carga_masiva_alumnos(carga, entidad):
                         carga.cargado = True
                         carga.save()
                         return False
+                    carga.log += 'Se carga archivo para: %s.' % entidad.name
+                    carga.save()
                 entidad = entidad_archivo
                 ronda = entidad.ronda
                 try:
@@ -363,7 +366,7 @@ def carga_masiva_alumnos(carga, entidad):
                         grupo = grupos[0]
                     else:
                         grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
-                        logger.info('Carga masiva xls. Se crea grupo %s' % grupo.clave_ex)
+                        logger.info('Carga masiva xls. Se crea grupo %s-%s' % (grupo.clave_ex, d['grupo']))
                         carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.clave_ex
                         carga.save()
                 grupo.nombre = d['grupo']
@@ -408,6 +411,7 @@ def carga_masiva_alumnos(carga, entidad):
     carga.cargado = True
     carga.save()
     return True
+
 
 def carga_masiva_personal(carga, entidad):
     centros_cargados = []
@@ -482,7 +486,8 @@ def carga_masiva_personal(carga, entidad):
                 carga.log += '<p>Se intenta crear usuario con username: %s</p>\n' % username
                 carga.save()
                 gauser = Gauser.objects.create_user(username, email=email, last_login=now(), dni=dni,
-                                                    password=pass_generator(size=9))
+                                                    password=pass_generator(size=9),
+                                                    first_name=nombre, last_name=apellidos)
             gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
             gauser_extra.clave_ex = clave_ex
             gauser_extra.id_organizacion = clave_ex
@@ -553,6 +558,7 @@ def carga_masiva_personal(carga, entidad):
     carga.cargado = True
     carga.save()
     return True
+
 
 def carga_masiva_datos_centros(carga):
     gauss = Gauser.objects.get(username='gauss')
@@ -701,6 +707,7 @@ def carga_masiva_datos_centros(carga):
         EntidadExtraExpedienteOferta.objects.get_or_create(eeexpediente=eee, oferta=oferta)
     return True
 
+
 def carga_masiva_horario_personal_centro(carga):
     try:
         f = carga.fichero.read()
@@ -735,8 +742,16 @@ def carga_masiva_horario_personal_centro(carga):
                 if keys[column_header] == 'dni':
                     dni = genera_nie(str(int(float(sheet.cell(row_index, col_index).value))))
                     setattr(pxls, keys[column_header], dni)
+                elif column_header in ['X_DOCENTE', 'X_DEPARTAMENTO', 'DÍA', 'HORA INICIO', 'AÑO', 'HORA FIN',
+                                       'X_ACTIVIDAD', 'MINUTOS', 'X_DEPENDENCIA', 'X_OFERTAMATRIG', 'X_DEPENDENCIA2',
+                                       'X_UNIDAD', 'X_MATERIOAOMG', 'X_PUESTO', 'X_SESION', 'X_ETAPA']:
+                    # Comprobar que existe valor y no es una celda vacía:
+                    if sheet.cell(row_index, col_index).value:
+                        setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
+                    else:
+                        setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
                 else:
-                    setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
+                    setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
             except Exception as msg:
                 setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
                 carga.log += 'Error: %s' % str(msg)
@@ -759,10 +774,13 @@ def carga_masiva_horario_personal_centro(carga):
     po.carga_plantilla_xls()
     po.carga_completa = True
     po.save()
+
+
 def carga_masiva_datos_casiopea(carga):
     return True
 
-#La siguiente función habrá que borrarla cuando se estabilicen las nuevas cargas:
+
+# La siguiente función habrá que borrarla cuando se estabilicen las nuevas cargas:
 def carga_masiva_tipo_EXCEL(carga):
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
@@ -872,7 +890,7 @@ def carga_masiva_tipo_EXCEL(carga):
                     if cursos.count() > 0:
                         carga.log += '<p>cursos iguales (%s): %s - %s</p>' % (cursos.count(), d['x_curso'], ronda)
                         curso = cursos[0]
-                        #cursos.exclude(pk__in=[curso.pk]).delete()
+                        # cursos.exclude(pk__in=[curso.pk]).delete()
                     else:
                         curso = Curso.objects.create(clave_ex=x_curso, ronda=ronda)
                         logger.info('Carga masiva xls. Se crea curso %s' % curso.clave_ex)
@@ -893,7 +911,7 @@ def carga_masiva_tipo_EXCEL(carga):
                     if grupos.count() > 0:
                         carga.log += '<p>grupos iguales (%s): %s - %s</p>' % (grupos.count(), d['x_unidad'], ronda)
                         grupo = grupos[0]
-                        #grupos.exclude(pk__in=[grupo.pk]).delete()
+                        # grupos.exclude(pk__in=[grupo.pk]).delete()
                     else:
                         grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
                         logger.info('Carga masiva xls. Se crea grupo %s' % grupo.clave_ex)
@@ -1315,7 +1333,7 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             gauser_extra.cargos.add(cargo)
             gauser_extra.save()
             docentes_cargados[code_entidad].append(clave_ex)
-            #carga.log += '<p>Carga de %s - %s - %s</p>\n' % (username, dni, gauser_extra.id_organizacion)
+            # carga.log += '<p>Carga de %s - %s - %s</p>\n' % (username, dni, gauser_extra.id_organizacion)
             direc_apellidos, direc_nombre = entidad.entidadextra.director.split(', ')
             if gauser_extra.gauser.first_name == direc_nombre and gauser_extra.gauser.last_name == direc_apellidos:
                 cargo_director, c = Cargo.objects.get_or_create(entidad=entidad, clave_cargo='g_director_centro')
@@ -1382,7 +1400,7 @@ def carga_masiva_from_excel():
                 carga_masiva_tipo_CENTROSRACIMA(carga)
             elif carga.tipo == 'DOCENTES_RACIMA':
                 carga_masiva_tipo_DOCENTES_RACIMA(carga)
-            #Las anteriores cargas habrá que borrarlas. Los nuevos tipos de cargas son:
+            # Las anteriores cargas habrá que borrarlas. Los nuevos tipos de cargas son:
             # ['ALUMN_CENTRO', 'ALUMN_CENTROS', 'PERSONAL_CENTRO', 'PERSONAL_CENTROS', 'DATOS_CENTROS', 'HORARIO_PERSONAL_CENTRO', 'DATOS_CASIOPEA']
             elif carga.tipo == 'ALUMN_CENTRO':
                 carga_masiva_alumnos(carga=carga, entidad=carga.g_e.ronda.entidad)
