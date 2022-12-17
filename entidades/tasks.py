@@ -220,6 +220,7 @@ def create_usuario(datos, ronda, tipo):
 
 
 def carga_masiva_alumnos(carga, entidad):
+    entidad_inicial = entidad
     entidades = []
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
@@ -300,16 +301,16 @@ def carga_masiva_alumnos(carga, entidad):
                     carga.save()
             try:
                 entidad_archivo = Entidad.objects.get(code=d['centro'].replace(')', '').split(sep='(')[1])
-                if entidad:
+                if entidad_inicial:
                     if entidad != entidad_archivo:
                         carga.log += 'La entidad de carga y la información del archivo no coinciden.'
                         carga.cargado = True
                         carga.save()
                         return False
-                    if entidad_archivo not in entidades:
-                        entidades.append(entidad_archivo)
-                        carga.log += 'Se carga archivo para: %s.' % entidad.name
-                        carga.save()
+                if entidad_archivo not in entidades:
+                    entidades.append(entidad_archivo)
+                    carga.log += 'Se carga archivo para: %s.' % entidad.name
+                    carga.save()
                 entidad = entidad_archivo
                 ronda = entidad.ronda
                 try:
@@ -1408,7 +1409,7 @@ def carga_masiva_from_excel():
             elif carga.tipo == 'ALUMN_CENTRO':
                 carga_masiva_alumnos(carga=carga, entidad=carga.g_e.ronda.entidad)
             elif carga.tipo == 'ALUMN_CENTROS':
-                carga_masiva_alumnos(carga=carga, entidad=None)
+                carga_masiva_alumnos(carga=carga, entidad=False)
             elif carga.tipo == 'PERSONAL_CENTRO':
                 carga_masiva_personal(carga=carga, entidad=carga.g_e.ronda.entidad)
             elif carga.tipo == 'PERSONAL_CENTROS':
