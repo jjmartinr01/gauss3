@@ -713,7 +713,11 @@ def horarios_ajax(request):
                 [dict(zip(keys, (row[0], '%s (%s)' % (row[1], row[2])))) for row in
                  materias_contain_texto]))
         elif action == 'carga_horario_usuario':
-            ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+            try:
+                ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+            except:
+                cargo = Cargo.objects.filter(entidad=g_e.entidad, clave_cargo='g_docente')
+                ge = usuarios_ronda(g_e.ronda, cargos=cargo)[0]
             horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
             sesiones = horario.sesion_set.filter(g_e=ge)
             try:
