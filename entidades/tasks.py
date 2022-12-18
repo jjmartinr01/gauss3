@@ -309,7 +309,7 @@ def carga_masiva_alumnos(carga, entidad):
                         return False
                 if entidad_archivo not in entidades:
                     entidades.append(entidad_archivo)
-                    carga.log += 'Se carga archivo para: %s.' % entidad.name
+                    carga.log += 'Se carga archivo para: %s.' % entidad_archivo.name
                     carga.save()
                 entidad = entidad_archivo
                 ronda = entidad.ronda
@@ -412,6 +412,8 @@ def carga_masiva_alumnos(carga, entidad):
             except Exception as msg:
                 carga.log += '<p>carga_centros0: %s - %s</p>' % (str(msg), d['centro'])
                 carga.save()
+    else:
+        carga.log += '<p>Error. El número de columnas (%s) no es el requerido.</p>' % int(sheet.ncols)
     carga.cargado = True
     carga.save()
     return True
@@ -743,9 +745,9 @@ def carga_masiva_horario_personal_centro(carga):
             try:
                 # Al cargar un campo con valor '2', la hoja excel la devuelve como '2.0'
                 # para grabar exactamento '2' lo convertimos float -> int -> str :
-                if keys[column_header] == 'dni':
-                    dni = genera_nie(str(int(float(sheet.cell(row_index, col_index).value))))
-                    setattr(pxls, keys[column_header], dni)
+                if column_header == 'DNI':
+                    dni = genera_nie(sheet.cell(row_index, col_index).value)
+                    setattr(pxls, 'dni', dni)
                 elif column_header in ['X_DOCENTE', 'X_DEPARTAMENTO', 'DÍA', 'HORA INICIO', 'AÑO', 'HORA FIN',
                                        'X_ACTIVIDAD', 'MINUTOS', 'X_DEPENDENCIA', 'X_OFERTAMATRIG', 'X_DEPENDENCIA2',
                                        'X_UNIDAD', 'X_MATERIOAOMG', 'X_PUESTO', 'X_SESION', 'X_ETAPA']:
