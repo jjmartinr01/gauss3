@@ -43,20 +43,20 @@
         </div>
         {% if plantillas_o and request.session.gauser_extra|has_permiso:'crea_cupos' %}
             <div class="panel callout radius">
-                <h5><b>Crea un cupo basado en el análisis de alguna de las siguientes plantillas orgánicas haciendo
-                    click sobre ella:</b></h5>
+                <h5><b>Crea un cupo basado en alguno de los siguientes análisis de plantillas orgánicas:
+                <br><span style="font-size:small;"> (Basta con hacer click sobre uno de ellos)</span></b></h5>
                 <div class="row">
                     {% for po in plantillas_o %}
-                        <div class="columns large-3">
+                        {% if po.ronda_centro == request.session.gauser_extra.ronda %}
+                        <div class="columns large-3" title="Análisis realizado por {{ po.g_e.gauser.get_full_name }}">
                             <a class="crea_cupo_from_po" data-po="{{ po.id }}">
                                 <div class="show_po">
                                     <p class="text_show_po">{{ po.ronda_centro.entidad.name }}
-                                        <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y' }}</span></p>
-                                    {#                                    <p class="text_show_po">{{ po.creado|date:'d-m-Y' }}</p>#}
+                                        <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y H:i' }}</span></p>
                                 </div>
                             </a>
-
                         </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
