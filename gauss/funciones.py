@@ -22,7 +22,7 @@ def borra_cargas_masivas_antiguas(carga):
             os.remove(RUTA_BASE + c.fichero.url)
             c.delete()
         except Exception as msg:
-            carga.log = 'Se intenta borrar la carga %s, pero no ha sido posible: %s<br>' % (c, str(msg))
+            carga.log = 'Se intenta borrar la carga "%s" (%s), pero no ha sido posible: %s<br>' % (c, c.id, str(msg))
             carga.save()
 
 def paginar(total, paso=15, c=1):

@@ -773,6 +773,11 @@ def carga_masiva_horario_personal_centro(carga):
                 carga.log += 'No encuentra Gobierno. %s - PO: %s' % (entidad.name, po.id)
                 carga.save()
             entidad.save()
+            if entidad != carga.g_e.ronda.entidad:
+                carga.log += 'Error. Carga para %s - g_e de %s' % (entidad.name, carga.g_e.ronda.entidad.name)
+                carga.cargado = True
+                carga.save()
+                return False
             po.ronda_centro = entidad.ronda
             po.save()
     carga.cargado = True
@@ -780,6 +785,7 @@ def carga_masiva_horario_personal_centro(carga):
     po.carga_plantilla_xls()
     po.carga_completa = True
     po.save()
+    return True
 
 
 def carga_masiva_datos_casiopea(carga):
