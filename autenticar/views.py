@@ -946,7 +946,7 @@ def create_usuario(datos, request, tipo):
     return gauser_extra
 
 
-@permiso_required('acceso_carga_masiva')
+# @permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
@@ -1011,12 +1011,14 @@ def carga_masiva(request):
         else:
             crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
 
+    cargas_masivas = CargaMasiva.objects.filter(g_e=g_e)
     return render(request, "carga_masiva.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
                                   'title': 'Subir el archivo a GAUSS',
                                   'permiso': 'acceso_carga_masiva'}, {}),
                       'formname': 'carga_masiva',
+                      'cargas_masivas': cargas_masivas,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
