@@ -1404,6 +1404,7 @@ def carga_masiva_from_excel():
     for carga in cargas_necesarias:
         borra_cargas_masivas_antiguas(carga)
         try:
+            inicio_carga = datetime.now()
             if carga.tipo == 'EXCEL':
                 carga_masiva_tipo_EXCEL(carga)  # Función cambiada el 18/04/2021. Nuevos ficheros Racima
             elif carga.tipo == 'PENDIENTES':
@@ -1428,7 +1429,9 @@ def carga_masiva_from_excel():
                 carga_masiva_horario_personal_centro(carga=carga)
             elif carga.tipo == 'DATOS_CASIOPEA':
                 carga_masiva_datos_casiopea(carga=carga)
-            carga.log += '<p><b>Proceso de carga terminado (%s)</b></p>' % datetime.now()
+            fin_carga = datetime.now()
+            carga.log += '<p><b>Proceso de carga iniciado (%s) terminado (%s)</b></p>' % (inicio_carga, fin_carga)
+            carga.log += '<p><b>Tiempo empleado en la carga: %s</b></p>' % (fin_carga - inicio_carga)
             carga.cargado = True
             carga.save()
         except Exception as msg:
