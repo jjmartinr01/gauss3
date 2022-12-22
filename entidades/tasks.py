@@ -1042,7 +1042,7 @@ def carga_masiva_tipo_EXCEL(carga):
                         cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
                     except:
                         cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
-                                                     cargo='Docente')
+                                                     cargo='Docente' )
                 # for c in CARGOS:
                 #     if cargo.clave_cargo == c['clave_cargo']:
                 #         for code_nombre in c['permisos']:
