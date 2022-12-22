@@ -946,16 +946,18 @@ def create_usuario(datos, request, tipo):
     return gauser_extra
 
 
-@permiso_required('acceso_carga_masiva')
+# @permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
-        logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
+        tipo_carga = request.POST['tipo_carga']
+        file_masivo = request.FILES['file_masivo_' + tipo_carga]
+        logger.info('Carga de archivo de tipo: ' + file_masivo.content_type)
         ronda = request.session['gauser_extra'].ronda
         action = request.POST['action']
         if action == 'carga_masiva_csv':
-            if 'csv' in request.FILES['file_masivo'].content_type:
-                fichero = request.FILES['file_masivo']
+            if 'csv' in file_masivo.content_type:
+                fichero = file_masivo
                 # if fichero.multiple_chunks():
                 # csv_file = ''
                 csv_file = ''
@@ -984,8 +986,18 @@ def carga_masiva(request):
                         gauser_extra.tutor2 = tutor2
                         gauser_extra.save()
         if action == 'carga_masiva_racima':
-            if 'excel' in request.FILES['file_masivo'].content_type:
-                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
+            tipo2permiso = {'ALUMN_CENTRO': 'carga_alumnos_centro_educativo',
+                            'ALUMN_CENTROS': 'carga_alumnos_centros_educativos',
+                            'PERSONAL_CENTRO': 'carga_personal_centro_educativo',
+                            'PERSONAL_CENTROS': 'carga_personal_centros_educativos',
+                            'DATOS_CENTROS': 'carga_datos_centros_educativos',
+                            'HORARIO_PERSONAL_CENTRO': 'carga_horario_personal_centro_educativo',
+                            }
+            if not g_e.has_permiso(tipo2permiso[request.POST['select_tipo_carga']]):
+                return render(request, "enlazar.html", {'page': '/', })
+
+            if 'excel' in file_masivo.content_type:
+                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga)
                 try:
                     carga_masiva_from_excel.apply_async(expires=300)
                     crear_aviso(request, True, 'cmexcel_automatica')
@@ -993,15 +1005,20 @@ def carga_masiva(request):
                 except:
                     crear_aviso(request, False,
                                 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+            else:
+                crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
+                            '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
         else:
             crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
 
+    cargas_masivas = CargaMasiva.objects.filter(g_e=g_e)
     return render(request, "carga_masiva.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
                                   'title': 'Subir el archivo a GAUSS',
                                   'permiso': 'acceso_carga_masiva'}, {}),
                       'formname': 'carga_masiva',
+                      'cargas_masivas': cargas_masivas,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 

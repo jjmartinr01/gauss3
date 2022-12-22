@@ -16,6 +16,8 @@ from estudios.models import Materia, Curso, AreaMateria, CompetenciaEspecifica, 
 from entidades.models import Gauser_extra, Ronda, Entidad
 from horarios.models import Horario, Sesion
 from actividades.models import Actividad
+from mensajes.models import Aviso
+
 
 #############################################################################
 ##################### PROGRAMACIONES ANTIGUAS  ##############################
@@ -648,12 +650,14 @@ class Cont_unidad_modulo(models.Model):
 
 class ProgSec(models.Model):
     TIPOS = (('BOR', 'Borrador'), ('DEF', 'Definitiva'), ('RE', 'Refuerzo Educativo'),
-             ('AAC', 'Adaptación de Acceso al Currículo'), ('EC', 'Enriquecimiento Curricular'),
-             ('ACS', 'Adaptación Curricular Significativa'), ('PRE', 'Plan de Recuperación'),
-             ('PRT', 'Programa de Refuerzo Transitorio'), ('DIV', 'Diversificación Curricular'),)
+             ('AAC', 'Adaptación de Acceso al Currículo'), ('AC', 'Adaptación Curricular'),
+             ('ACS', 'Adaptación Curricular Significativa'), ('EC', 'Enriquecimiento Curricular'),
+             ('PRE', 'Plan de Recuperación'), ('PRT', 'Programa de Refuerzo Transitorio'),
+             ('DIV', 'Diversificación Curricular'),)
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre específico para la programación', blank=True, max_length=300)
     gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
+    alumno = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
     materia = models.ForeignKey(Materia_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
@@ -663,6 +667,7 @@ class ProgSec(models.Model):
     fin_clases = models.DateField('Fecha de fin de las clases', blank=True, null=True)
     es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
+    planrecup = models.TextField('Organización y seguimiento de los PREs', blank=True, null=True, default='')
     identificador = models.CharField('Identificador', max_length=11, default=pass_generator)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
@@ -733,6 +738,7 @@ class ProgSec(models.Model):
             if criinstreval.cevps not in cevpsecs:
                 cevpsecs.append(criinstreval.cevps)
         return cevpsecs
+
     @property
     def procedimientos_utilizados(self):
         procedimientos = {nombre: 0 for tipo, nombre in InstrEval.TIPOS}
@@ -758,6 +764,7 @@ class ProgSec(models.Model):
                     proc = criinstreval.ieval.get_tipo_display()
                     procedimientos[proc] += contrib_cepsec * contrib_cevpsec * contrib_crii * 100
         return procedimientos
+
     @property
     def asignaturas_ambito(self):
         return set(self.areamateria.competenciaespecifica_set.all().values_list('asignatura', flat=True))
@@ -781,7 +788,7 @@ class ProgSec(models.Model):
     def ceprogsec_porcentajes(self):
         ceps = self.ceprogsec_set.all()
         total_valores = ceps.aggregate(models.Sum('valor'))['valor__sum']
-        return {cep.id: str(round(cep.valor/total_valores*100, 2)) for cep in ceps}
+        return {cep.id: str(round(cep.valor / total_valores * 100, 2)) for cep in ceps}
 
     def __str__(self):
         return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
@@ -798,9 +805,22 @@ class DocProgSec(models.Model):  # Docente habilitado en la progsec
 
 
 class CEProgSec(models.Model):
+    NIVELES = (('00INF0', 'Primer Ciclo Infantil - 0 años'), ('00INF1', 'Primer Ciclo Infantil - 1 año'),
+               ('00INF2', 'Primer Ciclo Infantil - 2 años'), ('00INF3', 'Segundo Ciclo Infantil - 3 años'),
+               ('00INF4', 'Segundo Ciclo Infantil - 4 años'), ('00INF5', 'Segundo Ciclo Infantil - 5 años'),
+               ('10PRI1', 'Primer Ciclo Primaria - 1er Curso'), ('10PRI2', 'Primer Ciclo Primaria - 2o Curso'),
+               ('10PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('10PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
+               ('10PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('10PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
+               ('20ESO1', '1º de ESO'), ('20ESO2', '2º de ESO'), ('20ESO3', '3º de ESO'), ('20ESO4', '4º de ESO'))
+    GRADOS = ((5, '5%'), (10, '10%'), (15, '15%'), (20, '20%'), (25, '25%'), (30, '30%'), (35, '35%'),
+              (40, '40%'), (45, '45%'), (50, '50%'), (55, '55%'), (60, '60%'), (65, '65%'), (70, '70%'),
+              (75, '75%'), (80, '80%'), (85, '85%'), (90, '90%'), (95, '95%'), (100, '100%'),)
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
+    nivel = models.CharField('Nivel de referencia para evaluar al alumno/a', max_length=7, default='', blank=True,
+                             null=True, choices=NIVELES)
+    grado = models.IntegerField('Grado de adquisción de la competencia específica', default=100, choices=GRADOS)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property
@@ -818,6 +838,7 @@ class CEProgSec(models.Model):
                 cantidad = 1
             total += cantidad
         return total
+
     @property
     def tipos_procedimientos_utilizados(self):
         tipos = []
@@ -955,6 +976,7 @@ class SitApren(models.Model):
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
     contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
+    # producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
 
     class Meta:
         verbose_name_plural = 'Situaciones de aprendizaje'
@@ -1058,9 +1080,6 @@ class RepoSitApren(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
     contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
-
-
-
 
     class Meta:
         verbose_name_plural = 'SAP Repositorio de situaciones de aprendizaje'
@@ -1264,10 +1283,42 @@ class CuadernoProf(models.Model):
     def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
         try:
             return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
-        except:
+        except Exception as msg:
+            try:
+                # En algún cuaderno se ha generado más de un calalumnce y, por tanto, aparece esta exception.
+                # Es necesario borrar todas las calalumnces y generarlas de nuevo
+                calalumnces = self.calalumce_set.filter(alumno=alumno, cep__ce=ce)
+                if calalumnces.count() > 1:
+                    for calalumnce in calalumnces:
+                        calalumnce.calalumcev_set.all().delete()
+                    calalumnces.delete()
+                    calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
+                    for calalumvalor in calalumvalores:
+                        # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                        # De esta forma regeneramos todos los valores:
+                        calalumvalor.save()
+                    # Registramos el error:
+                    aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
+                    Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
+                elif calalumnces.count() == 0:
+                    # calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
+                    # for calalumvalor in calalumvalores:
+                    #    # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                    #    # De esta forma regeneramos todos los valores:
+                    #     calalumvalor.save()
+                    ## Registramos el error:
+                    aviso = 'cuaderno 10000-0: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
+                    Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
+                    return 0
+                try:
+                    return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
+                except:
+                    return 10000
+            except:
+                return 20000
             # cep = CEProgSec.objects.get(psec=self.psec, ce=ce)
             # cace = CalAlumCE.objects.create(alumno=alumno, cp=self, cep=cep)
-            return 10000
+
         #################################################################
         ######## LINEAS DE CÓDIGO ANTIGUAS:
         # try:
@@ -1378,11 +1429,24 @@ class CuadernoProf(models.Model):
 
 
 class CalAlumCE(models.Model):
+    ORDEN = {'00INF0': 1, '00INF1': 2, '00INF2': 3, '00INF3': 4, '00INF4': 5, '00INF5': 6, '10PRI1': 7, '10PRI2': 8,
+             '10PRI3': 9, '10PRI4': 10, '10PRI5': 11, '10PRI6': 12, '20ESO1': 13, '20ESO2': 14, '20ESO3': 15,
+             '20ESO4': 16}
     cp = models.ForeignKey(CuadernoProf, on_delete=models.CASCADE, blank=True, null=True)
     alumno = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
     cep = models.ForeignKey(CEProgSec, on_delete=models.CASCADE)
     valor = models.FloatField('Valor cuantitativo asociado a la competencia específica', default=0)
     obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
+
+    @property
+    def valor_final(self):
+        try:
+            orden_curso_alumno = self.ORDEN[self.cp.psec.areamateria.curso]
+            orden_nivel_alumno = self.ORDEN[self.cep.nivel]
+            diferencia = orden_curso_alumno - orden_nivel_alumno
+        except:
+            diferencia = 0
+        return self.valor * (1 / 2) ** diferencia
 
     def __str__(self):
         return '%s - %s (%s)' % (self.cep.psec, self.cep.ce.nombre, self.valor)

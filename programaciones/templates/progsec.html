@@ -79,7 +79,6 @@
                 </div>
             </div>
         </div>
-
         <div id="listado_progsec">
             <br><br>
             <dl class="accordion" data-accordion id="list_progsec">
@@ -322,7 +321,9 @@
                     $.post("/progsecundaria/", {action: 'update_texto', id: id, texto: nuevo_texto, campo: campo},
                         function (data) {
                             if (data.ok) {
-                                $('#accordion_nombre' + data.progsec).html(data.html);
+                                if (campo == 'nombre') {
+                                    $('#accordion_nombre' + data.progsec).html(data.html);
+                                }
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();

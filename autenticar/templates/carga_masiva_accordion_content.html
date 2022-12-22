@@ -1,0 +1,33 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Fichero:</b>
+            <br>{{ cm.fichero.url }}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Errores:</b>
+            {% if cm.error %}
+                <br>Sí
+            {% else %}
+                <br>No
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Cargado:</b>
+            {% if cm.cargado %}
+                <br>Sí
+            {% else %}
+                <br>No
+            {% endif %}
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label><b>Acciones e incidentes durante la carga:</b></label>
+        <br>{{ cm.log }}
+    </div>
+</div>

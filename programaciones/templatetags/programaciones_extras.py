@@ -91,6 +91,10 @@ def get_calalumvalor_de_calalum(ca):
         return str(msg)
 
 @register.filter
+def cbarra2br(texto):
+    # Transformar "\n" en <br> para imprimir en html
+    return texto.replace('\n', '<br>')
+@register.filter
 def keyvalue(diccionario, key):
     return diccionario[key]
 
@@ -140,6 +144,20 @@ def get_recpv_xs(recp, y):
 def calificacion_alumno(cuaderno, alumno):
     return cuaderno.calificacion_alumno(alumno)
 
+#################################################
+########  Estas dos funciones trabajan juntas para crear una función de tres variables
+########  Observarlas en cuadernodocente_accordion_content.html
+########  cuaderno|get_asignatura:asignatura|calificacion_alumno_asignatura:alumno
+@register.filter
+def get_asignatura(cuaderno, asignatura):
+    return cuaderno, asignatura
+@register.filter
+def calificacion_alumno_asignatura(cuaderno_asignatura, alumno):
+    try:
+        cuaderno, asignatura = cuaderno_asignatura
+        return cuaderno.calificacion_alumno_asignatura(alumno, asignatura)
+    except Exception as msg:
+        return str(msg)
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
 ########  Observarlas en cuadernodocente_accordion_content.html

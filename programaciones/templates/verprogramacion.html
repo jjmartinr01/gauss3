@@ -137,7 +137,7 @@
 
 <h4 class="pagebreak">Procedimiento para la adopción de medidas de atención a la diversidad</h4>
 {% if progsec.procdiversidad %}
-    <p>{{ progsec.procdiversidad }}</p>
+    <p>{% autoescape off %}{{ progsec.procdiversidad|cbarra2br }}{% endautoescape %}</p>
 {% else %}
     <p style="color: gray;">Todavía no se ha definido el procedimiento para la adopción de
         medidas de atención a la diversidad.</p>
@@ -283,9 +283,9 @@
         <h4>{{ sitapren.nombre }}</h4>
         <h5>Descripción y saberes básicos de la situación de aprendizaje, integrando
             metodologías:</h5>
-        <p>{{ sitapren.contenidos_sbas }}</p>
+        <p>{% autoescape off %}{{ sitapren.contenidos_sbas|cbarra2br }}{% endautoescape %}</p>
         <h5>Producto solicitado a los alumnos en la situación de aprendizaje:</h5>
-        <p>{{ sitapren.objetivo }}</p>
+        <p>{% autoescape off %}{{ sitapren.objetivo|cbarra2br }}{% endautoescape %}</p>
         <h5>Competencias específicas que se van a trabajar en esta situación de
             aprendizaje:</h5>
         {% for ce in sitapren.ceps.all %}
@@ -296,7 +296,7 @@
             a cabo (al menos) {{ sitapren.actsitapren_set.all|length }}
             actividad{{ sitapren.actsitapren_set.all|length|pluralize:'es' }}:</h5>
         {% for asapren in sitapren.actsitapren_set.all %}
-            <p>{{ asapren.nombre }}</p><p>{{ asapren.description }}</p>
+            <p>{{ asapren.nombre }}</p><p>{% autoescape off %}{{ asapren.description|cbarra2br }}{% endautoescape %}</p>
             <p>Para evaluar el desarrollo de la actividad se hacen uso de procedimientos de evaluación. Estos
                 procedimientos de evaluación miden la adquisición de las competencias por parte del alumnado
                 utilizando los denominados criterios de evaluación.</p>
@@ -443,7 +443,7 @@
                         {% endifchanged %}
                         <tr>
                             <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
-                            <td>{{ cep.valor|floatformat }}</td>
+                            <td style="text-align: center;">{{ cep.valor|floatformat }}</td>
                         </tr>
                     {% endfor %}
                 </table>

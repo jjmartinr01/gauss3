@@ -21,8 +21,8 @@ def borra_cargas_masivas_antiguas(carga):
         try:
             os.remove(RUTA_BASE + c.fichero.url)
             c.delete()
-        except:
-            carga.log = 'Error al borrar: %s' % c
+        except Exception as msg:
+            carga.log = 'Se intenta borrar la carga "%s" (%s), pero no ha sido posible: %s<br>' % (c, c.id, str(msg))
             carga.save()
 
 def paginar(total, paso=15, c=1):
@@ -285,7 +285,7 @@ def usuarios_ronda(ronda, subentidades=False, cargos=False, edad_min=-1, edad_ma
     if subentidades:
         filtro = filtro & Q(subentidades__in=subentidades)
 
-    return Gauser_extra.objects.filter(filtro).order_by('gauser__last_name', 'gauser__first_name')
+    return Gauser_extra.objects.filter(filtro & Q(activo=True)).order_by('gauser__last_name', 'gauser__first_name')
 
 
 def usuarios_de_gauss(entidad, subentidades=False, cargos=False, edad_min=-1, edad_max=120, ronda=False):

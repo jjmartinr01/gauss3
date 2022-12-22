@@ -1,218 +1,548 @@
 {% extends "base.html" %}
 {% load my_templatetags %}
+{% block head %}
+    <style>
+        .panel_carga_masiva_racima {
+            display: none;
+            position: relative;
+        }
+    </style>
+{% endblock %}
 
 {% block contenido %}
-    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
-        {% csrf_token %}
-
-        <div class="">
-            <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de usuarios</strong></h4>
+<form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+    {% csrf_token %}
+    <div class="">
+        <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de datos</strong></h4>
+    </div>
+    {% if request.session.gauser_extra|has_permiso:'carga_masiva_racima' %}
+        <input type="hidden" name="action" value="carga_masiva_racima">
+        <input type="hidden" name="tipo_carga" id="tipo_carga" value="">
+        <div class="row">
+            <div class="columns large-8">
+                <label>Selecciona el tipo de datos a cargar:
+                    <select id="select_tipo_carga" name="select_tipo_carga">
+                        {% if request.session.gauser_extra|has_permiso:'carga_alumnos_centro_educativo' %}
+                            <option value="ALUMN_CENTRO">Alumnos de su centro educativo</option>
+                        {% endif %}
+                        {% if request.session.gauser_extra|has_permiso:'carga_alumnos_centros_educativos' %}
+                            <option value="ALUMN_CENTROS">Alumnos de varios centros educativos</option>
+                        {% endif %}
+                        {% if request.session.gauser_extra|has_permiso:'carga_personal_centro_educativo' %}
+                            <option value="PERSONAL_CENTRO">Personal de su centro educativo</option>
+                        {% endif %}
+                        {% if request.session.gauser_extra|has_permiso:'carga_personal_centros_educativos' %}
+                            <option value="PERSONAL_CENTROS">Personal de varios centros educativos</option>
+                        {% endif %}
+                        {% if request.session.gauser_extra|has_permiso:'carga_datos_centros_educativos' %}
+                            <option value="DATOS_CENTROS">Datos de los centros educativos</option>
+                        {% endif %}
+                        {% if request.session.gauser_extra|has_permiso:'carga_horario_personal_centro_educativo' %}
+                            <option value="HORARIO_PERSONAL_CENTRO">Horarios del personal de su centro educativo
+                            </option>
+                        {% endif %}
+                        {% if request.session.gauser_extra|has_permiso:'carga_plantilla_organica_casiopea' %}
+                            <option value="DATOS_CASIOPEA">Datos sobre plantilla orgánica de Casiopea</option>
+                        {% endif %}
+                    </select>
+            </div>
+            <div class="columns large-4">
+                <label>&nbsp;</label>
+                <a class="button tiny success" id="show_formulario_carga"><b>Mostrar formulario de carga</b></a>
+            </div>
         </div>
 
-        {% if request.session.gauser_extra|has_permiso:'carga_masiva_racima' %}
-            <input type="hidden" name="action" value="carga_masiva_racima">
-            <div class="panel callout">
-                <div class="row">
-                    <div class="large-4 columns">
-                        <b>Archivo xls (Racima):</b>
-                    </div>
-                    <div class="large-8 columns">
-                        <input type="file" name="file_masivo" id="file_masivo"/>
-                    </div>
+        {# Formulario de carga: ALUMN_CENTRO #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_ALUMN_CENTRO">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
                 </div>
-                <hr>
-                <div class="row">
-                    <div class="large-12 columns">
-                        <p>Este formulario sirve para cargar dos archivos diferentes: el del personal del centro y
-                            el de los alumnos.</p>
-                        <ol>
-                            <li><b>El archivo para cargar el personal del centro se obtiene de:</b>
-                                <ul>
-                                    <li>
-                                        Racima (Gestión)
-                                        <i class="fa fa-long-arrow-right"></i> Seguimiento
-                                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
-                                        <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
-                                        <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
-                                    </li>
-                                    <li>
-                                        En "año académico" escribir el año en el que comenzó este curso escolar
-                                    </li>
-                                    <li>
-                                        Finalmente, elegir exportar con formato "Hoja Microsoft Excel"
-                                    </li>
-                                </ul>
-                            </li>
-                            <li><b>El archivo para cargar los alumnos del centro se obtiene de:</b>
-                                <ul>
-                                    <li>
-                                        Racima (Gestión)
-                                        <i class="fa fa-long-arrow-right"></i> Seguimiento
-                                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
-                                        <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
-                                        <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado matriculado
-                                    </li>
-                                    <li>
-                                        En "año académico" escribir el año en el que comenzó este curso escolar
-                                    </li>
-                                    <li>
-                                        Finalmente, elegir exportar con formato "Hoja Microsoft Excel"
-                                    </li>
-                                </ul>
-                            </li>
-                        </ol>
-                        <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>
-                    </div>
-                </div>
-                {#                <div class="row">#}
-                {#                    <div class="large-12 columns">#}
-                {#                        <p>Este formulario sirve para cargar dos archivos diferentes: el del personal del centro y#}
-                {#                            el de los alumnos.</p>#}
-                {#                        <ol>#}
-                {#                            <li><b>El primero se obtiene de:</b> Racima <i class="fa fa-long-arrow-right"></i> Personal#}
-                {#                                <i class="fa fa-long-arrow-right"></i> Información del personal#}
-                {#                                <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
-                {#                            </li>#}
-                {#                            <li><b>El segundo de:</b> Racima <i class="fa fa-long-arrow-right"></i> Alumnado#}
-                {#                                <i class="fa fa-long-arrow-right"></i> Búsquedas <i class="fa fa-long-arrow-right"></i>#}
-                {#                                Alumnado del centro <i class="fa fa-long-arrow-right"></i> Con todos los campos en#}
-                {#                                blanco se#}
-                {#                                pulsa el "check" <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
-                {#                            </li>#}
-                {#                        </ol>#}
-                {#                        <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>#}
-                {#                    </div>#}
-                {#                </div>#}
-            </div>
-        {% else %}
-            <input type="hidden" name="action" value="carga_masiva_csv">
-            <div class="panel callout">
-                <div class="row">
-                    <div class="large-4 columns">
-                        Archivo CSV (utf-8): <strong>{{ gauser_extra.gauser.get_full_name }}</strong>
-                    </div>
-                    <div class="large-8 columns">
-                        <input type="file" name="file_masivo" id="file_masivo"/></strong>
-                    </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_ALUMN_CENTRO" id="file_masivo_ALUMN_CENTRO"/>
                 </div>
             </div>
-            <div class="panel">
-                <div class="row">
-                    <div class="large-12">
-                        <p>Un archivo csv es un fichero de texto que se puede editar en una hoja de cálculo (como por
-                            ejemplo Excel). El archivo csv que se carga en GAUSS tiene tantas filas como usuarios.
-                            Cada fila contiene la información de un socio donde cada uno de los campos de información
-                            viene
-                            separada por un ";". Observa que el fichero está definiendo una tabla en la que las columnas
-                            vienen separadas por el ";". Puedes descargarte una plantilla de ejemplo pulsando
-                            <a href="/static/plantilla_carga_masiva.csv">aquí <i class="fa fa-download"></i></a>.
-                        </p>
-
-                        <p>El archivo a cargar debe estar codificado en utf-8 y la primera fila define los nombres de
-                            los
-                            campos de información sobre el usuario. No es necesario que los campos estén en un
-                            determinado
-                            orden, pero sí que tengan los siguientes nombres:</p>
-
-                        <p><strong>id_socio</strong>, <strong>id_organizacion</strong>, <strong>nombre</strong>,
-                            <strong>apellidos</strong>,
-                            <strong>dni</strong>, <strong>telefono_fijo</strong>, <strong>telefono_movil</strong>,
-                            <strong>direccion</strong>,
-                            <strong>cp,
-                                localidad</strong>, <strong>provincia</strong>, <strong>sexo</strong>,
-                            <strong>email</strong>, <strong>nacimiento</strong>, <strong>fecha_alta</strong>, <strong>observaciones</strong>,
-                            <strong>iban</strong>, <strong>subentidades</strong>, <strong>perfiles</strong>,
-                            <strong>nombre_tutor1</strong>, <strong>apellidos_tutor1</strong>,
-                            <strong>dni_tutor1</strong>,
-                            <strong>telefono_fijo_tutor1</strong>, <strong>telefono_movil_tutor1</strong>, <strong>
-                                direccion_tutor1</strong>, <strong>cp_tutor1</strong>, <strong>localidad_tutor1</strong>,
-                            <strong>provincia_tutor1</strong>, <strong>sexo_tutor1</strong>, <strong>email_tutor1,
-                                nacimiento_tutor1</strong>, <strong>fecha_alta_tutor1</strong>,
-                            <strong>observaciones_tutor1</strong>, <strong>iban_tutor1</strong>,
-                            <strong>subentidades_tutor1</strong>, <strong>perfiles_tutor1</strong>, <strong>
-                                nombre_tutor2</strong>, <strong>apellidos_tutor2</strong>, <strong>dni_tutor2</strong>,
-                            <strong>telefono_fijo_tutor2</strong>, <strong>telefono_movil_tutor2</strong>, <strong>
-                                direccion_tutor2</strong>, <strong>cp_tutor2</strong>, <strong>localidad_tutor2</strong>,
-                            <strong>provincia_tutor2</strong>, <strong>sexo_tutor2</strong>, <strong>email_tutor1,
-                                nacimiento_tutor2</strong>, <strong>fecha_alta_tutor2</strong>,
-                            <strong>observaciones_tutor2</strong>, <strong>iban_tutor2</strong>,
-                            <strong>subentidades_tutor1</strong>, <strong>perfiles_tutor1</strong>.
-                        </p>
-
-                        <p>Estos campos deben estar escritos de la forma indicada, es decir en minúsculas y sin acentos.
-                            Si fichero contuviera más columnas, GAUSS no las tendrá en cuenta.</p>
-
-                        <p>Los siguientes campos son obligatorios para el socio: id_socio, nombre, apellidos,
-                            nacimiento,
-                            sexo, iban.
-                        </p>
-
-                        <p>Los siguientes campos son obligatorios para el tutor: nombre, apellidos, dni, sexo.
-                        </p>
-                        <ul>
-                            <li><strong>id_socio</strong>: Conjunto de caracteres alfanuméricos (más de 2) que
-                                identifican
-                                al socio dentro de la entidad. Ej. L23/345
-                            </li>
-                            <li><strong>id_organizacion</strong>: Conjunto de caracteres alfanuméricos que identifican
-                                al
-                                socio dentro de la organización que contiene a la propia entidad. Ej. ESAPA4567R
-                            </li>
-                            <li><strong>nombre</strong>: Nombre del socio. Ej. Eduardo</li>
-                            <li><strong>apellidos</strong>: Apellidos del socio. Ej. Martínez Ochoa</li>
-                            <li><strong>dni</strong>: Número del documento nacional de identidad.</li>
-                            <li><strong>telefono_fijo</strong>: Teléfono fijo del socio.</li>
-                            <li><strong>telefono_movil</strong>: Teléfono móvil del socio.</li>
-                            <li><strong>direccion</strong>: Dirección postal del socio.</li>
-                            <li><strong>localidad</strong>: Localidad de residencia del socio.</li>
-                            <li><strong>cp</strong>: Código postal del socio.</li>
-                            <li><strong>provincia</strong>: Provincia de residencia del socio.</li>
-                            <li><strong>sexo</strong>: Sexo del socio. Este campo debe ser H o M.</li>
-                            <li><strong>email</strong>: Dirección de correo electrónico del socio.</li>
-                            <li><strong>nacimiento</strong>: Fecha de nacimiento dd/mm/aaaa. Ej. 27/07/2001</li>
-                            <li><strong>fecha_alta</strong>: Fecha en el que entró en la entidad dd/mm/aaaa. Ej.
-                                18/10/2013
-                            </li>
-                            <li><strong>observaciones</strong>: Información relevante sobre el socio que se desee
-                                guardar.
-                            </li>
-                            <li><strong>iban</strong>: Número de identificación bancaria al que se cargarán las cuotas.
-                                Ej.
-                                ES3420451235678921002311
-                            </li>
-                            <li><strong>subentidades</strong>: Lista de los códigos de secciones o departamentos,
-                                separados
-                                por comas, a los que pertenece el usuario. Debes haberlas creado antes (menú
-                                CONFIGURACIÓN).
-                                Ej. 33, 48, 156
-                            </li>
-                            <li><strong>perfiles</strong>: Lista de los códigos de los cargos o perfiles, separados por
-                                comas, asignados al usuario. Debes haberlos creado antes (menú CONFIGURACIÓN) . Ej.
-                                37, 45, 127
-                            </li>
-                        </ul>
-                        <p>Los campos terminados en <strong>_tutor1</strong> y <strong>_tutor2</strong> son similares
-                            a los del socio, pero hacen referencia a sus tutores legales.</p>
-
-                        <p>Si el socio es menor de edad es necesario que estén definidos los datos de al menos uno de
-                            los
-                            tutores legales del socio.</p>
-
-                        <p>Estos datos pueden estar cargados en una hoja de cálculo (por ejemplo Excel, y cada dato se
-                            almacena en una columna). Posteriormente dicho archivo puede guardarse como "csv" utilizando
-                            el "Guardar como" y seleccionando codificación utf-8.</p>
-
-                        <p>Al cargar los usuarios se comprueba en primer lugar el identificador del usuario (id_socio).
-                            En el caso de que exista ya un usuario con ese identificador no se modificarán
-                            los datos que ya están almacenados en GAUSS. Es decir, la carga masiva de usuarios a través
-                            de
-                            este
-                            módulo sólo sirve para crear nuevos usuarios.</p>
-                    </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los datos de los alumnos de su centro educativo.</p>
+                    <p><b>El archivo para cargar los alumnos del centro se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado
+                            matriculado
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
                 </div>
             </div>
-        {% endif %}
-    </form>
+        </div>
+
+        {# Formulario de carga: ALUMN_CENTROS #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_ALUMN_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_ALUMN_CENTROS" id="file_masivo_ALUMN_CENTROS"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los datos de los alumnos de todos los centros
+                        educativos.</p>
+                    <p><b>El archivo para cargar los alumnos de todos los centros se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado
+                            matriculado
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            En "Código de centro" escribir el número 0
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {# Formulario de carga: PERSONAL_CENTRO #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_PERSONAL_CENTRO">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_PERSONAL_CENTRO" id="file_masivo_PERSONAL_CENTRO"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los datos del personal de su centro educativo.</p>
+                    <p><b>El archivo para cargar el personal de su centro educativo se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {# Formulario de carga: PERSONAL_CENTROS #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_PERSONAL_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_PERSONAL_CENTROS" id="file_masivo_PERSONAL_CENTROS"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los datos del personal de todos los centros educativos.</p>
+                    <p><b>El archivo para cargar el personal de todos los centros se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
+                        </li>
+                        <li>
+                            En "Código de centro" escribir el número 0
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {# Formulario de carga: DATOS_CENTROS #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_DATOS_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_DATOS_CENTROS" id="file_masivo_DATOS_CENTROS"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los datos de todos los centros educativos.</p>
+                    <p><b>El archivo para cargar los datos de los centros se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Centro
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Datos de los centros
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {# Formulario de carga: HORARIO_PERSONAL_CENTRO #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_HORARIO_PERSONAL_CENTRO">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_HORARIO_PERSONAL_CENTRO"
+                           id="file_masivo_HORARIO_PERSONAL_CENTRO"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los horarios del personal de su centro educativo.</p>
+                    <p><b>El archivo para cargar los datos se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Horario del profesorado del centro con
+                            sus materias
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            En "Código de centro" escribir el código del centro educativo
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {# Formulario de carga: DATOS_CASIOPEA #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_DATOS_CASIOPEA">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Casiopea):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_DATOS_CASIOPEA" id="file_masivo_DATOS_CASIOPEA"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los datos de plantilla orgánica de los centros que se
+                        almacenan en el servidor Casiopea (Consejería de Eduación).</p>
+                    <p><b>El archivo para cargar los datos se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            <p>Página web: <a href="https://casiopea.larioja.org/sgti/" target="_blank">
+                                https://casiopea.larioja.org/sgti/</a></p>
+                            <p>Una vez en el servidor de Casiopea, el archivo excel se obtiene: "Consultas"
+                                <i class="fa fa-long-arrow-right"></i> "Plantilla".</p>
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <input type="hidden" name="action" value="carga_masiva_csv">
+        <input type="hidden" name="tipo_carga" id="tipo_carga" value="CSV">
+        <div class="panel callout">
+            <div class="row">
+                <div class="large-4 columns">
+                    Archivo CSV (utf-8): <strong>{{ gauser_extra.gauser.get_full_name }}</strong>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_CSV" id="file_masivo_CSV"/></strong>
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="row">
+                <div class="large-12">
+                    <p>Un archivo csv es un fichero de texto que se puede editar en una hoja de cálculo (como por
+                        ejemplo Excel). El archivo csv que se carga en GAUSS tiene tantas filas como usuarios.
+                        Cada fila contiene la información de un socio donde cada uno de los campos de información
+                        viene
+                        separada por un ";". Observa que el fichero está definiendo una tabla en la que las columnas
+                        vienen separadas por el ";". Puedes descargarte una plantilla de ejemplo pulsando
+                        <a href="/static/plantilla_carga_masiva.csv">aquí <i class="fa fa-download"></i></a>.
+                    </p>
+
+                    <p>El archivo a cargar debe estar codificado en utf-8 y la primera fila define los nombres de
+                        los
+                        campos de información sobre el usuario. No es necesario que los campos estén en un
+                        determinado
+                        orden, pero sí que tengan los siguientes nombres:</p>
+
+                    <p><strong>id_socio</strong>, <strong>id_organizacion</strong>, <strong>nombre</strong>,
+                        <strong>apellidos</strong>,
+                        <strong>dni</strong>, <strong>telefono_fijo</strong>, <strong>telefono_movil</strong>,
+                        <strong>direccion</strong>,
+                        <strong>cp,
+                            localidad</strong>, <strong>provincia</strong>, <strong>sexo</strong>,
+                        <strong>email</strong>, <strong>nacimiento</strong>, <strong>fecha_alta</strong>, <strong>observaciones</strong>,
+                        <strong>iban</strong>, <strong>subentidades</strong>, <strong>perfiles</strong>,
+                        <strong>nombre_tutor1</strong>, <strong>apellidos_tutor1</strong>,
+                        <strong>dni_tutor1</strong>,
+                        <strong>telefono_fijo_tutor1</strong>, <strong>telefono_movil_tutor1</strong>, <strong>
+                            direccion_tutor1</strong>, <strong>cp_tutor1</strong>, <strong>localidad_tutor1</strong>,
+                        <strong>provincia_tutor1</strong>, <strong>sexo_tutor1</strong>, <strong>email_tutor1,
+                            nacimiento_tutor1</strong>, <strong>fecha_alta_tutor1</strong>,
+                        <strong>observaciones_tutor1</strong>, <strong>iban_tutor1</strong>,
+                        <strong>subentidades_tutor1</strong>, <strong>perfiles_tutor1</strong>, <strong>
+                            nombre_tutor2</strong>, <strong>apellidos_tutor2</strong>, <strong>dni_tutor2</strong>,
+                        <strong>telefono_fijo_tutor2</strong>, <strong>telefono_movil_tutor2</strong>, <strong>
+                            direccion_tutor2</strong>, <strong>cp_tutor2</strong>, <strong>localidad_tutor2</strong>,
+                        <strong>provincia_tutor2</strong>, <strong>sexo_tutor2</strong>, <strong>email_tutor1,
+                            nacimiento_tutor2</strong>, <strong>fecha_alta_tutor2</strong>,
+                        <strong>observaciones_tutor2</strong>, <strong>iban_tutor2</strong>,
+                        <strong>subentidades_tutor1</strong>, <strong>perfiles_tutor1</strong>.
+                    </p>
+
+                    <p>Estos campos deben estar escritos de la forma indicada, es decir en minúsculas y sin acentos.
+                        Si fichero contuviera más columnas, GAUSS no las tendrá en cuenta.</p>
+
+                    <p>Los siguientes campos son obligatorios para el socio: id_socio, nombre, apellidos,
+                        nacimiento,
+                        sexo, iban.
+                    </p>
+
+                    <p>Los siguientes campos son obligatorios para el tutor: nombre, apellidos, dni, sexo.
+                    </p>
+                    <ul>
+                        <li><strong>id_socio</strong>: Conjunto de caracteres alfanuméricos (más de 2) que
+                            identifican
+                            al socio dentro de la entidad. Ej. L23/345
+                        </li>
+                        <li><strong>id_organizacion</strong>: Conjunto de caracteres alfanuméricos que identifican
+                            al
+                            socio dentro de la organización que contiene a la propia entidad. Ej. ESAPA4567R
+                        </li>
+                        <li><strong>nombre</strong>: Nombre del socio. Ej. Eduardo</li>
+                        <li><strong>apellidos</strong>: Apellidos del socio. Ej. Martínez Ochoa</li>
+                        <li><strong>dni</strong>: Número del documento nacional de identidad.</li>
+                        <li><strong>telefono_fijo</strong>: Teléfono fijo del socio.</li>
+                        <li><strong>telefono_movil</strong>: Teléfono móvil del socio.</li>
+                        <li><strong>direccion</strong>: Dirección postal del socio.</li>
+                        <li><strong>localidad</strong>: Localidad de residencia del socio.</li>
+                        <li><strong>cp</strong>: Código postal del socio.</li>
+                        <li><strong>provincia</strong>: Provincia de residencia del socio.</li>
+                        <li><strong>sexo</strong>: Sexo del socio. Este campo debe ser H o M.</li>
+                        <li><strong>email</strong>: Dirección de correo electrónico del socio.</li>
+                        <li><strong>nacimiento</strong>: Fecha de nacimiento dd/mm/aaaa. Ej. 27/07/2001</li>
+                        <li><strong>fecha_alta</strong>: Fecha en el que entró en la entidad dd/mm/aaaa. Ej.
+                            18/10/2013
+                        </li>
+                        <li><strong>observaciones</strong>: Información relevante sobre el socio que se desee
+                            guardar.
+                        </li>
+                        <li><strong>iban</strong>: Número de identificación bancaria al que se cargarán las cuotas.
+                            Ej.
+                            ES3420451235678921002311
+                        </li>
+                        <li><strong>subentidades</strong>: Lista de los códigos de secciones o departamentos,
+                            separados
+                            por comas, a los que pertenece el usuario. Debes haberlas creado antes (menú
+                            CONFIGURACIÓN).
+                            Ej. 33, 48, 156
+                        </li>
+                        <li><strong>perfiles</strong>: Lista de los códigos de los cargos o perfiles, separados por
+                            comas, asignados al usuario. Debes haberlos creado antes (menú CONFIGURACIÓN) . Ej.
+                            37, 45, 127
+                        </li>
+                    </ul>
+                    <p>Los campos terminados en <strong>_tutor1</strong> y <strong>_tutor2</strong> son similares
+                        a los del socio, pero hacen referencia a sus tutores legales.</p>
+
+                    <p>Si el socio es menor de edad es necesario que estén definidos los datos de al menos uno de
+                        los
+                        tutores legales del socio.</p>
+
+                    <p>Estos datos pueden estar cargados en una hoja de cálculo (por ejemplo Excel, y cada dato se
+                        almacena en una columna). Posteriormente dicho archivo puede guardarse como "csv" utilizando
+                        el "Guardar como" y seleccionando codificación utf-8.</p>
+
+                    <p>Al cargar los usuarios se comprueba en primer lugar el identificador del usuario (id_socio).
+                        En el caso de que exista ya un usuario con ese identificador no se modificarán
+                        los datos que ya están almacenados en GAUSS. Es decir, la carga masiva de usuarios a través
+                        de
+                        este
+                        módulo solo sirve para crear nuevos usuarios.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div id="div_list_cargas_masivas">
+        <dl class="accordion" data-accordion id="list_cargas_masivas">
+            {% for cm in cargas_masivas %}
+            <dd class="accordion-navigation" id="accordion{{ cm.id }}"
+                style="border-bottom: dotted 1px black">
+                <a href="#panel{{ cm.id }}">
+                    <i id="circle{{ cm.id }}" class="fa fa-plus-circle circle_icon"></i>
+                    <b id="asunto{{ cm.id }}">Carga masiva: {{ cm.get_tipo_display }}</b> -- <span
+                        style="color: green; padding-right: 20px;"><i
+                        class="fa fa-user"></i> {{ cm.g_e.gauser.get_full_name }}</span> ({{ cm.creado|date:"d-m-Y" }})
+                </a>
+                <div id="panel{{ cm.id }}" class="content accordion-cm" data-id="{{ cm.id }}">
+                    <div class="row">
+                        <div class="columns large-7">
+                            <label><b>Fichero:</b>
+                                <br>{{ cm.fichero.url }}
+                            </label>
+                        </div>
+                        {#    <div class="columns large-4">#}
+                        {#        <label><b>Errores:</b>#}
+                        {#            {% if cm.error %}#}
+                        {#                <br>Sí#}
+                        {#            {% else %}#}
+                        {#                <br>No#}
+                        {#            {% endif %}#}
+                        {#        </label>#}
+                        {#    </div>#}
+                        <div class="columns large-5">
+                            <label><b>Cargado:</b>
+                                {% if cm.cargado %}
+                                    <br>Sí
+                                {% else %}
+                                    <br>No
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="large-12 columns">
+                            <label><b>Acciones e incidentes durante la carga:</b></label>
+                            {% autoescape off %}
+                            {{ cm.log }}
+                            {% endautoescape %}
+                        </div>
+                    </div>
+                </div>
+            </dd>
+            {% endfor %}
+        </dl>
+    </div>
+</form>
 
 {% endblock %}
 
@@ -220,10 +550,10 @@
 {% block final %}
     <script>
 
-        habilita(['s_check']);
         $('#check_sign').click(function (e) {
             e.preventDefault();
-            if ($('#file_masivo').val()) {
+            var tipo_carga = $('#tipo_carga').val();
+            if ($('#file_masivo_' + tipo_carga).val()) {
                 document.getElementById("{{ formname }}").submit();
             } else {
                 show_mensajes({
@@ -233,6 +563,24 @@
             }
         });
 
+        $('#show_formulario_carga').click(function (e) {
+            e.preventDefault();
+            var tipo = $('#select_tipo_carga').val();
+            $('.panel_carga_masiva_racima').hide();
+            $('#panel_' + tipo).show();
+            $('#tipo_carga').val(tipo);
+            habilita(['s_check']);
+        });
+        $('.hide_formulario_carga').click(function (e) {
+            e.preventDefault();
+            $('.panel_carga_masiva_racima').hide();
+            habilita(['h_check']);
+        });
+
+        $('#select_tipo_carga').change(function (e){
+            $('.panel_carga_masiva_racima').hide();
+            habilita(['h_check']);
+        });
 
     </script>
 {% endblock %}

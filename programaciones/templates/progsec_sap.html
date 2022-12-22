@@ -215,6 +215,52 @@
                     }
                 });
             });
+            $('body').on('click', '.exportar_sap', function () {
+                id = $(this).data('id');
+                input_nombre =  $('#input_nombre'+id).val();
+                input_contenidos_sbas =  $('#input_contenidos_sbas'+id).val();
+                input_objetivo =  $('#input_objetivo'+id).val();
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Exportar esta situación de aprendizaje?',
+                    texto: 'Si aceptas, la situación de aprendizaje se exportará a un repositorio general de situaciones de aprendizaje',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Exportar": function () {
+                            hide_mensajes();
+                            $.post(url_progsec_sap, {action: 'exportar_sap', id: id,
+                                input_nombre: input_nombre,
+                                input_contenidos_sbas: input_contenidos_sbas,
+                                input_objetivo: input_objetivo
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+            // Espe: Copiar (duplicar) SAP
+            $('body').on('click', '.copiar_sap', function () {
+                var sap = $(this).data('sap');
+                var sb = $(this).data('sb');
+                $.post("/progsecundaria_sb/{{ sb.id }}/", {action: 'copiar_sap', sap: sap, sb: sb},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_sbs').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            // Espe: Fin
         {% endif %}
 
         $(document).foundation({

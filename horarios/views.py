@@ -23,12 +23,12 @@ from django.utils.text import slugify, normalize_newlines
 from django.utils.html import strip_tags
 
 from autenticar.control_acceso import permiso_required
+from entidades.tasks import carga_masiva_from_excel
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda, get_dce
-from gauss.rutas import MEDIA_ACTILLAS
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia, SeguimientoAlumno, \
     PlataformaDistancia, SesionExtra
-from horarios.tasks import carga_masiva_from_file
+# from horarios.tasks import carga_masiva_from_file
 from my_templatetags.templatetags.my_templatetags import human_readable_ges
 from entidades.models import *
 from mensajes.models import Aviso
@@ -713,7 +713,11 @@ def horarios_ajax(request):
                 [dict(zip(keys, (row[0], '%s (%s)' % (row[1], row[2])))) for row in
                  materias_contain_texto]))
         elif action == 'carga_horario_usuario':
-            ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+            try:
+                ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+            except:
+                cargo = Cargo.objects.filter(entidad=g_e.entidad, clave_cargo='g_docente')
+                ge = usuarios_ronda(g_e.ronda, cargos=cargo)[0]
             horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
             sesiones = horario.sesion_set.filter(g_e=ge)
             try:
@@ -843,36 +847,34 @@ def carga_masiva_horarios(request):
     if request.method == 'POST':
         ronda = request.session['gauser_extra'].ronda
         action = request.POST['action']
-        if action == 'carga_masiva_racima_xml':
-            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
-            if 'xml' in request.FILES['file_masivo'].content_type:
-                xml_file = ElementTree.XML(request.FILES['file_masivo'].read())  # ,parser)
-                if xml_file.tag == 'SERVICIO':  # Si ocurre esto es el archivo de exportación de RACIMA
-                    incidencias = xml_racima(xml_file, request)
-                    if incidencias['especialidades']:
-                        geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda)
-                        especialidades = Especialidad_entidad.objects.filter(ronda=g_e.ronda)
-                        departamentos = Departamento.objects.filter(ronda=g_e.ronda)
-                        incidencias['especialidades'] = render_to_string('incidencias_especialidades.html',
-                                                                         {'geps': geps,
-                                                                          'especialidades': especialidades,
-                                                                          'departamentos': departamentos})
-                elif xml_file.tag == 'HORARIO':  # Si ocurre esto es el archivo de exportación de PEÑALARA
-                    CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='PLUMIER')
-                    # from entidades.cron import carga_masiva_from_file
-                    carga_masiva_from_file.delay()
-                    # xml_penalara(xml_file, request)
-            else:
-                crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
-        elif action == 'carga_masiva_racima_xls':
+        # if action == 'carga_masiva_racima_xml':
+        #     logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
+        #     if 'xml' in request.FILES['file_masivo'].content_type:
+        #         xml_file = ElementTree.XML(request.FILES['file_masivo'].read())  # ,parser)
+        #         if xml_file.tag == 'SERVICIO':  # Si ocurre esto es el archivo de exportación de RACIMA
+        #             incidencias = xml_racima(xml_file, request)
+        #             if incidencias['especialidades']:
+        #                 geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda)
+        #                 especialidades = Especialidad_entidad.objects.filter(ronda=g_e.ronda)
+        #                 departamentos = Departamento.objects.filter(ronda=g_e.ronda)
+        #                 incidencias['especialidades'] = render_to_string('incidencias_especialidades.html',
+        #                                                                  {'geps': geps,
+        #                                                                   'especialidades': especialidades,
+        #                                                                   'departamentos': departamentos})
+        #         elif xml_file.tag == 'HORARIO':  # Si ocurre esto es el archivo de exportación de PEÑALARA
+        #             CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='PLUMIER')
+        #             carga_masiva_from_file.delay()
+        #     else:
+        #         crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
+        if action == 'carga_masiva_racima_xls':
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
+            # CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'],
+            #                            tipo='HORARIOXLS')
             CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'],
-                                       tipo='HORARIOXLS')
-            # carga_masiva_from_file.delay()
-            # crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
-
+                                       tipo='HORARIO_PERSONAL_CENTRO')
             try:
-                carga_masiva_from_file.apply_async(expires=300)
+                carga_masiva_from_excel.apply_async(expires=300)
+                # carga_masiva_from_file.apply_async(expires=300)
                 crear_aviso(request, True, 'cmhorario_automatica')
                 crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
             except:
@@ -1577,10 +1579,19 @@ def guardias_ajax(request):
 def alumnos_horarios(request):
     g_e = request.session['gauser_extra']
     ronda = request.session['ronda']
-    horario = Horario.objects.get(entidad=g_e.ronda.entidad, ronda=ronda, predeterminado=True)
+    try:
+        horario = Horario.objects.get(entidad=g_e.ronda.entidad, ronda=ronda, predeterminado=True)
+    except:
+        entidad = g_e.ronda.entidad
+        horario = Horario.objects.create(entidad=entidad, ronda=g_e.ronda, nombre='Horario nuevo', predeterminado=True)
+        inicio = time(9, 0)
+        fin = time(10, 0)
+        Tramo_horario.objects.create(horario=horario, nombre='Nuevo tramo', inicio=inicio, fin=fin)
     grupos = Grupo.objects.filter(ronda=ronda)
-    usuarios = usuarios_ronda(g_e.ronda)
-    alumnos = Gauser_extra_estudios.objects.filter(grupo__in=grupos, ge__in=usuarios)
+    # usuarios = usuarios_ronda(g_e.ronda)
+    # alumnos = Gauser_extra_estudios.objects.filter(grupo__in=grupos, ge__in=usuarios)
+    cargo_a = Cargo.objects.get(clave_cargo='g_alumno', entidad=g_e.ronda.entidad)
+    alumnos = Gauser_extra_estudios.objects.filter(ge__cargos__in=[cargo_a])
     tutores_id = alumnos.values_list('tutor__id', flat=True).distinct()
     tutores = Gauser_extra.objects.filter(id__in=tutores_id)
     cotutores_id = alumnos.values_list('cotutor__id', flat=True).distinct()

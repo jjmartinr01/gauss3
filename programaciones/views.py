@@ -1989,6 +1989,13 @@ def progsecundaria(request):
         pga, c = PGA.objects.get_or_create(ronda=ies.ronda)
     else:
         pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
+    # Las siguientes líneas son para asegurar que los creadores de una ProgSec siempre tendrán permiso 'X'
+    psecs_ge_propietario = ProgSec.objects.filter(pga=pga, gep=g_ep)
+    for psec in psecs_ge_propietario:
+        dps, c = DocProgSec.objects.get_or_create(psec=psec, gep=g_ep)
+        dps.permiso = 'X'
+        dps.save()
+    # Fin de las líneas que aseguran que el propietario tiene permiso 'X'
     if g_e.has_permiso('ve_todas_programaciones'):
         progsecs = ProgSec.objects.filter(pga=pga)
     else:
@@ -2151,6 +2158,9 @@ def progsecundaria(request):
                     else:
                         texto = request.POST['texto']
                     setattr(progsec, request.POST['campo'], texto)
+                    if request.POST['campo'] == 'nombre' and not texto:
+                        texto = '%s - %s' % (progsec.areamateria.get_curso_display(), progsec.areamateria.nombre)
+                        progsec.nombre = texto
                     progsec.save()
                     return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
                 else:
@@ -2417,8 +2427,16 @@ def progsecundaria(request):
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
+
                 permiso = progsec.get_permiso(g_ep)
-                if 'E' in permiso or 'X' in permiso:
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif 'E' in permiso or 'X' in permiso:
                     saber = progsec.saberbas_set.get(id=request.POST['saber'])
                     psec = saber.psec
                     # saber_id = saber.id
@@ -2541,6 +2559,7 @@ def verprogramacion(request, secret, id):
     except:
         pass
 
+
 def verprogramaciones(request, secret):
     try:
         entidad = Entidad.objects.get(secret=secret)
@@ -2555,7 +2574,7 @@ def verprogramaciones(request, secret):
         return HttpResponse('<h1>Se ha producido un error. Petición no llevada a cabo.</h1>')
 
 
-@permiso_required('acceso_progsecundaria')
+# @permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
@@ -2575,11 +2594,66 @@ def progsecundaria_sb(request, id):
                 html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
+                #sap = SitApren.objects.create(sbas=sb)
+                #html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+                #return JsonResponse({'ok': True, 'html': html})
+        elif action == 'exportar_sap':
+            try:
+                ## Se obtiene el objeto SitAprend
+                sapren = SitApren.objects.get(id=request.POST['id'])
+                ## Se obtienen las actividades de aprendizaje asociadas
+                actsapren_all = ActSitApren.objects.filter(sapren=sapren)
+                ## Se obtiene el objeto SaberBas
+                saberbas = SaberBas.objects.get(id=sapren.sbas.id)
+                ## Se obtiene el objeto ProgSec
+                progsec = ProgSec.objects.get(id=saberbas.psec.id)
+                ## Se obtiene un objeto AreaMateria
+                areamateria = AreaMateria.objects.get(id=progsec.areamateria.id)
+                ## Se crea un repositorio de situación de aprendizaje con el area materia
+                ## de la situación de aprendizaje de la que se exporta.
+                sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre, contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
+                ## Se obtienen las competencias especificas de la situación de aprendizaje
+                for cep in sapren.ceps.all():
+                    sap.ces.add(cep.ce) #Se agregan las competencias al repo de la situacion de aprendizaje
+                for asa in actsapren_all: #Se recorren las actividades de aprendizaje
+                    act = RepoActSitApren.objects.create(sapren=sap,nombre=asa.nombre,description=asa.description)
+                    ## Se obtienen los intrumentos de evaluación, que son objetos InstrEval, de una actividad de aprendizaje
+                    instreval_all = InstrEval.objects.filter(asapren=asa)
+                    for ie in instreval_all: #se recorren los instrumentos de evaluacion
+                        repoIEval = RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
+                        criinstreval_all = CriInstrEval.objects.filter(ieval=ie) # se obtienen los criterios de evaluacion
+                        for criinstreval in criinstreval_all:
+                            #Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
+                            #por que si no el refrescon en la vista de la interfaz da un error
+                            repocev_all = RepoCEv.objects.filter(sapren=sap, cev=criinstreval.cevps.cev)
+                            if repocev_all.count() == 0:
+                                repocev = RepoCEv.objects.create(sapren=sap, cev=criinstreval.cevps.cev, valor=criinstreval.peso,modificado=criinstreval.modificado)
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso, modificado=criinstreval.modificado)
+                            else:
+                                repocev = repocev_all[0]
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,modificado=criinstreval.modificado)
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_sap':
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
-                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                progsec = sapren.sbas.psec
+                permiso = progsec.get_permiso(g_ep)
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
+                    # if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
@@ -2587,6 +2661,47 @@ def progsecundaria_sb(request, id):
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        # Espe: Copiar (duplicar) SAP
+        elif action == 'copiar_sap':
+            try:
+                # codigo copiar_sap
+                # obtenemos la unidad de programacion (saber basico) a la que pertenece
+                sb = SaberBas.objects.get(id=request.POST['sb'])
+                # obtenemos la programacion a la que pertenece
+                # psec = ProgSec.objects.get(id=sb.psec.id)
+                # obtenemos la situación de aprendizaje a duplicar
+                sap = SitApren.objects.get(id=request.POST['sap'], sbas=sb)
+                sap_nueva = SitApren.objects.get(id=sap.id)
+                # se borra clave primaria y se modifica nombre sap
+                sap_nueva.pk = None
+                sap_nueva.nombre = '%s (Copia)' % sap.nombre
+                sap_nueva.save()
+                # se copian las competencias especificas de la sap
+                # relation: many to many
+                #for cep in sap.ceps.all():
+                #    sap_nueva.ceps.add(cep.ce)
+                sap_nueva.ceps.add(*sap.ceps.all())
+                # obtenemos las actividades
+                for act in sap.actsitapren_set.all():
+                    act_nueva = ActSitApren.objects.get(id=act.id)
+                    act_nueva.pk = None
+                    act_nueva.sapren = sap_nueva
+                    act_nueva.save()
+                    for instev in act.instreval_set.all():
+                        instev_nuevo = InstrEval.objects.get(id=instev.id)
+                        instev_nuevo.pk = None
+                        instev_nuevo.asapren = act_nueva
+                        instev_nuevo.save()
+                        for criinstev in instev.criinstreval_set.all():
+                            criinstev_nuevo = CriInstrEval.objects.get(id=criinstev.id)
+                            criinstev_nuevo.pk = None
+                            criinstev_nuevo.ieval = instev_nuevo
+                            criinstev_nuevo.save()
+                html = render_to_string('progsec_sap_accordion.html', {'sap': sap_nueva})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        # Espe: Fin
         elif action == 'open_accordion':
             try:
                 sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
@@ -2684,7 +2799,16 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_sap_actividad':
             try:
                 act = ActSitApren.objects.get(id=request.POST['id'])
-                if act.sapren.actsitapren_set.all().count() > 1:
+                progsec = act.sapren.sbas.psec
+                permiso = progsec.get_permiso(g_ep)
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif act.sapren.actsitapren_set.all().count() > 1:
                     if act.sapren.sbas == sb:
                         act.delete()
                     return JsonResponse({'ok': True})
@@ -2707,7 +2831,16 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_act_instrumento':
             try:
                 inst = InstrEval.objects.get(id=request.POST['id'])
-                if inst.asapren.instreval_set.all().count() > 1:
+                progsec = inst.asapren.sapren.sbas.psec
+                permiso = progsec.get_permiso(g_ep)
+                if 'C' in permiso:
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
+                    return JsonResponse({'ok': False, 'msg': msg})
+                elif inst.asapren.instreval_set.all().count() > 1:
                     if inst.asapren.sapren.sbas == sb:
                         inst.delete()
                     return JsonResponse({'ok': True})
@@ -3059,9 +3192,9 @@ def cuadernodocente(request):
                 cuaderno.alumnos.add(*cuaderno.grupo.gauser_extra_estudios_set.all().values_list('ge', flat=True))
                 for alumno in cuaderno.alumnos.all():
                     for cep in cuaderno.psec.ceprogsec_set.all():
-                        calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
+                        calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cep)
                         for cevp in cep.cevprogsec_set.all():
-                            CalAlumCEv.objects.create(calalumce=calalumce, cevp=cevp)
+                            CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevp)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
@@ -3351,9 +3484,9 @@ def cuadernodocente(request):
                             except:
                                 pass
                     for cep in cuaderno.psec.ceprogsec_set.all():
-                        calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
+                        calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cep)
                         for cevp in cep.cevprogsec_set.all():
-                            CalAlumCEv.objects.create(calalumce=calalumce, cevp=cevp)
+                            CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevp)
                     html_span = render_to_string('cuadernodocente_accordion_content_ga_alumno.html',
                                                  {'cuaderno': cuaderno, 'alumno': alumno})
                 else:

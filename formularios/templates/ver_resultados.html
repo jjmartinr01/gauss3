@@ -97,10 +97,12 @@
                                 <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
                             {% elif gfri.gfsi.tipo in 'EM SC SO CA' %}
                                 {% for respuesta in gfri.respuesta_array %}
-                                    <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ respuesta }}">{{ respuesta|truncatechars_html:20 }}</td>
+{#                                    <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ respuesta }}">{{ respuesta|truncatechars_html:20 }}</td>#}
+                                    <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ respuesta }}">{{ respuesta}}</td>
                                 {% endfor %}
                             {% else %}
-                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>
+{#                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>#}
+                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ gfri.respuesta }}">{{ gfri.respuesta}}</td>
                             {% endif %}
                         {% endfor %}
                     </tr>

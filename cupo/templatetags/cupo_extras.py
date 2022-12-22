@@ -424,13 +424,16 @@ def get_plazas_puesto(objeto, puesto):
 
 @register.filter
 def get_plazas(objeto):
-    cpoc = CargaPlantillaOrganicaCentros.objects.all().last()
-    if objeto.__class__.__name__ == 'Entidad':
-        entidad = objeto  # El objeto es del tipo Entidad
-        return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=entidad)
-    else:
-        po = objeto  # El objeto es del tipo PlantillaOrganica
-        return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=po.ronda_centro.entidad)
+    try:
+        cpoc = CargaPlantillaOrganicaCentros.objects.all().last()
+        if objeto.__class__.__name__ == 'Entidad':
+            entidad = objeto  # El objeto es del tipo Entidad
+            return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=entidad)
+        else:
+            po = objeto  # El objeto es del tipo PlantillaOrganica
+            return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=po.ronda_centro.entidad)
+    except:
+        EspecialidadPlantilla.objects.none()
 
 
 @register.filter
