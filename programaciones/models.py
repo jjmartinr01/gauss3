@@ -976,6 +976,7 @@ class SitApren(models.Model):
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
     contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
+    # producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
 
     class Meta:
         verbose_name_plural = 'Situaciones de aprendizaje'

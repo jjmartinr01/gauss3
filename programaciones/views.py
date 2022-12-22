@@ -2575,7 +2575,7 @@ def verprogramaciones(request, secret):
         return HttpResponse('<h1>Se ha producido un error. Petición no llevada a cabo.</h1>')
 
 
-@permiso_required('acceso_progsecundaria')
+# @permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
@@ -2662,6 +2662,47 @@ def progsecundaria_sb(request, id):
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        # Espe: Copiar (duplicar) SAP
+        elif action == 'copiar_sap':
+            try:
+                # codigo copiar_sap
+                # obtenemos la unidad de programacion (saber basico) a la que pertenece
+                sb = SaberBas.objects.get(id=request.POST['sb'])
+                # obtenemos la programacion a la que pertenece
+                # psec = ProgSec.objects.get(id=sb.psec.id)
+                # obtenemos la situación de aprendizaje a duplicar
+                sap = SitApren.objects.get(id=request.POST['sap'], sbas=sb)
+                sap_nueva = SitApren.objects.get(id=sap.id)
+                # se borra clave primaria y se modifica nombre sap
+                sap_nueva.pk = None
+                sap_nueva.nombre = '%s (Copia)' % sap.nombre
+                sap_nueva.save()
+                # se copian las competencias especificas de la sap
+                # relation: many to many
+                #for cep in sap.ceps.all():
+                #    sap_nueva.ceps.add(cep.ce)
+                sap_nueva.ceps.add(*sap.ceps.all())
+                # obtenemos las actividades
+                for act in sap.actsitapren_set.all():
+                    act_nueva = ActSitApren.objects.get(id=act.id)
+                    act_nueva.pk = None
+                    act_nueva.sapren = sap_nueva
+                    act_nueva.save()
+                    for instev in act.instreval_set.all():
+                        instev_nuevo = InstrEval.objects.get(id=instev.id)
+                        instev_nuevo.pk = None
+                        instev_nuevo.asapren = act_nueva
+                        instev_nuevo.save()
+                        for criinstev in instev.criinstreval_set.all():
+                            criinstev_nuevo = CriInstrEval.objects.get(id=criinstev.id)
+                            criinstev_nuevo.pk = None
+                            criinstev_nuevo.ieval = instev_nuevo
+                            criinstev_nuevo.save()
+                html = render_to_string('progsec_sap_accordion.html', {'sap': sap_nueva})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        # Espe: Fin
         elif action == 'open_accordion':
             try:
                 sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
