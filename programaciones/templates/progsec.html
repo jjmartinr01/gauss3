@@ -50,10 +50,18 @@
                     </select>
                 </div>
                 <div class="columns large-2">
-                    <a id="busca_progsec_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+                    <a id="busca_progsec_manual" title="Buscar lista de programaciones"><i class="fa fa-search"></i> <b>Buscar</b></a>
                 </div>
             </div>
         </div>
+
+        <div id="bk_cargar_fichero_progsec" style="display: none;"> {# sag #}
+            <br><br>
+            <dl class="accordion" data-accordion id="bk_cargar_progsec">
+            {% include 'bkimportar_progsec.html' %}
+            </dl>
+        </div>
+
         <div id="formulario_crear" style="display: none;">
             <div class="row">
                 <div class="columns large-5">
@@ -130,7 +138,7 @@
             {#habilita(['s_search']);#}
             {% if g_e|has_permiso:"crea_programaciones" %}
                 {#habilita(['s_plus', 's_link']);#}
-                habilita(['s_plus',]);
+                habilita(['s_plus', 's_upload']);
                 $('#plus_sign').click(function (event) {
                     event.preventDefault();
                     $('#formulario_crear').toggle();
@@ -637,12 +645,33 @@
                 document.getElementById('{{formname}}').submit();
             });
 
-            $('#Contenido').on('click', '.backup_progsec', function (e) { // sag
+            $('#Contenido').on('click', '.backup_progsec', function (e) { {# sag #}
                     e.preventDefault();
-                    {#genera_pdf_informe();#}
                     $('#action').val('backup_progsec');
                     document.getElementById('{{formname}}').submit();
                 });
+
+            $("body").on('click', '#upload_sign', function (e) { {# sag #}
+                $("#bk_cargar_fichero_progsec").toggle("slow", function(){
+                    if($("#bk_cargar_fichero_progsec").is(":visible")){
+                        habilita(['s_check']);
+                    } else {
+                        habilita(['h_check']);
+                    }
+                });
+            });
+
+            $("body").on('click', '#check_sign', function (e) { {# sag #}
+                e.preventDefault();
+                if ($("#file_bkimportar").val()) {
+                    document.getElementById('{{formname}}').submit();
+                } else {
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
+                            'subir un archivo primero debes cargarlo pulsando en "Seleccionar archivo"'
+                    })
+                }
+            })
 
             {% comment %}
                 $("body").on('keyup', '#busca_progsec', function (e) {

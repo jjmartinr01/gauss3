@@ -2487,6 +2487,11 @@ def progsecundaria(request):
             response = HttpResponse(bkps.generarXML(ProgSec), content_type='application/xml')
             response['Content-Disposition'] = 'attachment; filename="Programacion_'+request.POST["id_progsec"]+'.xml"'
             return response
+        elif (request.FILES.get('file_bkimportar') != None):  # sag
+            if  (request.FILES.get('file_bkimportar').size > 0):
+                bkps = BkProgsec()
+                respuesta = bkps.importarXML(request)
+                return HttpResponse(respuesta)
     try:
         prog = int(request.GET['prog'])
     except:
@@ -2503,6 +2508,12 @@ def progsecundaria(request):
                             'permiso': 'libre'},
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
                             'title': 'Buscar programación a través del nombre de la materia de secundaria',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'upload', 'texto': 'Importar', # sag #
+                            'title': 'Importar programación guardada',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',  # sag #
+                            'title': 'Ejecutar importación',
                             'permiso': 'libre'},
                            # {'tipo': 'button', 'nombre': 'file-text', 'texto': 'Programaciones otros cursos',
                            #  'title': 'Mostrar programaciones de otros curso',

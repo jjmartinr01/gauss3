@@ -1,0 +1,33 @@
+{% load my_templatetags %}
+
+    <div class="">
+        <h4 style="text-align: center;color: #008CBA;"><strong>Nueva programación desde fichero de copia de seguridad</strong></h4>
+    </div>
+    <div class="panel callout">
+        <div class="row">
+            <div class="large-2 columns">
+                <b>Archivo xml: </b>
+            </div>
+            <div class="large-10 columns">
+                <input type="file" name="file_bkimportar" id="file_bkimportar"/>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="large-10 columns">
+            <p>Este apartado creará una programación nueva desde el fichero creado desde la copia de seguridad
+                de una programación.</p>
+            <p>La programación creada contendrá:
+                <ul style="padding-left: 20px;">
+                    <li>La información común de la programación.</li>
+                    <li>Los cuadernos pertenecientes al profesor.</li>
+                    <li>La programación creada pertenecerá sólo al docente que la ha creado.</li>
+                </ul>
+            </p>
+        </div>
+    </div>
+<hr>
+<div id="bk_importar_resultado">
+
+</div>
+<hr>
