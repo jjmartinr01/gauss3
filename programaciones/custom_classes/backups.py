@@ -190,77 +190,82 @@ class BkProgsec:  # sag
                         try:
                             sp = SitApren.objects.get(id=sitapren.text)
                         except SitApren.DoesNotExist:
-                            self.logger.info(
-                                'Importación programación ==error==> No existe SitApren: ' + sitapren.text)
+                            self.logger.info('Importación programación ==error==> No existe SitApren: ' + sitapren.text)
 
                         newCEProgsec.sitapren_set.add(sp)
 
     def __crearCuadernosProf(self, cuadernos):
         # Recorre los cuadernos de una programación
-        datos = cuadernos.tag + '<br>'
         for cuaderno in cuadernos:
-            datos += cuaderno.tag + ': ' + cuaderno.get('id') + '<br>'
             for elemento in cuaderno:
                 if elemento.tag == 'datos':
-                    datos += str(elemento.find('vmin').text) + '<br>' \
-                             + str(elemento.find('vmax').text) + '<br>' \
-                             + str(elemento.find('vista').text) + '<br>' \
-                             + str(elemento.find('borrado').text) + '<br>' \
-                             + str(elemento.find('log').text) + '<br>' \
-                             + str(elemento.find('ge_id').text) + '<br>' \
-                             + str(elemento.find('grupo_id').text) + '<br>' \
-                             + str(elemento.find('psec_id').text) + '<br>'
-                elif elemento.tag == 'alumnos':
-                    datos += self.__crearAlumnosDeCuadernoProf(alumnos=elemento)
-                elif elemento.tag == 'escalas_cp':
-                    datos += self.__crearEscalascpDeCuadernoProf(escalascp=elemento)
-                elif elemento.tag == 'cal_alumnos':
-                    datos += self.__crearCalAlumnos(calalumnos=elemento)
-        return datos
+                    newCuadernoProf = CuadernoProf(
+                        vmin=elemento.find('vmin').text,
+                        vmax=elemento.find('vmax').text,
+                        vista=elemento.find('vista').text,
+                        borrado=elemento.find('borrado').text,
+                        log=elemento.find('log').text,
+                        grupo_id=elemento.find('grupo_id').text,
+                        ge_id=self.gep_id,
+                        psec_id=self.new_progsec_id
+                    )
+                    newCuadernoProf.save()
 
-    def __crearAlumnosDeCuadernoProf(self, alumnos):
+                elif elemento.tag == 'alumnos':
+                    self.__crearAlumnosDeCuadernoProf(alumnos=elemento, newCuadernoProf=newCuadernoProf)  # OK
+                elif elemento.tag == 'escalas_cp':
+                    self.__crearEscalascpDeCuadernoProf(escalascp=elemento, newCuadernoProf=newCuadernoProf.id)  # OK
+                elif elemento.tag == 'cal_alumnos':
+                    self.__crearCalAlumnos(calalumnos=elemento)
+
+    def __crearAlumnosDeCuadernoProf(self, alumnos, newCuadernoProf):
         # Crea los alumnos asociados al cuaderno del profesor de la programación
-        datos = alumnos.tag + ':' + alumnos.get('model') + '<br>'
         for alumno in alumnos:
-            datos += alumno.tag + ': ' + alumno.get('id') + '<br>'
             for elemento in alumno:
                 if elemento.tag == 'datos':
-                    datos += str(elemento.find('cuadernoprof_id').text) + '<br>' \
-                             + str(elemento.find('gauser_extra_id')) + '<br>'
-        return datos
+                    try:
+                        newCuadernoProf.objects.add(
+                            Gauser_extra_programaciones.objects.get(id=elemento.find('gauser_extra_id')))
+                    except Gauser_extra_programaciones.DoesNotExist:
+                        self.logger.info(
+                            'Importación programación ==error==> No existe alumno para CuadernoProf: ' + elemento.find(
+                                'gauser_extra_id'))
 
-    def __crearEscalascpDeCuadernoProf(self, escalascp):
+    def __crearEscalascpDeCuadernoProf(self, escalascp, newCuadernoProf_id):
         # Recorrer escalas_cp del cuadernoprof de la programación
-        datos = escalascp.tag + ':' + escalascp.get('model') + '<br>'
         for escala in escalascp:
-            datos += escala.tag + ': ' + escala.get('id') + '<br>'
             for elemento in escala:
                 if elemento.tag == 'datos':
-                    datos += str(elemento.find('tipo').text) + '<br>' \
-                             + str(elemento.find('nombre').text) + '<br>' \
-                             + str(elemento.find('cp_id').text) + '<br>' \
-                             + str(elemento.find('ieval_id').text) + '<br>'
+                    newEscalaCP = EscalaCP(
+                        tipo=elemento.find('tipo').text,
+                        nombre=elemento.find('nombre').text,
+                        cp_id=newCuadernoProf_id,
+                        ieval_id=elemento.find('ieval_id').text
+                    )
+                    newEscalaCP.save()
                 elif elemento.tag == 'escalacpvalores':
-                    datos += self.__crearEscalascpValores(escalascp=elemento)
-        return datos
+                    self.__crearEscalascpValores(escalascp=elemento, newEscalaCP_id=newEscalaCP.id)
+                elif elemento.tag == 'cal_alumnos_valor':
+                    self.__crearCalAlumnos(calalumnos=elemento, newEscalaCP_id=newEscalaCP.id, newCuadernoProf_id=newCuadernoProf_id)
 
-    def __crearEscalascpValores(self, escalascp):
+
+    def __crearEscalascpValores(self, escalascp, newEscalaCP_id):
         # Recorrer Escalascp Valores de escalas del cuadernoprof de la programación
-        datos = escalascp.tag + ':' + escalascp.get('model') + '<br>'
         for escala in escalascp:
             if escala.tag == 'escalacpvalor':
-                datos += escala.tag + ': ' + escala.get('id') + '<br>'
                 for elemento in escala:
                     if elemento.tag == 'datos':
-                        datos += str(elemento.find('x').text) + '<br>' \
-                                 + str(elemento.find('y').text) + '<br>' \
-                                 + str(elemento.find('test_cualitativo').text) + '<br>' \
-                                 + str(elemento.find('ecp_id').text) + '<br>'
-        return datos
+                        newEscalaCPValor = EscalaCPvalor(
+                            x=elemento.find('x').text,
+                            y=elemento.find('y').text,
+                            texto_cualitativo=elemento.find('texto_cualitativo').text,
+                            # valor=
+                            ecp_id=newEscalaCP_id
+                        )
+                        newEscalaCPValor.save()
 
-    def __crearCalAlumnos(self, calalumnos):
+    def __crearCalAlumnos(self, calalumnos, newEscalaCP_id, newCuadernoProf_id):
         # Recorrer cal_alumnos del cuadernoprof de la programación
-        datos = calalumnos.tag + ':' + calalumnos.get('model') + '<br>'
         for cal in calalumnos:
             if cal.tag == 'datos':
                 datos += str(cal.find('obs').text) + '<br>' \
@@ -270,7 +275,7 @@ class BkProgsec:  # sag
                          + str(cal.find('ecp_id').text) + '<br>'
             elif cal.tag == 'cal_alumnos_valor':
                 datos += self.__crearCalAlumnosValor(calalumvalor=cal)
-        return datos
+
 
     def __crearCalAlumnosValor(self, calalumvalor):
         # Recorrer calalumvalor de calalum del cuadernoprof del al programación
