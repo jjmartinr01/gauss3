@@ -15,7 +15,7 @@
         <input type="hidden" name="action" id="action" value="">
         <div class="panel callout" style="display: none;position: relative;" id="buscar_en_listado_ajax">
             <div class="row">
-                <p><strong>Búsqueda de usuario por nombre y/o apellidos</strong></p>
+                <p><strong>Búsqueda de usuario por nombre o apellidos o DNI o usuario:</strong></p>
                 <select class="select_user select_buscar" id="select_buscar"></select>
             </div>
             <a id="buscar_en_listado_ajax_cerrar"
@@ -350,6 +350,7 @@
 
         $("#search_sign").click(function (e) {
             e.preventDefault();
+            $('#select_buscar').val('');
             $('#buscar_en_listado_ajax').show();
             $('.formulario_socio').fadeTo('fast', 0.3);
             $(document).scrollTop($('#buscar_en_listado_ajax').offset().top - 150);

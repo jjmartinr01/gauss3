@@ -2653,8 +2653,7 @@ def progsecundaria_sb(request, id):
                         cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     msg += ''.join(cuadernos)
                     return JsonResponse({'ok': False, 'msg': msg})
-                elif sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
-                    # if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                elif 'E' in permiso:
                     sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
