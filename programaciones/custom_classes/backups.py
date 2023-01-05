@@ -17,7 +17,7 @@ class BkProgsec:  # sag
     def generarXML(self, progsec):
         progsec = ProgSec.objects.get(id=self.id)
         contexto = {
-            'progsec': progsec,
+            'progsec': progsec
         }
         self.xmlContent = render_to_string("bkprogsec.xml", context=contexto)
         return self.xmlContent

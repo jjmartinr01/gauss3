@@ -1,5 +1,4 @@
 {% load programaciones_extras %}
-
 <?xml version="1.0" encoding="utf-8" ?>
 <programaciones model = "progsec">
     <programacion id = "{{ progsec.id }}">
@@ -63,31 +62,31 @@
                                 </escalacpvalor>
                                 {% endfor %}
                             </escalacpvalores>
+                            <cal_alumnos model = "calalum">
+                               {% for ca in cp|get_calalum_de_cuadernoprof %}
+                                <datos>
+                                    <obs>{{ ca.obs }}</obs>
+                                    <alumno_id>{{ ca.alumno_id }}</alumno_id>
+                                    <cie_id>{{ ca.cie_id }}</cie_id>
+                                    <cp_id>{{ ca.cp_id }}</cp_id>
+                                    <ecp_id>{{ ca.ecp_id }}</ecp_id>
+                                </datos>
+                                <cal_alumnos_valor model="calalumvalor">
+                                {% for cavalor in ca|get_calalumvalor_de_calalum %}
+                                    <calalum_valor id="{{ cavalor.id }}">
+                                        <datos>
+                                            <obs>{{ cavalor.obs }}</obs>
+                                            <ca_id>{{ cavalor.ca_id }}</ca_id>
+                                            <ecpv_id>{{ cavalor.ecpv_id }}</ecpv_id>
+                                        </datos>
+                                    </calalum_valor>
+                                {% endfor %}
+                            </cal_alumnos_valor>
+                        {% endfor %}
+                    </cal_alumnos>
                         </escala>
                         {% endfor %}
                     </escalas_cp>
-                    <cal_alumnos model = "calalum">
-                       {% for ca in cp|get_calalum_de_cuadernoprof %}
-                        <datos>
-                            <obs>{{ ca.obs }}</obs>
-                            <alumno_id>{{ ca.alumno_id }}</alumno_id>
-                            <cie_id>{{ ca.cie_id }}</cie_id>
-                            <cp_id>{{ ca.cp_id }}</cp_id>
-                            <ecp_id>{{ ca.ecp_id }}</ecp_id>
-                        </datos>
-                        <cal_alumnos_valor model="calalumvalor">
-                        {% for cavalor in ca|get_calalumvalor_de_calalum %}
-                            <calalum_valor id="{{ cavalor.id }}">
-                                <datos>
-                                    <obs>{{ cavalor.obs }}</obs>
-                                    <ca_id>{{ cavalor.ca_id }}</ca_id>
-                                    <ecpv_id>{{ cavalor.ecpv_id }}</ecpv_id>
-                                </datos>
-                            </calalum_valor>
-                        {% endfor %}
-                        </cal_alumnos_valor>
-                        {% endfor %}
-                    </cal_alumnos>
                 </cuadernoprof>
             {% endfor %}
         </cuadernos_prof>

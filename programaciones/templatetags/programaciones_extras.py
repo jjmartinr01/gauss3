@@ -46,7 +46,8 @@ def get_sitapren_de_ceprogsec(ceps):
 @register.filter  # sag
 def get_cuadernos_prof(progsec):
     try:
-        return CuadernoProf.objects.filter(psec_id=progsec.id, ge_id=progsec.gep_id)
+        entidades_ge = Gauser_extra_programaciones.objects.get(id=progsec.gep_id)
+        return CuadernoProf.objects.filter(psec_id=progsec.id, ge_id=entidades_ge.ge_id)
     except Exception as msg:
         return str(msg)
 
