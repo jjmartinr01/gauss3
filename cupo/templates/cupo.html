@@ -41,32 +41,73 @@
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos cupos</strong></h4>
         </div>
+        <div class="panel callout radius hide" id="panel_info">
+            <h5 style="font-weight: bold;color: #008CBA; text-align: center;">
+                <b>Información para crear estudios de cupo de profesorado</b>
+            </h5>
+            <p>Un estudio de cupo se crea a partir de un estudio de plantilla orgánica o haciendo una copia de
+                otro estudio existente. Para ello, elija una de las siguientes opciones:</p>
+            <ul>
+                {% if plantillas_o|length > 0 %}
+                    <li>Cree un cupo haciendo click sobre uno de los estudios de plantilla orgánica que se muestran
+                        tras este panel informativo.
+                    </li>
+                {% endif %}
+                {% if cupos|length > 0 %}
+                    <li>Haga una copia de un cupo ya existente. Para ello despliegue un estudio de cupo de los que
+                        aparecen debajo y pulse en el botón
+                        <span class="label"><i class="fa fa-copy"></i> Copiar</span>.
+                    </li>
+                {% endif %}
+                <li>Realice una carga masiva de datos. Para ello:
+                    <ol>
+                        <li>Utilizando el menú de la izquierda, vaya a la siguiente pantalla:
+                            <span style="font-weight: bold;color: #008CBA; text-align: center;">Configuración <i
+                                    class="fa fa-long-arrow-right"></i> Carga masiva</span></li>
+                        <li>Escoja el tipo de carga denominado "Horarios del personal de su centro educativo".</li>
+                        <li>Espere a que se cargue completamente el archivo. Dicha carga puede requerir varios
+                            minutos.
+                        </li>
+                    </ol>
+                </li>
+            </ul>
+        </div>
         {% if plantillas_o and request.session.gauser_extra|has_permiso:'crea_cupos' %}
             <div class="panel callout radius">
-                <h5><b>Crea un cupo basado en alguno de los siguientes análisis de plantillas orgánicas:
-                <br><span style="font-size:small;"> (Basta con hacer click sobre uno de ellos)</span></b></h5>
+                <h5>
+                    <b>Puede crear un cupo basado en alguno de los siguientes estudios de plantilla orgánica:<br>
+                        {% if plantillas_o|length == 1 %}
+                            <span style="font-size:small;"> (Basta con hacer click sobre el siguiente estudio)</span>
+                        {% else %}
+                            <span style="font-size:small;"> (Basta con hacer click sobre uno de los siguientes estudios)</span>
+                        {% endif %}
+                    </b>
+                </h5>
                 <div class="row">
                     {% for po in plantillas_o %}
                         {% if po.ronda_centro == request.session.gauser_extra.ronda %}
-                        <div class="columns large-3" title="Análisis realizado por {{ po.g_e.gauser.get_full_name }}">
-                            <a class="crea_cupo_from_po" data-po="{{ po.id }}">
-                                <div class="show_po">
-                                    <p class="text_show_po">{{ po.ronda_centro.entidad.name }}
-                                        <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y H:i' }}</span></p>
-                                </div>
-                            </a>
-                        </div>
+                            <div class="columns large-3"
+                                 title="Análisis realizado por {{ po.g_e.gauser.get_full_name }}">
+                                <a class="crea_cupo_from_po" data-po="{{ po.id }}">
+                                    <div class="show_po">
+                                        <p class="text_show_po">{{ po.ronda_centro.entidad.name }}
+                                            <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y H:i' }}</span>
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
                         {% endif %}
                     {% endfor %}
                 </div>
             </div>
         {% else %}
-            <div class="panel callout radius">
-                <h5><b>Solo es posible crear un estudio de cupo a través de un estudio de plantilla orgánica que haya
-                    creado el Inspector del centro, o haciendo una copia de un estudio de cupo ya existente.</b></h5>
-                <h5>Si no hubiera ningún estudio de plantilla creado, debes esperar a que el Inspector lo cree.</h5>
-            </div>
+            <script>
+                setTimeout(function () {
+                    $('#panel_info').toggle();
+                }, 500);
+            </script>
         {% endif %}
+
 
         <dl class="accordion" data-accordion id="list_cupos" title="Lista de cupos">
             {% for cupo in cupos %}
@@ -81,6 +122,12 @@
 
 {% block final %}
     <script>
+        habilita(['s_info-circle']);
+        $('#info-circle_sign').click(function (event) {
+            event.preventDefault();
+            $('#panel_info').toggle();
+        });
+
         function inicializar_select2() {
             setTimeout(function () {
                 $('.select_add_especialidad').select2({
@@ -133,7 +180,7 @@
                                         $('#panel' + id).html(data.html);
                                         $('#cupo').val(id);
                                         inicializar_select2();
-                                        setTimeout(function (){
+                                        setTimeout(function () {
                                             $(document).foundation();
                                         }, 1000);
                                         $("#update_ok").show().delay(1500).fadeOut();
@@ -524,7 +571,7 @@
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
-                    setTimeout(function (){
+                    setTimeout(function () {
                         show_avisos();
                     }, 200);
                 });

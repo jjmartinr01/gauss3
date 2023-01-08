@@ -1,4 +1,4 @@
-{% extends "base_select2-4.html" %}
+{% extends "base_sin_menu_lateral.html" %}
 {% load my_templatetags %}
 
 {% block contenido %}
@@ -38,7 +38,7 @@
         <input type="hidden" id="action" name="action" value="mostrar_cupo"/>
         <input type="hidden" id="cupo" name="cupo" value="{{ cupo.id }}"/>
         <h4 class="cab_title">{{ cupo.nombre }}</h4>
-        <div class="sticky" style="background-color: white;">
+        <div class="sticky" style="background-color: white;" id="div_sticky_info">
             <div class="row cab_title cab1" id="reparto_especialidad" style="display: block;">
                 <div class="columns large-5 medium-5 small-12" title="Periodos establecidos para la jornada completa">
                     <span id="especialidad_profes">{{ profesores_cupo.especialidad }}</span>
@@ -81,10 +81,10 @@
                         <option value="empty">Ningún curso seleccionado</option>
                     </select>
                 </div>
-                <div class="columns large-1 medium-1 small-1">
-                    <input type="text" id="num_alumnos_curso" value="">
-                </div>
-                <div class="columns large-5 medium-5 small-5">
+                {#                <div class="columns large-1 medium-1 small-1">#}
+                {#                    <input type="text" id="num_alumnos_curso" value="">#}
+                {#                </div>#}
+                <div class="columns large-6 medium-6 small-6">
                     <select name="subentidad" id="especialidad">
                         <option value="">Sin especialidad</option>
                         {% for esp in especialidades %}
@@ -103,15 +103,19 @@
                 <div class="columns large-1 medium-1 small-3"
                      title="Filtrar por el número de periodos lectivos en una semana que son destinados a la materia">
                     {#                <input type="text" id="filtro_periodos" value="">#}
+                    &nbsp;
                 </div>
                 <div class="columns large-1 medium-1 small-3" title="Filtrar por el número de grupos calculados">
                     {#                <input type="text" id="filtro_grupos" value="">#}
+                    &nbsp;
                 </div>
                 <div class="columns large-3 medium-3 small-6" title="Filtrar por especialidad">
                     {#                <input type="text" id="filtro_especialidad" value="">#}
+                    &nbsp;
                 </div>
-                <div class="columns large-1 medium-1 small-2" title="Filtrar por número de alumnos">
+                <div class="columns large-1 medium-1 small-2" title="Cambiar de forma general el número de alumnos">
                     {#                <input type="text" id="filtro_alumnos" value="">#}
+                    <input type="text" id="num_alumnos_curso" value="">
                 </div>
                 <div class="columns large-1 medium-1 small-2"
                      title="Filtrar por número de máximo de alumnos en un grupo">
@@ -145,7 +149,7 @@
             e.preventDefault();
             window.location.href = '/cupo/';
         });
-        setTimeout(function (){
+        setTimeout(function () {
             $(document).foundation();
         }, 1000);
 
@@ -219,16 +223,58 @@
             $(this).val('');
         });
 
-        $('#num_alumnos_curso').keyup(function (e) {
-            var num_alumnos = $(this).val();
-            $('.num_alumnos').each(function (index) {
-                $(this).html(num_alumnos);
-                $(this).trigger('keyup');
-            });
-        });
+        function execute_if_input_text_not_change(element, callback) {
+            /*
+            element: input element text i.e. <input type="text">
+            callback: function must be executed when a keyup event is got and the text doesn't change in 1.5 secs
+            */
+            var variable_id = 'variable_' + element.attr('id');
+            var variable_id_has_changed = 'variable_' + element.attr('id') + 'has_changed';
+            if (typeof window[variable_id] === 'undefined') {
+                window[variable_id] = element.val();
+            }
+            if (typeof window[variable_id_has_changed] === 'undefined') {
+                window[variable_id_has_changed] = true;
+            }
+            setTimeout(function () {
+                var new_input_text = element.val();
+                if (element.val() == window[variable_id] & window[variable_id_has_changed] == true) {
+                    window[variable_id_has_changed] = false;
+                    callback();
+                } else {
+                    window[variable_id] = new_input_text;
+                    window[variable_id_has_changed] = true;
+                }
+            }, 1500);
+        };
 
-        $('#num_alumnos_curso').focusout(function (e) {
-            $(this).val('');
+        function actualiza_num_alumnos_curso() {
+            var element = $('#num_alumnos_curso');
+            if (parseInt(element.val()) > 0) {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Modificar el número de alumnos?',
+                    texto: 'Si aceptas a todas las materias/actividades se asignarán ' + element.val() + ' alumnos.',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                            $('#num_alumnos_curso').val('');
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            var num_alumnos = $('#num_alumnos_curso').val();
+                            $('.num_alumnos').each(function (index) {
+                                $(this).html(num_alumnos);
+                                $(this).trigger('keyup');
+                            });
+                            $('#num_alumnos_curso').val('');
+                        }
+                    }
+                });
+            }
+        }
+
+        $('#num_alumnos_curso').keyup(function (e) {
+            execute_if_input_text_not_change($(this), actualiza_num_alumnos_curso);
         });
 
         $('body').on('keyup', '.change_nombre', function (e) {
@@ -528,6 +574,55 @@
                     }
                 });
         });
+
+
+        {% comment %}
+        function isScrolledIntoView(elem)
+{
+    var docViewTop = $(window).scrollTop();
+    var docViewBottom = docViewTop + $(window).height();
+
+    var elemTop = $(elem).offset().top;
+    var elemBottom = elemTop + $(elem).height();
+
+    return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+}
+
+var original_w = 0;
+var primera_vez = true;
+        const resize_ob = new ResizeObserver(function(entries) {
+
+	// since we are observing only a single element, so we access the first element in entries array
+	let rect = entries[0].contentRect;
+
+	// current width & height
+	let width = rect.width;
+	let height = rect.height;
+    if (primera_vez){
+        original_w = width;
+        primera_vez = false;
+    }
+    if (width > original_w){
+        $('#menu_lateral_for_large').addClass('hide-for-large');
+    $('#Principal').removeClass('large-10').addClass('large-12');
+    }else{
+        $('#menu_lateral_for_large').addClass('show-for-large');
+    $('#Principal').removeClass('large-12').addClass('large-10');
+    }
+
+    v = isScrolledIntoView(document.getElementById('cabecera_gauss2'));
+    console.log('original width : ' + original_w);
+	console.log('Current Width : ' + width);
+	console.log('Current Height : ' + height);
+    console.log('Cabecera2 visible : ' + v);
+});
+
+// start observing for resize
+
+            resize_ob.observe(document.querySelector("#div_sticky_info"));
+
+
+        {% endcomment %}
     </script>
 {% endblock %}
 

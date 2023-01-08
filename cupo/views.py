@@ -33,7 +33,7 @@ from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
     EspecialidadDocenteBasica, Cargo, MiembroEDB
 from entidades.models import Departamento as Depentidad
-from estudios.models import Curso, Materia, Grupo, EtapaEscolar
+from estudios.models import Curso, Materia, Grupo, EtapaEscolar, Gauser_extra_estudios
 from horarios.tasks import carga_masiva_from_file
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
@@ -131,7 +131,12 @@ def cupo(request):
     cursos_existentes = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                              clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
     return render(request, "cupo.html",
-                  {'formname': 'cupo_profesorado',
+                  {'iconos':
+                       ({'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Información',
+                         'title': 'Información sobre la creación de nuevos cupos.',
+                         'permiso': 'libre'}, {},
+                        ),
+                   'formname': 'cupo_profesorado',
                    'cupos': cupos,
                    'plantillas_o': plantillas_o,
                    'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
@@ -181,7 +186,20 @@ def ajax_cupo(request):
                         if created:
                             geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=ec.nombre)
                             for gep in geps:
-                                Profesor_cupo.objects.create(profesorado=profesores_cupo,
+                                tipo = 'INT' if 'nterino' in gep.ge.tipo_personal else 'DEF'
+                                try:
+                                    jornada_calculada = int(gep.ge.jornada_contratada.split(':')[0])
+                                    if jornada_calculada > 20:
+                                        jornada = '1'
+                                    elif jornada_calculada > 14 and jornada_calculada < 20:
+                                        jornada = '2'
+                                    elif jornada_calculada > 9 and jornada_calculada < 13:
+                                        jornada = '3'
+                                    else:
+                                        jornada = '4'
+                                except:
+                                    jornada = '1'
+                                Profesor_cupo.objects.create(profesorado=profesores_cupo, tipo=tipo, jornada=jornada,
                                                              nombre=gep.ge.gauser.get_full_name())
                 for etapa in EtapaEscolar.objects.all():
                     EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
@@ -280,8 +298,11 @@ def ajax_cupo(request):
                         maestros = ['18401', '18407', '18408', '18409', '18410', '18416', '18429', '18431', '18433',
                                     '18434']
                         if pxls.x_puesto in maestros:
-                            J = {'cmax': 21.5, 'cmin': 21.5, 'mmax': 10.75, 'mmin': 10.75, 'dmax': 14.33,
-                                 'dmin': 14.33, 'umax': 7.16, 'umin': 7.16}
+                            # J = {'cmax': 21.5, 'cmin': 21.5, 'mmax': 10.75, 'mmin': 10.75, 'dmax': 14.33,
+                            #      'dmin': 14.33, 'umax': 7.16, 'umin': 7.16}
+                            # Las anteriores horas no tienen en cuenta el recreo, para tenerlo en cuenta:
+                            J = {'cmax': 23, 'cmin': 23, 'mmax': 11.5, 'mmin': 11.5, 'dmax': 15.33,
+                                 'dmin': 15.33, 'umax': 7.66, 'umin': 7.66}
                         else:
                             J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7,
                                  'umin': 6}
@@ -293,14 +314,41 @@ def ajax_cupo(request):
                                                              min_media=J['mmin'], max_tercio=J['umax'],
                                                              min_tercio=J['umin'])
                         profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
-                        geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
+                        # geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
+                        # for gep in list(set(geps)):
+                        #   Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
+                        geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', 'x_docente')
                         for gep in list(set(geps)):
-                            Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
+                            try:
+                                ge = Gauser_extra.objects.get(ronda=po.ronda_centro, clave_ex=gep[1])
+                                tipo = 'INT' if 'nterino' in ge.tipo_personal else 'DEF'
+                                try:
+                                    jornada_calculada = int(ge.jornada_contratada.split(':')[0])
+                                    if jornada_calculada > 20:
+                                        jornada = '1'
+                                    elif jornada_calculada > 14 and jornada_calculada < 20:
+                                        jornada = '2'
+                                    elif jornada_calculada > 9 and jornada_calculada < 13:
+                                        jornada = '3'
+                                    else:
+                                        jornada = '4'
+                                except:
+                                    jornada = '1'
+                                Profesor_cupo.objects.create(profesorado=profesores_cupo, tipo=tipo, jornada=jornada,
+                                                             nombre=gep[0])
+                            except:
+                                Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep[0])
                     if len(pxls.x_materiaomg) > 0:
                         eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
                                                                         clave_ex=pxls.x_etapa_escolar)
                         cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
                                                                 nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
+                        if c:
+                            curso = Curso.objects.get(ronda=po.ronda_centro, clave_ex=pxls.x_curso)
+                            grupos = Grupo.objects.filter(cursos__in=[curso])
+                            gee = Gauser_extra_estudios.objects.filter(grupo__in=grupos)
+                            cc.num_alumnos = max(gee.count(), mn)
+                            cc.save()
                         h, sc, m = pxls.horas_semana_min.rpartition(':')
                         try:
                             horas = int(h) + int(m) / 60
@@ -308,13 +356,20 @@ def ajax_cupo(request):
                             return JsonResponse({'horas': pxls.horas_semana_min, 'h': h, 'm': m,
                                                  'etapa': pxls.x_etapa_escolar, 'x_materia': pxls.x_materiaomg})
                         if pxls.x_actividad == '1':
-                            Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=pxls.materia,
-                                                               horas=horas, clave_ex=pxls.x_materiaomg, especialidad=ec,
+                            Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, clave_ex=pxls.x_materiaomg,
+                                                               horas=horas, especialidad=ec, nombre=pxls.materia,
                                                                num_alumnos=cc.num_alumnos, max_num_alumnos=mn)
                         else:
-                            Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=pxls.actividad,
-                                                               horas=horas, clave_ex=pxls.x_actividad, especialidad=ec,
-                                                               max_num_alumnos=mn, num_alumnos=cc.num_alumnos)
+                            if 'Apoyo' in pxls.actividad or 'ACNEE' in pxls.actividad:
+                                nombre = '%s (%s)' % (pxls.actividad, pxls.materia)
+                                Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=nombre,
+                                                                   horas=horas, clave_ex=pxls.x_actividad,
+                                                                   especialidad=ec, min_num_alumnos=1,
+                                                                   num_alumnos=3, max_num_alumnos=mn)
+                            else:
+                                Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, clave_ex=pxls.x_actividad,
+                                                                   horas=horas, especialidad=ec, nombre=nombre,
+                                                                   max_num_alumnos=mn, num_alumnos=cc.num_alumnos)
                     elif pxls.x_actividad in ['2', '614']:  # Esto sucede en las tutorías
                         eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
                                                                         clave_ex=pxls.x_etapa_escolar)
@@ -1177,7 +1232,7 @@ def ajax_cupo(request):
 
 def clave_ex2int(curso):
     try:
-        print(int(curso.etapa_escolar.clave_ex))
+        # print(int(curso.etapa_escolar.clave_ex))
         return int(curso.etapa_escolar.clave_ex)
     except:
         return 0
@@ -1571,11 +1626,15 @@ def plantilla_organica(request):
     ejemplo_sesiones = Sesion.objects.filter(g_e__id=45740, horario__id=128)
     return render(request, "plantilla_organica.html",
                   {
-                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
-                                  'title': 'Cargar datos a partir de archivo obtenido de Racima',
-                                  'permiso': 'libre'},
-                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
-                                  'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
+                      # No se permite cargar datos desde plantilla_organica. Ahora solo desde carga masiva:
+                      # 'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
+                      #             'title': 'Cargar datos a partir de archivo obtenido de Racima',
+                      #             'permiso': 'libre'},
+                      #            {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
+                      #             'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
+                      #             'permiso': 'carga_datos_casiopea'}, {}),
+                      'iconos': ({'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Información',
+                                  'title': 'Información sobre la elaboración de un estudio de plantilla orgánica',
                                   'permiso': 'libre'}, {}),
                       'formname': 'plantilla_organica',
                       'plantillas_o': plantillas_o,
@@ -1586,6 +1645,7 @@ def plantilla_organica(request):
                       'ejemplo_sesiones': ejemplo_sesiones,
                       'docente': g_e,
                   })
+
 
 def comprueba_dnis(request):
     g_e = request.session["gauser_extra"]
@@ -1612,15 +1672,20 @@ def comprueba_dnis(request):
                         ges_a_mover = gauser_extra_all.filter(gauser=g)
                         for ge_a_mover in ges_a_mover:
                             if ge_a_mover.ronda.id in rondas_buenas:
-                                info['errores'].append('Varios ges (%s - %s) en la misma ronda: (%s, %s) -- ges_buenos: %s %s' % (g.get_full_name(), g.dni, ge_a_mover.id, ge_a_mover.ronda.id, g_bueno.get_full_name(), list(ges_buenos.values_list('id', 'ronda_id'))))
-                        info['duplicados'].append({'g_bueno': [g_bueno.id, g_bueno.last_name], 'ges_buenos': list(ges_buenos_id),
-                                                   'ges_a_mover': list(ges_a_mover.values_list('id', flat=True))})
-                        info['gausers'].append('g_bueno %s, g_mal %s' %(g_bueno.dni, g.dni))
+                                info['errores'].append(
+                                    'Varios ges (%s - %s) en la misma ronda: (%s, %s) -- ges_buenos: %s %s' % (
+                                        g.get_full_name(), g.dni, ge_a_mover.id, ge_a_mover.ronda.id,
+                                        g_bueno.get_full_name(), list(ges_buenos.values_list('id', 'ronda_id'))))
+                        info['duplicados'].append(
+                            {'g_bueno': [g_bueno.id, g_bueno.last_name], 'ges_buenos': list(ges_buenos_id),
+                             'ges_a_mover': list(ges_a_mover.values_list('id', flat=True))})
+                        info['gausers'].append('g_bueno %s, g_mal %s' % (g_bueno.dni, g.dni))
                     except:
                         info['errores'].append('Varios gauser con dni %' % dni)
                     # gausers_duplicados = list(gauser_all.filter(dni=dni).values_list('id', 'last_name'))
                     # info['duplicados'].append({'g': [g.id, g.last_name], 'dup': gausers_duplicados})
     return JsonResponse(info)
+
 
 def arregla_duplicados_antiguo(request):
     g_e = request.session["gauser_extra"]
@@ -1673,6 +1738,7 @@ def arregla_duplicados_antiguo(request):
             except:
                 info['errores'].append('Error con usuario %s' % g.id)
     return JsonResponse(info)
+
 
 def arregla_duplicados(request):
     g_e = request.session["gauser_extra"]
