@@ -842,7 +842,7 @@ def carga_masiva_horario_personal_centro(carga):
                 carga.log += 'No encuentra Gobierno. %s - PO: %s' % (entidad.name, po.id)
                 carga.save()
             entidad.save()
-            if entidad != carga.g_e.ronda.entidad:
+            if entidad != carga.g_e.ronda.entidad and not carga.g_e.has_permiso('carga_plantillas_organicas'):
                 carga.log += 'Error. Carga para %s - g_e de %s' % (entidad.name, carga.g_e.ronda.entidad.name)
                 carga.cargado = True
                 carga.save()

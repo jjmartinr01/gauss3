@@ -1107,7 +1107,7 @@ def perfiles_permisos(request):
         'formname': 'permisos_perfiles',
         'form': form,
         'iconos':
-            ({'tipo': 'search', 'title': 'Buscar usuario por nombre', 'permiso': 'acceso_perfiles_permisos'},
+            (#{'tipo': 'search', 'title': 'Buscar usuario por nombre', 'permiso': 'acceso_perfiles_permisos'},
              {'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
               'title': 'Aceptar los cambios realizados', 'permiso': 'asigna_permisos'},
              ),

@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Sistemas de gestión aumentada | ASOCIA</title>
+    <title>Sistemas de gestión aumentada | Entidades</title>
     <link rel="shortcut icon" href="/static/images/favicon3.ico">
     <link rel="stylesheet" href="/static/css/style.css"/>
     <link rel="stylesheet" href="/static/foundation-5.5.3/css/foundation.css"/>
@@ -611,7 +611,7 @@
                             }
                             if (item.tipo === 'g') {
                                 return {
-                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor) + entidad,
+                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor, item.cargos) + entidad,
                                     id: item.tipo + item.id
                                 }
                             } else if (item.tipo === 'c') {

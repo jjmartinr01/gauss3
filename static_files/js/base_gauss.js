@@ -65,20 +65,20 @@ function charge_on_ready() {
 }
 
 function habilita(iconos) {
-    for (i in iconos) {
+    for (var i in iconos) {
         var p = iconos[i].split('_');
         if (p[0] == 'h') {
-            $("#" + p[1] + "_sign").addClass('disabled');
-            $("#" + p[1] + "_li").addClass('hide');
+            $('#' + p[1] + '_sign').addClass('disabled');
+            $('#' + p[1] + '_li').addClass('hide');
         } else {
-            $("#" + p[1] + "_sign").removeClass('disabled');
-            $("#" + p[1] + "_li").removeClass('hide');
+            $('#' + p[1] + '_sign').removeClass('disabled');
+            $('#' + p[1] + '_li').removeClass('hide');
         }
     }
 }
 
 function show_avisos() {
-    return $.post("/get_avisos/", {}, function (data) {
+    return $.post('/get_avisos/', {}, function (data) {
         if (data != '') {
             $('#reveal_lista_avisos').html(data);
             $('#reveal_modal_aviso').foundation('reveal', 'open');

@@ -33,8 +33,9 @@ from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
     EspecialidadDocenteBasica, Cargo, MiembroEDB
 from entidades.models import Departamento as Depentidad
+from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar, Gauser_extra_estudios
-from horarios.tasks import carga_masiva_from_file
+# from horarios.tasks import carga_masiva_from_file
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
 
@@ -127,7 +128,7 @@ def cupo(request):
     f = datetime.datetime(2021, 1, 1)
     # cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(id__in=cupos_id)).distinct()
-    plantillas_o = PlantillaOrganica.objects.filter(Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
+    plantillas_o = PlantillaOrganica.objects.filter(Q(g_e__gauser=g_e.gauser) | Q(ronda_centro=g_e.ronda))
     cursos_existentes = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                              clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
     return render(request, "cupo.html",
@@ -1310,15 +1311,35 @@ def plantilla_organica(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
         if request.POST['action'] == 'carga_masiva_plantilla':
-            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
-            CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
-            try:
-                carga_masiva_from_file.apply_async(expires=300)
-                crear_aviso(request, True, 'cmplantilla_organica')
-                crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
-            except:
-                crear_aviso(request, False,
-                            'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+            if not g_e.has_permiso('carga_plantillas_organicas'):
+                return render(request, "enlazar.html", {'page': '/', })
+            file_masivo = request.FILES['file_masivo_xls']
+            if 'excel' in file_masivo.content_type:
+                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo,
+                                           tipo='HORARIO_PERSONAL_CENTRO')
+                try:
+                    carga_masiva_from_excel.apply_async(expires=300)
+                    crear_aviso(request, True, 'POexcel_automatica')
+                    m1 = '<p>El archivo cargado puede tardar unos minutos en ser procesado.</p>'
+                    m2 = '<p>En cuanto </p>'
+                    crear_aviso(request, False, m1)
+                except:
+                    crear_aviso(request, False,
+                                'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+            else:
+                crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
+                            '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
+
+
+            # logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
+            # CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
+            # try:
+            #     carga_masiva_from_file.apply_async(expires=300)
+            #     crear_aviso(request, True, 'cmplantilla_organica')
+            #     crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            # except:
+            #     crear_aviso(request, False,
+            #                 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
         elif request.POST['action'] == 'excel_po':
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['po'])
@@ -1403,6 +1424,9 @@ def plantilla_organica(request):
                                                      nombre=keys['DESPEC'], plazas=plazas, ocupadas=ocupadas)
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+            html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+            return JsonResponse({'ok': True, 'html': html, 'carga_completa': po.carga_completa})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
                 html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
@@ -1626,16 +1650,12 @@ def plantilla_organica(request):
     ejemplo_sesiones = Sesion.objects.filter(g_e__id=45740, horario__id=128)
     return render(request, "plantilla_organica.html",
                   {
-                      # No se permite cargar datos desde plantilla_organica. Ahora solo desde carga masiva:
-                      # 'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
-                      #             'title': 'Cargar datos a partir de archivo obtenido de Racima',
-                      #             'permiso': 'libre'},
-                      #            {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
-                      #             'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
-                      #             'permiso': 'carga_datos_casiopea'}, {}),
-                      'iconos': ({'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Información',
-                                  'title': 'Información sobre la elaboración de un estudio de plantilla orgánica',
-                                  'permiso': 'libre'}, {}),
+                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Racima',
+                                  'permiso': 'carga_plantillas_organicas'},
+                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
+                                  'permiso': 'carga_datos_casiopea'}, {}),
                       'formname': 'plantilla_organica',
                       'plantillas_o': plantillas_o,
                       'g_e': g_e,

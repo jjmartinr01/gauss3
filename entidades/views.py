@@ -672,9 +672,25 @@ def ajax_filtro(request):
 @LogGauss
 @login_required()
 def buscar_usuarios(request):
-    texto = request.GET['q']
     g_e = request.session['gauser_extra']
     usuarios = usuarios_ronda(g_e.ronda)
+    items = []
+    texto = request.GET['q']
+    palabras = texto.split()
+    q = Q(gauser__first_name__icontains=palabras[0]) | Q(gauser__last_name__icontains=palabras[0]) | Q(
+        gauser__dni__icontains=palabras[0]) | Q(gauser__username__icontains=palabras[0])
+    for palabra in palabras[1:]:
+        qnueva = Q(gauser__first_name__icontains=palabra) | Q(gauser__last_name__icontains=palabra) | Q(
+            gauser__dni__icontains=palabra) | Q(gauser__username__icontains=palabra)
+        q = q & qnueva
+    for u in usuarios_ronda(g_e.ronda, subentidades=False).filter(q):
+        cargos = []
+        for cargo in u.cargos.all():
+            cargos.append(cargo.cargo)
+        text = '%s, %s (%s)' % (u.gauser.last_name, u.gauser.first_name, ', '.join(cargos))
+        items.append({'id': u.id, 'text': text})
+
+    return JsonResponse({'ok': True, 'items': items})
     usuarios_contain_texto = usuarios.filter(
         Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list('id',
                                                                                                     'gauser__last_name',
@@ -2608,12 +2624,20 @@ def selectgcs_organization(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
         if request.method == 'GET':
-            texto = request.GET['q']
             rondas = Entidad.objects.filter(organization=g_e.ronda.entidad.organization).values_list('ronda__id',
                                                                                                      flat=True)
-            q1 = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
-            q2 = Q(ronda__id__in=rondas)
-            ges = Gauser_extra.objects.filter(q1 & q2)
+            texto = request.GET['q']
+            palabras = texto.split()
+            q = Q(gauser__first_name__icontains=palabras[0]) | Q(gauser__last_name__icontains=palabras[0]) | Q(
+                gauser__dni__icontains=palabras[0]) | Q(gauser__username__icontains=palabras[0])
+            for palabra in palabras[1:]:
+                qnueva = Q(gauser__first_name__icontains=palabra) | Q(gauser__last_name__icontains=palabra) | Q(
+                    gauser__dni__icontains=palabra) | Q(gauser__username__icontains=palabra)
+                q = q & qnueva
+            ges = Gauser_extra.objects.filter(q & Q(ronda__id__in=rondas))
+            # q1 = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
+            # q2 = Q(ronda__id__in=rondas)
+            # ges = Gauser_extra.objects.filter(q1 & q2)
             options = []
             for ge in ges.distinct():
                 options.append(
@@ -2644,7 +2668,19 @@ def selectgcs(request):
             for tipo in request.GET['tipo']:  # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
                 if tipo == 'g':
                     usronda = usuarios_ronda(g_e.ronda, subentidades=subs, cargos=cars)
-                    ges = usronda.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
+
+
+                    palabras = texto.split()
+                    q = Q(gauser__first_name__icontains=palabras[0]) | Q(gauser__last_name__icontains=palabras[0]) | Q(
+                        gauser__dni__icontains=palabras[0]) | Q(gauser__username__icontains=palabras[0])
+                    for palabra in palabras[1:]:
+                        qnueva = Q(gauser__first_name__icontains=palabra) | Q(gauser__last_name__icontains=palabra) | Q(
+                            gauser__dni__icontains=palabra) | Q(gauser__username__icontains=palabra)
+                        q = q & qnueva
+
+
+
+                    ges = usronda.filter(q)
                 elif tipo == 'c':
                     if cars:
                         cargos = cars
@@ -2666,9 +2702,10 @@ def selectgcs(request):
                     cotutor = ge.gauser_extra_estudios.cotutor.gauser.get_full_name()
                 except:
                     grupo, tutor, cotutor = '', '', ''
+                cargos_ge = [c.cargo for c in ge.cargos.all()]
                 options.append(
                     {'id': ge.id, 'first_name': ge.gauser.first_name, 'last_name': ge.gauser.last_name,
-                     'grupo': grupo, 'tutor': tutor, 'cotutor': cotutor, 'tipo': 'g'})
+                     'grupo': grupo, 'tutor': tutor, 'cotutor': cotutor, 'tipo': 'g', 'cargos': ', '.join(cargos_ge)})
             for c in cargos.distinct():
                 options.append({'id': c.id, 'cargo': c.cargo, 'tipo': 'c'})
             for s in subentidades.distinct():

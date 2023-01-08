@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_select2-4.html" %}
 {% load my_templatetags %}
 
 {% block contenido %}
@@ -38,8 +38,8 @@
                         {% endif %}
                     {% endif %}
                 </div>
-                <div class="large-10 columns">
-                    <div class="row">
+                <div class="large-5 columns">
+                    <div class="row" title="Usuario: {{ gauser_extra.gauser.username }}">
                         {% if gauser_extra.gauser.sexo == 'H' %}
                             <i class="fa fa-male fa-fw"></i>
                         {% else %}
@@ -58,6 +58,10 @@
                                 {{ cargo.cargo }}{% if not forloop.last %}, {% endif %}{% endfor %}
                         {% endif %}
                     </div>
+                </div>
+                <div class="large-5 columns">
+                    <label><b>Buscar a otro usuario:</b>
+                        <select id="buscar_usuario"></select></label>
                 </div>
             </div>
         </div>
@@ -87,81 +91,83 @@
             <dl class="accordion" data-accordion>
                 {% for menu in entidad|menus %}
                     {% if g_e|has_permiso:menu.menu_default.code_menu %}
-                    <dd class="accordion-navigation" id="accordion{{ menu.id }}">
-                        <a href="#panel_{{ menu.id }}" style="padding-left: {{ menu.menu_default.nivel }}em;">
-                            <span class="heading pos{{ menu.id }}">{{ menu.pos }}</span>
-                            <span class="heading" id="texto_menu{{ menu.id }}"> {{ menu.texto_menu }}</span>
-                        </a>
+                        <dd class="accordion-navigation" id="accordion{{ menu.id }}">
+                            <a href="#panel_{{ menu.id }}" style="padding-left: {{ menu.menu_default.nivel }}em;">
+                                <span class="heading pos{{ menu.id }}">{{ menu.pos }}</span>
+                                <span class="heading" id="texto_menu{{ menu.id }}"> {{ menu.texto_menu }}</span>
+                            </a>
 
-                        <div id="panel_{{ menu.id }}" class="content accordion-menu" data-id="{{ menu.id }}">
-                            <div class="row">
-                                <div class="columns large-1 position heading pos{{ menu.id }}" id="pos{{ menu.id }}"
-                                     data-menu="{{ menu.id }}" contenteditable="true" style="text-align: right;">
-                                    {{ menu.pos }}
-                                </div>
-                                <div class="columns large-8 end nombre heading" data-menu="{{ menu.id }}"
-                                     contenteditable="true">{{ menu.texto_menu }}
-                                </div>
-                            </div>
-                            {% for p in menu.permisos %}
-                                {% if g_e|has_permiso:p.code_nombre %}
-                                    <div class="row">
-                                        <div class="columns large-2">
-                                            &nbsp;
-                                        </div>
-                                        <div class="columns large-10">
-                                            <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
-                                                   title="Permiso según cargo" disabled
-                                                    {% if p in gauser_extra.permisos_cargos %} checked{% endif %}>
-                                            <input type="checkbox" class="permiso" id="p{{ p.id }}"
-                                                   title="Permiso asignado al usuario" value="{{ p.id }}"
-                                                    {% if p in gauser_extra.permisos.all %} checked{% endif %}>
-                                            {{ p.nombre }}
-                                        </div>
+                            <div id="panel_{{ menu.id }}" class="content accordion-menu" data-id="{{ menu.id }}">
+                                <div class="row">
+                                    <div class="columns large-1 position heading pos{{ menu.id }}" id="pos{{ menu.id }}"
+                                         data-menu="{{ menu.id }}" contenteditable="true" style="text-align: right;">
+                                        {{ menu.pos }}
                                     </div>
-                                {% endif %}
-                            {% endfor %}
-                            <hr>
-                            {% for m in menu.children %}
-                                {% if g_e|has_permiso:m.menu_default.code_menu %}
-                                <div id="child{{ m.id }}">
-                                    <div class="row">
-                                        <div class="columns large-1 heading" style="text-align: right;">
+                                    <div class="columns large-8 end nombre heading" data-menu="{{ menu.id }}"
+                                         contenteditable="true">{{ menu.texto_menu }}
+                                    </div>
+                                </div>
+                                {% for p in menu.permisos %}
+                                    {% if g_e|has_permiso:p.code_nombre %}
+                                        <div class="row">
+                                            <div class="columns large-2">
+                                                &nbsp;
+                                            </div>
+                                            <div class="columns large-10">
+                                                <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
+                                                       title="Permiso según cargo" disabled
+                                                        {% if p in gauser_extra.permisos_cargos %} checked{% endif %}>
+                                                <input type="checkbox" class="permiso" id="p{{ p.id }}"
+                                                       title="Permiso asignado al usuario" value="{{ p.id }}"
+                                                        {% if p in gauser_extra.permisos.all %} checked{% endif %}>
+                                                {{ p.nombre }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                                <hr>
+                                {% for m in menu.children %}
+                                    {% if g_e|has_permiso:m.menu_default.code_menu %}
+                                        <div id="child{{ m.id }}">
+                                            <div class="row">
+                                                <div class="columns large-1 heading" style="text-align: right;">
                                         <span class="pos{{ menu.id }}"
                                               style="text-align: right;">{{ menu.pos }}</span>.
-                                        </div>
-                                        <div class="columns large-1 position2 heading" data-menu="{{ m.id }}"
-                                             contenteditable="true" id="pos{{ m.id }}">{{ m.pos }}
-                                        </div>
-
-                                        <div class="columns large-8 end nombre heading" data-menu="{{ m.id }}"
-                                             contenteditable="true">{{ m.texto_menu }}
-                                        </div>
-                                    </div>
-                                    {% for p in m.permisos %}
-                                        {% if g_e|has_permiso:p.code_nombre %}
-                                            <div class="row">
-                                                <div class="columns large-3">
-                                                    &nbsp;
                                                 </div>
-                                                <div class="columns large-9">
-                                                    <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
-                                                           title="Permiso según cargo" disabled
-                                                            {% if p in gauser_extra.permisos_cargos %}
-                                                           checked{% endif %}>
-                                                    <input type="checkbox" class="permiso" id="p{{ p.id }}"
-                                                           title="Permiso asignado al usuario" value="{{ p.id }}"
-                                                            {% if p in gauser_extra.permisos.all %}
-                                                           checked{% endif %}> {{ p.nombre }}
+                                                <div class="columns large-1 position2 heading" data-menu="{{ m.id }}"
+                                                     contenteditable="true" id="pos{{ m.id }}">{{ m.pos }}
+                                                </div>
+
+                                                <div class="columns large-8 end nombre heading" data-menu="{{ m.id }}"
+                                                     contenteditable="true">{{ m.texto_menu }}
                                                 </div>
                                             </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </dd>
+                                            {% for p in m.permisos %}
+                                                {% if g_e|has_permiso:p.code_nombre %}
+                                                    <div class="row">
+                                                        <div class="columns large-3">
+                                                            &nbsp;
+                                                        </div>
+                                                        <div class="columns large-9">
+                                                            <input type="checkbox" class="permiso_cargo"
+                                                                   id="pc{{ p.id }}"
+                                                                   title="Permiso según cargo" disabled
+                                                                    {% if p in gauser_extra.permisos_cargos %}
+                                                                   checked{% endif %}>
+                                                            <input type="checkbox" class="permiso" id="p{{ p.id }}"
+                                                                   title="Permiso asignado al usuario"
+                                                                   value="{{ p.id }}"
+                                                                    {% if p in gauser_extra.permisos.all %}
+                                                                   checked{% endif %}> {{ p.nombre }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </dd>
                     {% endif %}
                 {% endfor %}
             </dl>
@@ -290,50 +296,20 @@
             $('.cargos').prop('disabled', true);
         {% endif %}
 
+        $('#buscar_usuario').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'format_g': '{0}, {1} ({4})',
+                'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
+            })
+        );
 
-        $("#input_search_select2").select2({
-            placeholder: "Escribe parte del nombre",
-            minimumInputLength: 3,
-            ajax: {
-                url: "/buscar_usuarios/",
-                dataType: 'json',
-                quietMillis: 100,
-                data: function (term, page) { // page is the one-based page number tracked by Select2
-                    return {
-                        action: 'select2',
-                        q: term, //search term
-                        page_limit: 10, // page size
-                        page: page // page number
-                    };
-                },
-                results: function (data) {
-                    return {
-                        results: $.map(data, function (item) {
-                            return {
-                                text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
-                                id: item.id
-                            }
-                        })
-                    };
-                }
-            },
-            formatResult: function (resultado) {
-                return '<div class="select2-user-result">' + resultado.text + '</div>';
-            },
-            formatSelection: function (resultado) {
-                $('#gauser_extra_selected').val(resultado.id);
-                return resultado.text;
-            },
-            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
-            escapeMarkup: function (m) {
-                return m;
-            } // we do not want to escape markup since we are displaying html in results
-        });
-
-        $("#input_search_select2").change(function () {
+        $("#buscar_usuario").change(function () {
+            {# Para eliminar la 'g' inicial devuelta por el conf_select2 utilizamos substring: #}
+            $('#gauser_extra_selected').val($(this).val().substring(1));
             $('#action').val('gauser_extra_selected');
             document.getElementById("{{ formname }}").submit();
         });
-
     </script>
 {% endblock %}
