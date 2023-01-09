@@ -6,7 +6,7 @@ import random
 
 import xlwt
 import xlrd
-
+from time import sleep
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
@@ -1323,6 +1323,8 @@ def plantilla_organica(request):
                     m1 = '<p>El archivo cargado puede tardar unos minutos en ser procesado.</p>'
                     m2 = '<p>En cuanto </p>'
                     crear_aviso(request, False, m1)
+                    # Esperar 1 segundo a que se ejecute el inicio de carga_masiva_from_excel() y así se cree la PO:
+                    sleep(1)
                 except:
                     crear_aviso(request, False,
                                 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
@@ -1424,9 +1426,6 @@ def plantilla_organica(request):
                                                      nombre=keys['DESPEC'], plazas=plazas, ocupadas=ocupadas)
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
-            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
-            html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
-            return JsonResponse({'ok': True, 'html': html, 'carga_completa': po.carga_completa})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
                 html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
