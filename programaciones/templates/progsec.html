@@ -664,6 +664,7 @@
             $("body").on('click', '#check_sign', function (e) { {# sag #}
                 e.preventDefault();
                 if ($("#file_bkimportar").val()) {
+                    $('#action').val('bk_importar_progsec');
                     document.getElementById('{{formname}}').submit();
                 } else {
                     show_mensajes({

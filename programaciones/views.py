@@ -2487,8 +2487,8 @@ def progsecundaria(request):
             response = HttpResponse(bkps.generarXML(ProgSec), content_type='application/xml')
             response['Content-Disposition'] = 'attachment; filename="Programacion_'+request.POST["id_progsec"]+'.xml"'
             return response
-        elif (request.FILES.get('file_bkimportar') != None):  # sag
-            if  (request.FILES.get('file_bkimportar').size > 0):
+        elif (request.POST['action'] == 'bk_importar_progsec'):  # sag
+            if ((request.FILES.get('file_bkimportar') != None) and (request.FILES.get('file_bkimportar').size > 0)):
                 bkps = BkProgsec()
                 respuesta = bkps.importarXML(request)
                 return HttpResponse(respuesta)
