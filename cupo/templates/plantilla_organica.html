@@ -692,5 +692,13 @@
                     }
                 });
         });
+
+        {% if recargar %}
+            {# Recargar la página en caso de que recargar sea True #}
+            setTimeout(function(){
+                {#window.location.reload();#}
+                window.location.href = window.location.href;
+            }, 500);
+        {% endif %}
     </script>
 {% endblock %}

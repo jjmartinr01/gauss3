@@ -85,7 +85,7 @@
                 </h5>
                 <div class="row">
                     {% for po in plantillas_o %}
-                        {% if po.ronda_centro == request.session.gauser_extra.ronda %}
+                        {% if po.ronda_centro == g_e.ronda or po.g_e.gauser == g_e.gauser %}
                             <div class="columns large-3"
                                  title="Análisis realizado por {{ po.g_e.gauser.get_full_name }}">
                                 <a class="crea_cupo_from_po" data-po="{{ po.id }}">

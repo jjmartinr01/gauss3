@@ -139,6 +139,7 @@ def cupo(request):
                         ),
                    'formname': 'cupo_profesorado',
                    'cupos': cupos,
+                   'g_e': g_e,
                    'plantillas_o': plantillas_o,
                    'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                    'especialidades_existentes': ESPECIALIDADES,
@@ -1309,6 +1310,8 @@ def crea_plantilla_organica_manual(entidad, g_e):
 # @permiso_required('acceso_carga_masiva_horarios')
 def plantilla_organica(request):
     g_e = request.session["gauser_extra"]
+    # Hacer una recarga tras haber creado una plantilla orgánica:
+    recargar = False
     if request.method == 'POST':
         if request.POST['action'] == 'carga_masiva_plantilla':
             if not g_e.has_permiso('carga_plantillas_organicas'):
@@ -1323,11 +1326,10 @@ def plantilla_organica(request):
                     m1 = '<p>El archivo cargado puede tardar unos minutos en ser procesado.</p>'
                     m2 = '<p>En cuanto </p>'
                     crear_aviso(request, False, m1)
-                    # Esperar 1 segundo a que se ejecute el inicio de carga_masiva_from_excel() y así se cree la PO:
-                    sleep(1)
                 except:
                     crear_aviso(request, False,
                                 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+                recargar = True
             else:
                 crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
                             '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
@@ -1656,6 +1658,7 @@ def plantilla_organica(request):
                                   'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
                                   'permiso': 'carga_datos_casiopea'}, {}),
                       'formname': 'plantilla_organica',
+                      'recargar': recargar,
                       'plantillas_o': plantillas_o,
                       'g_e': g_e,
                       'centros_no_racima': Entidad.objects.filter(code__in=centros_no_racima),
