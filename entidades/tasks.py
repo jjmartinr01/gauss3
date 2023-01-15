@@ -92,14 +92,14 @@ def create_usuario(datos, ronda, tipo):
     username_inventado = 'usuario_inventado_%s' % pass_generator()
     username = datos['username' + tipo] if len(datos['username' + tipo]) > 2 else username_inventado
     try:
-        #if not tipo, implica que es un alumno/a
+        # if not tipo, implica que es un alumno/a
         if not tipo:
             try:
-                #Los tutores no tienen id_socio o noidracima por eso tipo es la cadena vacía.
+                # Los tutores no tienen id_socio o noidracima por eso tipo es la cadena vacía.
                 gauser = Gauser.objects.get(educa_pk=datos['id_socio'])
             except:
                 try:
-                    #Es posible que existan usuarios alumnos con username y que todavía no tengan grabados
+                    # Es posible que existan usuarios alumnos con username y que todavía no tengan grabados
                     # el noidracima en educa_pk. La siguiente línea corrige esta situación.
                     gauser = Gauser.objects.get(username=username)
                     gauser.educa_pk = datos['id_socio']
@@ -192,14 +192,14 @@ def create_usuario(datos, ronda, tipo):
             gauser_extra = ges[0]
             ## Podríamos escribir ges.exclude(id=gauser_extra.id).delete(), pero como hay un error porque
             ## falta el nregistro en vut_vivienda necesito hacer esta triquiñuela para no duplicar usuarios:
-            #for ge_borrar in ges.exclude(id=gauser_extra.id):
-                # try:
-                #     ge_borrar.delete()
-                # except:
-                #     entidad, c = Entidad.objects.get_or_create(code=CODE_CONTENEDOR)
-                #     ge_borrar.ronda = entidad.ronda
-                #     ge_borrar.save()
-                #     logger.warning('Gauser_extra asociados al Gauser %s, desplazado al contenedor.' % (gauser))
+            # for ge_borrar in ges.exclude(id=gauser_extra.id):
+            # try:
+            #     ge_borrar.delete()
+            # except:
+            #     entidad, c = Entidad.objects.get_or_create(code=CODE_CONTENEDOR)
+            #     ge_borrar.ronda = entidad.ronda
+            #     ge_borrar.save()
+            #     logger.warning('Gauser_extra asociados al Gauser %s, desplazado al contenedor.' % (gauser))
             # logger.warning('Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser))
             # mensaje = 'Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser)
             # logger.info(mensaje)
@@ -592,7 +592,12 @@ def carga_masiva_personal(carga, entidad):
                 gauser_extra.puesto = puesto
                 gauser_extra.tipo_personal = tipo_personal
                 gauser_extra.jornada_contratada = jornada_contratada
-                gauser_extra.cargos.add(cargo)
+                try:
+                    cargo_docente = Cargo.objects.get(entidad=nueva_entidad, clave_cargo='g_docente', borrable=False)
+                except:
+                    cargo_docente = Cargo.objects.create(entidad=nueva_entidad, clave_cargo='g_docente', borrable=False,
+                                                         cargo='Docente')
+                gauser_extra.cargos.add(cargo_docente)
                 gauser_extra.save()
                 carga.log += '<p>Carga de %s - %s - s-%s</p>' % (username, dni, gauser_extra.id_organizacion)
                 carga.save()
@@ -1111,7 +1116,7 @@ def carga_masiva_tipo_EXCEL(carga):
                         cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
                     except:
                         cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
-                                                     cargo='Docente' )
+                                                     cargo='Docente')
                 # for c in CARGOS:
                 #     if cargo.clave_cargo == c['clave_cargo']:
                 #         for code_nombre in c['permisos']:
