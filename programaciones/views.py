@@ -2600,7 +2600,7 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
                 #return JsonResponse({'ok': True, 'html': html})
         elif action == 'exportar_sap':
-            try:
+            try:## Comentarios
                 ## Se obtiene el objeto SitAprend
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 ## Se obtienen las actividades de aprendizaje asociadas
