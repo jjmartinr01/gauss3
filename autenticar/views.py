@@ -1003,9 +1003,9 @@ def carga_masiva(request):
                     carga_masiva_from_excel.delay(carga=carga)
                     crear_aviso(request, True, 'cmexcel_automatica')
                     crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
-                except:
+                except Exception as msg:
                     crear_aviso(request, False,
-                                'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+                                'El archivo cargado no se ha encolado. Ejecutar la carga manualmente. %s' % msg)
             else:
                 crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
                             '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
