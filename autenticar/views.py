@@ -1000,7 +1000,7 @@ def carga_masiva(request):
                 carga = CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga)
                 try:
                     # carga_masiva_from_excel.apply_async(expires=300)
-                    carga_masiva_from_excel.delay(carga)
+                    carga_masiva_from_excel.delay(carga=carga)
                     crear_aviso(request, True, 'cmexcel_automatica')
                     crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
                 except:
