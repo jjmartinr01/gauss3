@@ -3833,3 +3833,44 @@ def arregla_instrevals(request):
         return HttpResponse('InstrEvals (%s) y RepoInstrEvals (%s) arreglados' % (info, repoinfo))
     except Exception as msg:
         return HttpResponse(str(msg))
+
+"""
+from programaciones.models import *
+from django.core import serializers
+from django.core.signing import Signer
+
+def copiaSeguridadCuaderno(cuaderno):
+    ProgSecs = ProgSec.objects.filter(id=cuaderno.psec.id)
+    CEProgSecs = CEProgSec.objects.filter(psec=cuaderno.psec)
+    CEvProgSecs = CEvProgSec.objects.filter(cepsec__psec=cuaderno.psec)
+    LibroRecursos = LibroRecurso.objects.filter(psec=cuaderno.psec)
+    ActExComs = ActExCom.objects.filter(psec=cuaderno.psec)
+    SaberBass = SaberBas.objects.filter(psec=cuaderno.psec)
+    SitAprens = SitApren.objects.filter(sbas__psec=cuaderno.psec)
+    ActSitAprens = ActSitApren.objects.filter(sapren__sbas__psec=cuaderno.psec)
+    InstrEvals = InstrEval.objects.filter(asapren__sapren__sbas__psec=cuaderno.psec)
+    CriInstrEvals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+    CuadernoProfs = [cuaderno]
+    # CalAlumCEs = cuaderno.calalumce_set.all()
+    CalAlumCEs = CalAlumCE.objects.filter(cp=cuaderno)
+    CalAlumCEvs = CalAlumCEv.objects.filter(calalumce__cp=cuaderno)
+    EscalaCPs = EscalaCP.objects.filter(cp=cuaderno)
+    EscalaCPvalors = EscalaCPvalor.objects.filter(ecp__cp=cuaderno)
+    CalAlums = CalAlum.objects.filter(cp=cuaderno)
+    CalAlumValors = CalAlumValor.objects.filter(ca__cp=cuaderno)
+    objetos = [*ProgSecs, *CEProgSecs, *CEvProgSecs, *LibroRecursos, *ActExComs, *SaberBass, *SitAprens, *ActSitAprens,
+                *InstrEvals, *CriInstrEvals, *CuadernoProfs, *CalAlumCEs, *CalAlumCEvs, *EscalaCPs, *EscalaCPvalors,
+                *CalAlums, *CalAlumValors]
+    data = serializers.serialize('jsonl', objetos)
+    signer = Signer()
+    data_signed = signer.sign(data)
+    with open("Output.cua", "w") as text_file:
+        text_file.write(data_signed)
+
+    # with open('Output.cua', 'r') as file:
+    #     data_read = file.read()
+        ## Se supone que data_read y data_signed son iguales. Por tanto se podría hacer:
+        # signer2 = Signer()
+        # datos_recuperados = signer2.unsign(data_read)
+        
+"""

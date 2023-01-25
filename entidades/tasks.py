@@ -1472,49 +1472,49 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
 
 
 @shared_task
-def carga_masiva_from_excel():
-    tipos = [tipo[0] for tipo in CargaMasiva.TIPOS]
-    cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
-    for carga in cargas_necesarias:
-        borra_cargas_masivas_antiguas(carga)
-        try:
-            inicio_carga = datetime.now()
-            if carga.tipo == 'EXCEL':
-                carga_masiva_tipo_EXCEL(carga)  # Función cambiada el 18/04/2021. Nuevos ficheros Racima
-            elif carga.tipo == 'PENDIENTES':
-                carga_masiva_tipo_PENDIENTES(carga)
-            elif carga.tipo == 'CENTROSRACIMA':
-                carga_masiva_tipo_CENTROSRACIMA(carga)
-            elif carga.tipo == 'DOCENTES_RACIMA':
-                carga_masiva_tipo_DOCENTES_RACIMA(carga)
-            # Las anteriores cargas habrá que borrarlas. Los nuevos tipos de cargas son:
-            # ['ALUMN_CENTRO', 'ALUMN_CENTROS', 'PERSONAL_CENTRO', 'PERSONAL_CENTROS', 'DATOS_CENTROS', 'HORARIO_PERSONAL_CENTRO', 'DATOS_CASIOPEA']
-            elif carga.tipo == 'ALUMN_CENTRO':
-                carga_masiva_alumnos(carga=carga, entidad=carga.g_e.ronda.entidad)
-            elif carga.tipo == 'ALUMN_CENTROS':
-                carga_masiva_alumnos(carga=carga, entidad=False)
-            elif carga.tipo == 'PERSONAL_CENTRO':
-                carga_masiva_personal(carga=carga, entidad=carga.g_e.ronda.entidad)
-            elif carga.tipo == 'PERSONAL_CENTROS':
-                carga_masiva_personal(carga=carga, entidad=None)
-            elif carga.tipo == 'DATOS_CENTROS':
-                carga_masiva_datos_centros(carga=carga)
-            elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
-                carga_masiva_horario_personal_centro(carga=carga)
-            elif carga.tipo == 'DATOS_CASIOPEA':
-                carga_masiva_datos_casiopea(carga=carga)
-            fin_carga = datetime.now()
-            carga.log += '<p><b>Proceso de carga iniciado (%s) terminado (%s)</b></p>' % (inicio_carga, fin_carga)
-            carga.log += '<p><b>Tiempo empleado en la carga: %s</b></p>' % (fin_carga - inicio_carga)
-            carga.cargado = True
-            carga.save()
-        except Exception as msg:
-            logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
-            logger.info('El mensaje de error es: %s' % str(msg))
-            carga.log += '<br>%s' % str(msg)
-            carga.error = True
-            carga.cargado = True
-            carga.save()
+def carga_masiva_from_excel(carga):
+    # tipos = [tipo[0] for tipo in CargaMasiva.TIPOS]
+    # cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
+    # for carga in cargas_necesarias:
+    borra_cargas_masivas_antiguas(carga)
+    try:
+        inicio_carga = datetime.now()
+        if carga.tipo == 'EXCEL':
+            carga_masiva_tipo_EXCEL(carga)  # Función cambiada el 18/04/2021. Nuevos ficheros Racima
+        elif carga.tipo == 'PENDIENTES':
+            carga_masiva_tipo_PENDIENTES(carga)
+        elif carga.tipo == 'CENTROSRACIMA':
+            carga_masiva_tipo_CENTROSRACIMA(carga)
+        elif carga.tipo == 'DOCENTES_RACIMA':
+            carga_masiva_tipo_DOCENTES_RACIMA(carga)
+        # Las anteriores cargas habrá que borrarlas. Los nuevos tipos de cargas son:
+        # ['ALUMN_CENTRO', 'ALUMN_CENTROS', 'PERSONAL_CENTRO', 'PERSONAL_CENTROS', 'DATOS_CENTROS', 'HORARIO_PERSONAL_CENTRO', 'DATOS_CASIOPEA']
+        elif carga.tipo == 'ALUMN_CENTRO':
+            carga_masiva_alumnos(carga=carga, entidad=carga.g_e.ronda.entidad)
+        elif carga.tipo == 'ALUMN_CENTROS':
+            carga_masiva_alumnos(carga=carga, entidad=False)
+        elif carga.tipo == 'PERSONAL_CENTRO':
+            carga_masiva_personal(carga=carga, entidad=carga.g_e.ronda.entidad)
+        elif carga.tipo == 'PERSONAL_CENTROS':
+            carga_masiva_personal(carga=carga, entidad=None)
+        elif carga.tipo == 'DATOS_CENTROS':
+            carga_masiva_datos_centros(carga=carga)
+        elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
+            carga_masiva_horario_personal_centro(carga=carga)
+        elif carga.tipo == 'DATOS_CASIOPEA':
+            carga_masiva_datos_casiopea(carga=carga)
+        fin_carga = datetime.now()
+        carga.log += '<p><b>Proceso de carga iniciado (%s) terminado (%s)</b></p>' % (inicio_carga, fin_carga)
+        carga.log += '<p><b>Tiempo empleado en la carga: %s</b></p>' % (fin_carga - inicio_carga)
+        carga.cargado = True
+        carga.save()
+    except Exception as msg:
+        logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
+        logger.info('El mensaje de error es: %s' % str(msg))
+        carga.log += '<br>%s' % str(msg)
+        carga.error = True
+        carga.cargado = True
+        carga.save()
 
 
 # --------------------------------------------------------------------------#
