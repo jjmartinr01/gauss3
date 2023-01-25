@@ -1471,7 +1471,7 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
     return True
 
 
-@shared_task(bind=True)
+@shared_task
 def carga_masiva_from_excel(carga=None):
     # tipos = [tipo[0] for tipo in CargaMasiva.TIPOS]
     # cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
