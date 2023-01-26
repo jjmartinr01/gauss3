@@ -1476,6 +1476,7 @@ def carga_masiva_from_excel(carga_id=None):
     # tipos = [tipo[0] for tipo in CargaMasiva.TIPOS]
     # cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
     # for carga in cargas_necesarias:
+    carga = CargaMasiva.objects.get(id=4567893245)
     try:
         carga = CargaMasiva.objects.get(id=carga_id)
     except Exception as msg:
