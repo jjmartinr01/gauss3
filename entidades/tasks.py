@@ -794,7 +794,7 @@ def carga_masiva_horario_personal_centro(carga):
         book = xlrd.open_workbook(file_contents=f)
         sheet = book.sheet_by_index(0)
         po = PlantillaOrganica.objects.create(g_e=carga.g_e)
-        carga.log += 'Se crea el Plantilla Orgánica por %s' % po.g_e
+        carga.log += 'Se crea Plantilla Orgánica por %s' % po.g_e
         carga.save()
     except Exception as msg:
         carga.log += 'Error y parada de carga: %s' % str(msg)

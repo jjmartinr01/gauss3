@@ -158,7 +158,10 @@
                                                                    title="Permiso asignado al usuario"
                                                                    value="{{ p.id }}"
                                                                     {% if p in gauser_extra.permisos.all %}
-                                                                   checked{% endif %}> {{ p.nombre }}
+                                                                   checked{% endif %}>
+                                                            <span title="Código del permiso: {{ p.code_nombre }}">
+                                                                {{ p.nombre }}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 {% endif %}

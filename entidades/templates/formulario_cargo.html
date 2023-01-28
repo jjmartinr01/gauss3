@@ -136,11 +136,13 @@
                     {% else %}
                         {% if p in permisos %}
                             <span style="color:gray;">
-                            <i class="fa fa-check-square-o"></i> {{ p.nombre }}
+                            <i class="fa fa-check-square-o"></i>
+                                <span title="Código del permiso: {{ p.code_nombre }}">{{ p.nombre }}</span>
                             </span>
                         {% else %}
                             <span style="color:gray;">
-                            <i class="fa fa-square-o"></i> {{ p.nombre }}
+                            <i class="fa fa-square-o"></i>
+                                <span title="Código del permiso: {{ p.code_nombre }}">{{ p.nombre }}</span>
                             </span>
                         {% endif %}
                     {% endif %}
