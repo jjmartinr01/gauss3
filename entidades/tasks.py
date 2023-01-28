@@ -794,7 +794,7 @@ def carga_masiva_horario_personal_centro(carga):
         book = xlrd.open_workbook(file_contents=f)
         sheet = book.sheet_by_index(0)
         po = PlantillaOrganica.objects.create(g_e=carga.g_e)
-        carga.log += 'Se crea Plantilla Orgánica por %s' % po.g_e
+        carga.log += 'Se crea Plantilla Orgánica por %s<br>' % po.g_e
         carga.save()
     except Exception as msg:
         carga.log += 'Error y parada de carga: %s' % str(msg)
@@ -849,7 +849,10 @@ def carga_masiva_horario_personal_centro(carga):
                 carga.log += 'No encuentra Gobierno. %s - PO: %s' % (entidad.name, po.id)
                 carga.save()
             entidad.save()
-            if entidad != carga.g_e.ronda.entidad and not carga.g_e.has_permiso('carga_plantillas_organicas'):
+            con1 = entidad == carga.g_e.ronda.entidad
+            con2 = carga.g_e.has_permiso('carga_horario_personal_centros_educativos')
+            con3 = carga.g_e.has_permiso('carga_horario_personal_centro_educativo')
+            if not (con2 or (con1 and con3)):
                 carga.log += 'Error. Carga para %s - g_e de %s' % (entidad.name, carga.g_e.ronda.entidad.name)
                 carga.cargado = True
                 carga.save()
@@ -857,6 +860,7 @@ def carga_masiva_horario_personal_centro(carga):
             po.ronda_centro = entidad.ronda
             po.save()
     carga.cargado = True
+    carga.log += 'Comienza la carga de la plantilla orgánica: %s' % datetime.now().strftime('%d-%m-%Y %H:%M')
     carga.save()
     po.carga_plantilla_xls()
     po.carga_completa = True

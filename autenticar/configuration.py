@@ -116,7 +116,11 @@ PERMISOS = [{'code_nombre': 'sube_archivo_csv',
              'menu': 'acceso_carga_masiva'
              },
             {'code_nombre': 'carga_horario_personal_centro_educativo',
-             'nombre': 'Tiene permiso para cargar los horarios del personal de un centro educativo',
+             'nombre': 'Tiene permiso para cargar los horarios del personal de su centro educativo',
+             'menu': 'acceso_carga_masiva'
+             },
+            {'code_nombre': 'carga_horario_personal_centros_educativos',
+             'nombre': 'Tiene permiso para cargar los horarios del personal de cualquier centro educativo',
              'menu': 'acceso_carga_masiva'
              },
             {'code_nombre': 'carga_plantilla_organica_casiopea',
