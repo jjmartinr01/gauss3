@@ -19,7 +19,7 @@ def borra_carga_masiva_antigua(carga):
         try:
             os.remove(RUTA_BASE + carga.fichero.url)
             msg = 'Se ha borrado la carga antigua: %s<br>' % carga
-        except Exception as msg:
+        except Exception as e:
             msg = 'Error al borrar el archivo asociado a la carga "%s". Objeto carga borrado.<br>' % carga
         carga.delete()
     else:
@@ -35,6 +35,7 @@ def borra_cargas_masivas_antiguas(carga):
         for c in cargas_antiguas:
             msg = borra_carga_masiva_antigua(c)
             carga.log += msg
+            carga.save()
 
 def paginar(total, paso=15, c=1):
     lis = range(1, total + 1)

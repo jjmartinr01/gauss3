@@ -1007,7 +1007,10 @@ def carga_masiva(request):
                 return render(request, "enlazar.html", {'page': '/', })
 
             if 'excel' in file_masivo.content_type:
-                carga = CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga)
+                fecha_hora = datetime.now().strftime('%d-%m-%Y a las %H:%M')
+                msg = 'Momento en el que se realiza la carga masiva: %s<br>' % fecha_hora
+                carga = CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga,
+                                                   log=msg)
                 try:
                     # carga_masiva_from_excel.apply_async(expires=300)
                     carga_masiva_from_excel.delay(carga_id=carga.id)

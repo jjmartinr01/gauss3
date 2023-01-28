@@ -794,6 +794,8 @@ def carga_masiva_horario_personal_centro(carga):
         book = xlrd.open_workbook(file_contents=f)
         sheet = book.sheet_by_index(0)
         po = PlantillaOrganica.objects.create(g_e=carga.g_e)
+        carga.log += 'Se crea el Plantilla Orgánica por %s' % po.g_e
+        carga.save()
     except Exception as msg:
         carga.log += 'Error y parada de carga: %s' % str(msg)
         carga.save()
@@ -1507,6 +1509,8 @@ def carga_masiva_from_excel(carga_id=None):
         elif carga.tipo == 'DATOS_CENTROS':
             carga_masiva_datos_centros(carga=carga)
         elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
+            carga.log += 'Carga de tipo: HORARIO_PERSONAL_CENTRO<br>'
+            carga.save()
             carga_masiva_horario_personal_centro(carga=carga)
         elif carga.tipo == 'DATOS_CASIOPEA':
             carga_masiva_datos_casiopea(carga=carga)
