@@ -1473,14 +1473,16 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
 
 @shared_task
 def carga_masiva_from_excel(carga_id=None):
-    # tipos = [tipo[0] for tipo in CargaMasiva.TIPOS]
-    # cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
-    # for carga in cargas_necesarias:
-    carga = CargaMasiva.objects.get(id=4567893245)
     try:
+        # Es improbable, sino imposible que se pase un carga_id inexistente, pero en el caso de que así fuera
+        # es necesario detectarlo y dejarlo grabado en un log
         carga = CargaMasiva.objects.get(id=carga_id)
     except Exception as msg:
-        return False, str(msg)
+        # Tomamos un Gauser_extra correspondiente al usuario 'gauss' que será el que regitre el Aviso
+        ge_gauss = Gauser_extra.objects.filter(gauser__username='gauss')[0]
+        msg = 'Se ha pasado un carga_id que no corresponde a ninguna carga masiva'
+        Aviso.objects.create(usuario=carga.g_e, aviso=msg, fecha=now())
+        return False
     borra_cargas_masivas_antiguas(carga)
     try:
         inicio_carga = datetime.now()

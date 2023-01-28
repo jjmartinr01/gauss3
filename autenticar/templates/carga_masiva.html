@@ -504,7 +504,7 @@
                 </a>
                 <div id="panel{{ cm.id }}" class="content accordion-cm" data-id="{{ cm.id }}">
                     <div class="row">
-                        <div class="columns large-7">
+                        <div class="columns large-5">
                             <label><b>Fichero:</b>
                                 <br>{{ cm.fichero.url }}
                             </label>
@@ -519,7 +519,7 @@
                         {#        </label>#}
                         {#    </div>#}
                         <div class="columns large-5">
-                            <label><b>Cargado:</b>
+                            <label style="text-align: center;"><b>¿Cargado?</b>
                                 {% if cm.cargado %}
                                     <br>Sí
                                 {% else %}
@@ -527,6 +527,20 @@
                                 {% endif %}
                             </label>
                         </div>
+                        {% if cm.cargado or cm.es_borrable %}
+                            <div class="columns large-2">
+                                <a class="button tiny radius alert del_carga_masiva" style="font-weight: bold;"
+                                   data-id="{{ cm.id }}">
+                                    <i class="fa fa-trash"></i> Borrar
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="columns large-2" title="Carga masiva {{ cm.id }}">
+                                <a class="button tiny radius secondary" style="font-weight: bold;">
+                                    <i class="fa fa-trash"></i> Borrar
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                     <br>
                     <div class="row">
@@ -577,9 +591,34 @@
             habilita(['h_check']);
         });
 
-        $('#select_tipo_carga').change(function (e){
+        $('#select_tipo_carga').change(function (e) {
             $('.panel_carga_masiva_racima').hide();
             habilita(['h_check']);
+        });
+
+        $('.del_carga_masiva').click(function (e) {
+            e.preventDefault();
+            carga_id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este registro de carga masiva?',
+                texto: 'Si aceptas, se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/carga_masiva/", {action: 'del_carga_masiva', carga_id: carga_id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#update_ok').show().delay(1500).fadeOut();
+                                    $('#accordion' + carga_id).remove();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
         });
 
     </script>

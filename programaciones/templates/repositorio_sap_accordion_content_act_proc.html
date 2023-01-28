@@ -11,7 +11,7 @@
             <label>Tipo de procedimiento:
                 <select type="text" data-id="{{ instrumento.id }}" data-clase="RepoInstrEval"
                         class="update_select" data-campo="tipo">
-                    <option value="">-----</option>
+{#                    <option value="">-----</option>#}
                     {% for tipo in instrumento.TIPOS %}
                         <option value="{{ tipo.0 }}"
                                 {% if instrumento.tipo == tipo.0 %}selected{% endif %}>{{ tipo.1 }}</option>
