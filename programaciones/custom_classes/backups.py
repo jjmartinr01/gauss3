@@ -11,7 +11,7 @@ class BkProgsec:  # sag
         self.id = progsec_id
         self.xmlContent = None
         self.gep_id = None
-        self.new_progsec_id = None
+        self.new_progsec = None
         self.logger = logging.getLogger('django')
 
     def generarXML(self, progsec):
@@ -36,9 +36,8 @@ class BkProgsec:  # sag
                 self.__crearProgramaciones(tree)
         except Exception as e:
             self.logger.info('Importación programación ==error==> %s' % e.__str__())
-            result = "No se ha creado la programación = " + str(e)
 
-        return "Importado el fichero. " + result
+        return 'Terminada importación'
 
     def __crearProgramaciones(self, programaciones):
         # Recorre todas las programaciones que contenga el fichero
@@ -59,15 +58,17 @@ class BkProgsec:  # sag
                     procdiversidad=prog.find('procdiversidad').text,
                     creado=prog.find('creado').text,
                     modificado=prog.find('modificado').text,
-                    departamento_id=prog.find('departamento_id').text,
-                    es_copia_de_id=progsec.get('id'),
+                    areamateria_id=prog.find('areamateria_id').text if prog.find('areamateria_id').text != "None" else None,
+                    curso_id=prog.find("curso_id").text if prog.find("curso_id").text != "None" else None,
+                    departamento_id=prog.find('departamento_id').text if prog.find('departamento_id').text != "None" else None,
+                    es_copia_de_id=prog.find('es_copia_de_id').text if prog.find('es_copia_de_id').text != "None" else None,
                     gep_id=self.gep_id,
-                    materia_id=prog.find('materia_id').text,
-                    pga_id=prog.find('pga_id').text
+                    materia_id=prog.find('materia_id').text if prog.find('materia_id').text != "None" else None,
+                    pga_id=prog.find('pga_id').text if prog.find('pga_id').text != "None" else None
                 )
                 newProgsec.save()
                 self.logger.info('Importación programación ==__crearProgsec==> OK')
-                self.new_progsec_id = newProgsec.id
+                self.new_progsec = newProgsec
             elif prog.tag == 'cuadernos_prof':
                 self.__crearCuadernosProf(cuadernos=prog)
             elif prog.tag == 'libros_recurso':
@@ -93,7 +94,7 @@ class BkProgsec:  # sag
                             doc_file=elemento.find('doc_file').text,
                             content_type=elemento.find('content_type').text,
                             modificado=elemento.find('modificado').text,
-                            psec_id=self.new_progsec_id
+                            psec_id=self.new_progsec.id
                         )
                         newLibroRecurso.save()
         self.logger.info('Importación programación ==__crearLibrosRecurso==> OK')
@@ -115,7 +116,7 @@ class BkProgsec:  # sag
                     comienzo=elemento.find('comienzo').text,
                     periodos=elemento.find('periodos').text,
                     modificado=elemento.find('modificado').text,
-                    psec_id=self.new_progsec_id
+                    psec_id=self.new_progsec.id
                 )
                 newSaberbas.save()
             elif elemento.tag == 'librorecurso':
@@ -143,7 +144,7 @@ class BkProgsec:  # sag
                     inicio=elemento.find('inicio').text,
                     fin=elemento.find('fin').text,
                     modificado=elemento.find('modificado').text,
-                    psec_id=self.new_progsec_id
+                    psec_id=self.new_progsec.id
                 )
                 newActexcom.save()
             elif elemento.tag == 'saberesbas':
@@ -167,17 +168,17 @@ class BkProgsec:  # sag
         # Recorre cada ceprogsec de ces_progsec
         for elemento in cep:
             if elemento.tag == 'datos':
-                newCEProgsec = CEProgSec(
+                newCEProgsec = CEProgSec.objects.create(
                     valor=elemento.find('valor').text,
                     modificado=elemento.find('modificado').text,
                     ce_id=elemento.find('ce_id').text,
-                    psec_id=self.new_progsec_id
+                    psec_id=self.new_progsec.id
                 )
                 newCEProgsec.save()
             elif elemento.tag == 'cevprogsec':
                 for cevprogsec in elemento:
                     if cevprogsec.tag == 'datos':
-                        newCEvProgsec = CEvProgSec(
+                        newCEvProgsec = CEvProgSec.objects.create(
                             valor=cevprogsec.find('valor').text,
                             modificado=cevprogsec.find('modificado').text,
                             cepsec_id=newCEProgsec.id,
@@ -199,22 +200,23 @@ class BkProgsec:  # sag
         for cuaderno in cuadernos:
             for elemento in cuaderno:
                 if elemento.tag == 'datos':
-                    newCuadernoProf = CuadernoProf(
+                    newCuadernoProf = CuadernoProf.objects.create(
                         vmin=elemento.find('vmin').text,
                         vmax=elemento.find('vmax').text,
                         vista=elemento.find('vista').text,
                         borrado=elemento.find('borrado').text,
                         log=elemento.find('log').text,
-                        grupo_id=elemento.find('grupo_id').text,
+                        tipo=elemento.find('tipo').text,
+                        grupo_id=elemento.find('grupo_id').text if elemento.find('grupo_id').text != "None" else None,
                         ge_id=self.gep_id,
-                        psec_id=self.new_progsec_id
+                        psec_id=self.new_progsec.id
                     )
                     newCuadernoProf.save()
 
                 elif elemento.tag == 'alumnos':
                     self.__crearAlumnosDeCuadernoProf(alumnos=elemento, newCuadernoProf=newCuadernoProf)  # OK
                 elif elemento.tag == 'escalas_cp':
-                    self.__crearEscalascpDeCuadernoProf(escalascp=elemento, newCuadernoProf=newCuadernoProf.id)  # OK
+                    self.__crearEscalascpDeCuadernoProf(escalascp=elemento, newCuadernoProf_id=newCuadernoProf.id)  # OK
                 elif elemento.tag == 'cal_alumnos':
                     self.__crearCalAlumnos(calalumnos=elemento)
 
@@ -224,21 +226,25 @@ class BkProgsec:  # sag
             for elemento in alumno:
                 if elemento.tag == 'datos':
                     try:
-                        newCuadernoProf.objects.add(
-                            Gauser_extra_programaciones.objects.get(id=elemento.find('gauser_extra_id')))
+                        gep_alumno = Gauser_extra_programaciones.objects.get(id=elemento.find('gauser_extra_id').text)
+
+                        newCuadernoProf.alumnos.add(
+                            gep_alumno.id
+                        )
                     except Gauser_extra_programaciones.DoesNotExist:
                         self.logger.info(
                             'Importación programación ==error==> No existe alumno para CuadernoProf: ' + elemento.find(
-                                'gauser_extra_id'))
+                                'gauser_extra_id').txt
+                        )
 
     def __crearEscalascpDeCuadernoProf(self, escalascp, newCuadernoProf_id):
         # Recorrer escalas_cp del cuadernoprof de la programación
         for escala in escalascp:
             for elemento in escala:
                 if elemento.tag == 'datos':
-                    newEscalaCP = EscalaCP(
+                    newEscalaCP = EscalaCP.objects.create(
                         tipo=elemento.find('tipo').text,
-                        nombre=elemento.find('nombre').text,
+                        nombre=elemento.find('nombre').text if elemento.find('nombre').text != 'None' else 'None',
                         cp_id=newCuadernoProf_id,
                         ieval_id=elemento.find('ieval_id').text
                     )
@@ -255,11 +261,11 @@ class BkProgsec:  # sag
             if escala.tag == 'escalacpvalor':
                 for elemento in escala:
                     if elemento.tag == 'datos':
-                        newEscalaCPValor = EscalaCPvalor(
+                        newEscalaCPValor = EscalaCPvalor.objects.create(
                             x=elemento.find('x').text,
                             y=elemento.find('y').text,
                             texto_cualitativo=elemento.find('texto_cualitativo').text,
-                            # valor=
+                            valor=elemento.find('valor').text,
                             ecp_id=newEscalaCP_id
                         )
                         newEscalaCPValor.save()

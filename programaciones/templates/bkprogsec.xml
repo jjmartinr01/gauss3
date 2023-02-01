@@ -1,15 +1,14 @@
-{% load programaciones_extras %}
-<?xml version="1.0" encoding="utf-8" ?>
+{% load programaciones_extras %}<?xml version="1.0" encoding="utf-8" ?>
 <programaciones model = "progsec">
     <programacion id = "{{ progsec.id }}">
         <datos>
             <nombre>{{ progsec.nombre }}</nombre>
             <tipo>{{ progsec.tipo }}</tipo>
-            <inicio_clases>{{ progsec.inicio_clases }}</inicio_clases>
-            <fin_clases>{{ progsec.fin_clases }}</fin_clases>
+            <inicio_clases>{{ progsec.inicio_clases | date:"Y-m-d" }}</inicio_clases>
+            <fin_clases>{{ progsec.fin_clases | date:"Y-m-d" }}</fin_clases>
             <procdiversidad>{{ progsec.procdiversidad }}</procdiversidad>
-            <creado>{{ progsec.creado }}</creado>
-            <modificado>{{ progsec.modificado }}</modificado>
+            <creado>{{ progsec.creado | date:"Y-m-d" }}</creado>
+            <modificado>{{ progsec.modificado | date:"Y-m-d H:i" }}</modificado>
             <areamateria_id>{{ progsec.areamateria_id }}</areamateria_id>
             <curso_id>{{ progsec.curso_id }}</curso_id>
             <departamento_id>{{ progsec.departamento_id }}</departamento_id>
@@ -27,6 +26,7 @@
                         <vista>{{ cp.vista }}</vista>
                         <borrado>{{ cp.borrado }}</borrado>
                         <log>{{ cp.log }}</log>
+                        <tipo>{{ cp.tipo }}</tipo>
                         <ge_id>{{ cp.ge.id }}</ge_id>
                         <grupo_id>{{ cp.grupo_id }}</grupo_id>
                         <psec_id>{{ cp.psec_id }}</psec_id>
@@ -57,6 +57,7 @@
                                         <x>{{ escp_valor.x }}</x>
                                         <y>{{ escp_valor.y }}</y>
                                         <test_cualitativo>{{ escp_valor.test_cualitativo }}</test_cualitativo>
+                                         <valor>{{ escp_valor.valor }}</valor>
                                         <ecp_id>{{ escp_valor.ecp_id }}</ecp_id>
                                     </datos>
                                 </escalacpvalor>
@@ -99,7 +100,7 @@
                     <observaciones>{{ lr.observaciones }}</observaciones>
                     <doc_file>{{ lr.doc_file }}</doc_file>
                     <content_type>{{ lr.content_type }}</content_type>
-                    <modificado>{{ lr.modificado }}</modificado>
+                    <modificado>{{ lr.modificado | date:"Y-m-d H:i" }}</modificado>
                     <psec_id>{{ lr.psec_id }}</psec_id>
                 </datos>
             </librorecurso>
@@ -111,9 +112,9 @@
                 <datos>
                     <orden>{{ sb.orden }}</orden>
                     <nombre>{{ sb.nombre }}</nombre>
-                    <comienzo>{{ sb.comienzo }}</comienzo>
+                    <comienzo>{{ sb.comienzo | date:"Y-m-d"}}</comienzo>
                     <periodos>{{ sb.periodos }}</periodos>
-                    <modificado>{{ sb.modificado }}</modificado>
+                    <modificado>{{ sb.modificado | date:"Y-m-d H:i" }}</modificado>
                     <psec_id>{{ sb.psec_id }}</psec_id>
                 </datos>
                 {% for lr in sb|get_librorecurso_de_saberbas %}
@@ -128,9 +129,9 @@
                 <datos>
                     <nombre>{{ ae.nombre }}</nombre>
                     <observaciones>{{ ae.observaciones }}</observaciones>
-                    <inicio>{{ ae.inicio }}</inicio>
-                    <fin>{{ ae.fin }}</fin>
-                    <modificado>{{ ae.modificado }}</modificado>
+                    <inicio>{{ ae.inicio | date:"Y-m-d H:i" }}</inicio>
+                    <fin>{{ ae.fin | date:"Y-m-d H:i" }}</fin>
+                    <modificado>{{ ae.modificado | date:"Y-m-d H:i" }}</modificado>
                     <psec_id>{{ ae.psec_id }}</psec_id>
                 </datos>
                 <saberesbas>
@@ -146,7 +147,7 @@
             <ceprogsec id = "{{ ceps.id }}">
                 <datos>
                     <valor>{{ ceps.valor }}</valor>
-                    <modificado>{{ ceps.modificado }}</modificado>
+                    <modificado>{{ ceps.modificado | date:"Y-m-d H:i" }}</modificado>
                     <ce_id>{{ ceps.ce_id }}</ce_id>
                     <psec_id>{{ ceps.psec_id }}</psec_id>
                 </datos>
@@ -154,7 +155,7 @@
                 <cevprogsec id = "{{ cev.id }}">
                     <datos>
                         <valor>{{ cev.valor }}</valor>
-                        <modificado>{{ cev.modificado }}</modificado>
+                        <modificado>{{ cev.modificado | date:"Y-m-d H:i" }}</modificado>
                         <cepsec_id>{{ cev.cepsec_id }}</cepsec_id>
                         <cev_id>{{ cev.cev_id }}</cev_id>
                     </datos>
