@@ -88,15 +88,36 @@ def crear_nombre_usuario(nombre, apellidos):
 # 'username_tutor2': '', 'username_tutor1': '', 'username': ''
 def create_usuario(datos, ronda, tipo):
     dni = genera_nie(datos['dni' + tipo]) if len(datos['dni' + tipo]) > 6 else 'DNI inventado generar error en el try'
-    username_inventado = 'opqrstuvwxyz0009'  # Servirá para comprobar si el username es correcto o no
+    # El siguiente nombre de usuario servirá para comprobar si el username es correcto o no:
+    username_inventado = 'usuario_inventado_%s' % pass_generator()
     username = datos['username' + tipo] if len(datos['username' + tipo]) > 2 else username_inventado
     try:
-        gauser = Gauser.objects.get(username=username)
+        # if not tipo, implica que es un alumno/a
+        if not tipo:
+            try:
+                # Los tutores no tienen id_socio o noidracima por eso tipo es la cadena vacía.
+                gauser = Gauser.objects.get(educa_pk=datos['id_socio'])
+            except:
+                try:
+                    # Es posible que existan usuarios alumnos con username y que todavía no tengan grabados
+                    # el noidracima en educa_pk. La siguiente línea corrige esta situación.
+                    gauser = Gauser.objects.get(username=username)
+                    gauser.educa_pk = datos['id_socio']
+                    gauser.save()
+                except MultipleObjectsReturned:
+                    return 'Múltiples gauser con el mismo username: %s' % username
+        else:
+            gauser = Gauser.objects.get(username=username)
     except:
         try:
             gauser = Gauser.objects.get(dni=dni)
-            if username != username_inventado:
-                gauser.username = username
+            # if username != username_inventado:
+            #     gauser.username = username
+            # Si username es igual a username_inventado es porque Racima no ha generado un usuario,
+            # por tanto, asignaremos uno que no tenga la estructura de Racima y evitar confusiones.
+            gauser.username = username
+            if not tipo:
+                gauser.educa_pk = datos['id_socio']
             gauser.save()
             logger.info('Existe Gauser con dni %s' % dni)
         except ObjectDoesNotExist:
@@ -104,11 +125,22 @@ def create_usuario(datos, ronda, tipo):
             try:
                 gauser_extra = Gauser_extra.objects.get(id_entidad=datos['id_socio'], ronda=ronda)
                 gauser = gauser_extra.gauser
-                if username != username_inventado:
-                    gauser.username = username
-                gauser.dni = dni
-                gauser.save()
+                # if username != username_inventado:
+                #     gauser.username = username
+                # Si username es igual a username_inventado es porque Racima no ha generado un usuario,
+                # por tanto, asignaremos uno que no tenga la estructura de Racima y evitar confusiones.
                 logger.warning('Encontrado Gauser y Gauser_extra con id_socio %s' % (datos['id_socio']))
+                try:
+                    gauser.username = username
+                    gauser.dni = dni
+                    if not tipo:
+                        gauser.educa_pk = datos['id_socio']
+                    gauser.save()
+                except:
+                    m1 = 'Encontrado Gauser y Gauser_extra con id_socio %s. ' % (datos['id_socio'])
+                    m2 = 'Error username %s ya esta en uso y no puede volver a asignarse' % username
+                    return m1 + m2
+
             except ObjectDoesNotExist:
                 gauser = None
                 logger.warning('No existe Gauser con id_socio %s' % (datos['id_socio']))
@@ -117,16 +149,36 @@ def create_usuario(datos, ronda, tipo):
                 logger.warning(
                     'Existen varios Gauser_extra asociados al Gauser encontrado. Se elige %s' % (gauser_extra))
                 gauser = gauser_extra.gauser
-                if username != username_inventado:
+                # if username != username_inventado:
+                #     gauser.username = username
+                # Si username es igual a username_inventado es porque Racima no ha generado un usuario,
+                # por tanto, asignaremos uno que no tenga la estructura de Racima y evitar confusiones.
+                try:
                     gauser.username = username
-                gauser.dni = dni
-                gauser.save()
+                    gauser.dni = dni
+                    if not tipo:
+                        gauser.educa_pk = datos['id_socio']
+                    gauser.save()
+                except:
+                    m1 = 'Existen varios Gauser_extra asociados al Gauser encontrado. Se elige %s. ' % gauser_extra
+                    m2 = 'Error username %s ya esta en uso y no puede volver a asignarse' % username
+                    return m1 + m2
         except MultipleObjectsReturned:
             gauser = Gauser.objects.filter(dni=dni)[0]
-            if username != username_inventado:
-                gauser.username = username
-            gauser.save()
             logger.warning('Existen varios Gauser con el mismo DNI. Se elige %s' % (gauser))
+            # if username != username_inventado:
+            #     gauser.username = username
+            # Si username es igual a username_inventado es porque Racima no ha generado un usuario,
+            # por tanto, asignaremos uno que no tenga la estructura de Racima y evitar confusiones.
+            try:
+                gauser.username = username
+                if not tipo:
+                    gauser.educa_pk = datos['id_socio']
+                gauser.save()
+            except:
+                m1 = 'Existen varios Gauser con el mismo DNI. Se elige %s. ' % gauser
+                m2 = 'Error username %s ya esta en uso y no puede volver a asignarse' % username
+                return m1 + m2
     if gauser:
         try:
             gauser_extra = Gauser_extra.objects.get(gauser=gauser, ronda=ronda)
@@ -138,19 +190,23 @@ def create_usuario(datos, ronda, tipo):
         except MultipleObjectsReturned:
             ges = Gauser_extra.objects.filter(gauser=gauser, ronda=ronda)
             gauser_extra = ges[0]
-            # Podríamos escribir ges.exclude(id=gauser_extra.id).delete(), pero como hay un error porque
-            # falta el nregistro en vut_vivienda necesito hacer esta triquiñuela para no duplicar usuarios:
-            for ge_borrar in ges.exclude(id=gauser_extra.id):
-                try:
-                    ge_borrar.delete()
-                except:
-                    entidad, c = Entidad.objects.get_or_create(code=CODE_CONTENEDOR)
-                    ge_borrar.ronda = entidad.ronda
-                    ge_borrar.save()
-                    logger.warning('Gauser_extra asociados al Gauser %s, desplazado al contenedor.' % (gauser))
-            logger.warning('Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser))
-            mensaje = 'Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser)
-            logger.info(mensaje)
+            ## Podríamos escribir ges.exclude(id=gauser_extra.id).delete(), pero como hay un error porque
+            ## falta el nregistro en vut_vivienda necesito hacer esta triquiñuela para no duplicar usuarios:
+            # for ge_borrar in ges.exclude(id=gauser_extra.id):
+            # try:
+            #     ge_borrar.delete()
+            # except:
+            #     entidad, c = Entidad.objects.get_or_create(code=CODE_CONTENEDOR)
+            #     ge_borrar.ronda = entidad.ronda
+            #     ge_borrar.save()
+            #     logger.warning('Gauser_extra asociados al Gauser %s, desplazado al contenedor.' % (gauser))
+            # logger.warning('Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser))
+            # mensaje = 'Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser)
+            # logger.info(mensaje)
+            error = 'Varios Gauser_extra asociados al Gauser: %s.<br>' % gauser
+            for ge in ges:
+                error += 'Gauser_extra: %s<br>' % ge
+            return error
     else:
         gauser_extra = None
 
@@ -158,8 +214,8 @@ def create_usuario(datos, ronda, tipo):
         if datos['nombre' + tipo] and datos['apellidos' + tipo]:
             nombre = datos['nombre' + tipo]
             apellidos = datos['apellidos' + tipo]
-            if username == username_inventado:
-                username = crear_nombre_usuario(nombre, apellidos)
+            # if username == username_inventado:
+            #     username = crear_nombre_usuario(nombre, apellidos)
             dni = genera_nie(datos['dni' + tipo])
             gauser = Gauser.objects.create_user(username, email=datos['email' + tipo].lower(),
                                                 password=pass_generator(), last_login=now())
@@ -172,6 +228,8 @@ def create_usuario(datos, ronda, tipo):
                      'fecha_alta': devuelve_fecha(datos['fecha_alta' + tipo])}
             for key, value in gdata.items():
                 setattr(gauser, key, value)
+            if not tipo:
+                gauser.educa_pk = datos['id_socio']
             gauser.save()
         else:
             mensaje = 'No se ha podido crear un usuario porque no se han indicado nombre y apellidos'
@@ -327,10 +385,6 @@ def carga_masiva_alumnos(carga, entidad):
                                                   borrable=False, clave_cargo='g_madre_padre')
                     carga.log += '<p>Crear cargo g_madre_padre - %s</p>' % ronda
                     carga.save()
-                # Definición de los datos que permiten definir los usuarios:
-                d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
-                d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
-                d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
                 try:
                     # Al leer el 'id' como string devuelve, por ejemplo, 2936.0 en lugar de 2936. Eliminar '.0' :
                     x_curso = str(d['x_curso']).split('.')[0]
@@ -371,11 +425,16 @@ def carga_masiva_alumnos(carga, entidad):
                     else:
                         grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
                         logger.info('Carga masiva xls. Se crea grupo %s-%s' % (grupo.clave_ex, d['grupo']))
-                        carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.clave_ex
+                        carga.log += '<br>Se crea grupo %s (%s) - Curso: %s (%s)' % (d[grupo], grupo.clave_ex,
+                                                                                     curso.nombre, curso.clave_ex)
                         carga.save()
                 grupo.nombre = d['grupo']
                 grupo.save()
                 grupo.cursos.add(curso)
+                # Definición de los datos que permiten definir los usuarios:
+                d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
+                d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
+                d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
                 d['activo'] = True
                 d['observaciones'] = '<b>Localidad de nacimiento:</b> %s<br><b>Nacionalidad:</b> %s<br>' \
                                      '<b>Código del país de nacimiento:</b> %s<br><b>País de nacimiento:</b> %s<br>' \
@@ -394,23 +453,33 @@ def carga_masiva_alumnos(carga, entidad):
                                          d['num_matriculas_exp'],
                                          d['rep_curso'], d['familia_numerosa'], d['lengua_materna'],
                                          d['year_incorporacion'])
-                tutor1 = create_usuario(d, ronda, '_tutor1')
-                if tutor1:
-                    tutor1.cargos.add(cargop)
-                    tutor1.save()
-                tutor2 = create_usuario(d, ronda, '_tutor2')
-                if tutor2:
-                    tutor2.cargos.add(cargop)
-                    tutor2.save()
                 gauser_extra = create_usuario(d, ronda, '')
-                gauser_extra.tutor1 = tutor1
-                gauser_extra.tutor2 = tutor2
-                gauser_extra.cargos.add(cargoa)
-                gauser_extra.save()
-                gauser_extra.gauser_extra_estudios.grupo = grupo
-                gauser_extra.gauser_extra_estudios.save()
+                if type(gauser_extra) == Gauser_extra:
+                    tutor1 = create_usuario(d, ronda, '_tutor1')
+                    if type(tutor1) == Gauser_extra:
+                        tutor1.cargos.add(cargop)
+                        tutor1.save()
+                        gauser_extra.tutor1 = tutor1
+                    elif type(tutor1) == str:
+                        carga.log += '<p>%s</p>' % tutor1
+                        carga.save()
+                    tutor2 = create_usuario(d, ronda, '_tutor2')
+                    if type(tutor2) == Gauser_extra:
+                        tutor2.cargos.add(cargop)
+                        tutor2.save()
+                        gauser_extra.tutor2 = tutor2
+                    elif type(tutor2) == str:
+                        carga.log += '<p>%s</p>' % tutor2
+                        carga.save()
+                    gauser_extra.cargos.add(cargoa)
+                    gauser_extra.save()
+                    gauser_extra.gauser_extra_estudios.grupo = grupo
+                    gauser_extra.gauser_extra_estudios.save()
+                elif type(gauser_extra) == str:
+                    carga.log += '<p>%s</p>' % gauser_extra
+                    carga.save()
             except Exception as msg:
-                carga.log += '<p>carga_centros0: %s - %s</p>' % (str(msg), d['centro'])
+                carga.log += '<p>%s<br>Los datos que han generado el error: %s</p>' % (str(msg), str(d))
                 carga.save()
     else:
         carga.log += '<p>Error. El número de columnas (%s) no es el requerido.</p>' % int(sheet.ncols)
@@ -523,7 +592,12 @@ def carga_masiva_personal(carga, entidad):
                 gauser_extra.puesto = puesto
                 gauser_extra.tipo_personal = tipo_personal
                 gauser_extra.jornada_contratada = jornada_contratada
-                gauser_extra.cargos.add(cargo)
+                try:
+                    cargo_docente = Cargo.objects.get(entidad=nueva_entidad, clave_cargo='g_docente', borrable=False)
+                except:
+                    cargo_docente = Cargo.objects.create(entidad=nueva_entidad, clave_cargo='g_docente', borrable=False,
+                                                         cargo='Docente')
+                gauser_extra.cargos.add(cargo_docente)
                 gauser_extra.save()
                 carga.log += '<p>Carga de %s - %s - s-%s</p>' % (username, dni, gauser_extra.id_organizacion)
                 carga.save()
@@ -720,6 +794,8 @@ def carga_masiva_horario_personal_centro(carga):
         book = xlrd.open_workbook(file_contents=f)
         sheet = book.sheet_by_index(0)
         po = PlantillaOrganica.objects.create(g_e=carga.g_e)
+        carga.log += 'Se crea Plantilla Orgánica por %s<br>' % po.g_e
+        carga.save()
     except Exception as msg:
         carga.log += 'Error y parada de carga: %s' % str(msg)
         carga.save()
@@ -773,7 +849,10 @@ def carga_masiva_horario_personal_centro(carga):
                 carga.log += 'No encuentra Gobierno. %s - PO: %s' % (entidad.name, po.id)
                 carga.save()
             entidad.save()
-            if entidad != carga.g_e.ronda.entidad:
+            con1 = entidad == carga.g_e.ronda.entidad
+            con2 = carga.g_e.has_permiso('carga_horario_personal_centros_educativos')
+            con3 = carga.g_e.has_permiso('carga_horario_personal_centro_educativo')
+            if not (con2 or (con1 and con3)):
                 carga.log += 'Error. Carga para %s - g_e de %s' % (entidad.name, carga.g_e.ronda.entidad.name)
                 carga.cargado = True
                 carga.save()
@@ -781,6 +860,7 @@ def carga_masiva_horario_personal_centro(carga):
             po.ronda_centro = entidad.ronda
             po.save()
     carga.cargado = True
+    carga.log += 'Comienza la carga de la plantilla orgánica: %s' % datetime.now().strftime('%d-%m-%Y %H:%M')
     carga.save()
     po.carga_plantilla_xls()
     po.carga_completa = True
@@ -1042,7 +1122,7 @@ def carga_masiva_tipo_EXCEL(carga):
                         cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
                     except:
                         cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
-                                                     cargo='Docente' )
+                                                     cargo='Docente')
                 # for c in CARGOS:
                 #     if cargo.clave_cargo == c['clave_cargo']:
                 #         for code_nombre in c['permisos']:
@@ -1398,49 +1478,58 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
 
 
 @shared_task
-def carga_masiva_from_excel():
-    tipos = [tipo[0] for tipo in CargaMasiva.TIPOS]
-    cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
-    for carga in cargas_necesarias:
-        borra_cargas_masivas_antiguas(carga)
-        try:
-            inicio_carga = datetime.now()
-            if carga.tipo == 'EXCEL':
-                carga_masiva_tipo_EXCEL(carga)  # Función cambiada el 18/04/2021. Nuevos ficheros Racima
-            elif carga.tipo == 'PENDIENTES':
-                carga_masiva_tipo_PENDIENTES(carga)
-            elif carga.tipo == 'CENTROSRACIMA':
-                carga_masiva_tipo_CENTROSRACIMA(carga)
-            elif carga.tipo == 'DOCENTES_RACIMA':
-                carga_masiva_tipo_DOCENTES_RACIMA(carga)
-            # Las anteriores cargas habrá que borrarlas. Los nuevos tipos de cargas son:
-            # ['ALUMN_CENTRO', 'ALUMN_CENTROS', 'PERSONAL_CENTRO', 'PERSONAL_CENTROS', 'DATOS_CENTROS', 'HORARIO_PERSONAL_CENTRO', 'DATOS_CASIOPEA']
-            elif carga.tipo == 'ALUMN_CENTRO':
-                carga_masiva_alumnos(carga=carga, entidad=carga.g_e.ronda.entidad)
-            elif carga.tipo == 'ALUMN_CENTROS':
-                carga_masiva_alumnos(carga=carga, entidad=False)
-            elif carga.tipo == 'PERSONAL_CENTRO':
-                carga_masiva_personal(carga=carga, entidad=carga.g_e.ronda.entidad)
-            elif carga.tipo == 'PERSONAL_CENTROS':
-                carga_masiva_personal(carga=carga, entidad=None)
-            elif carga.tipo == 'DATOS_CENTROS':
-                carga_masiva_datos_centros(carga=carga)
-            elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
-                carga_masiva_horario_personal_centro(carga=carga)
-            elif carga.tipo == 'DATOS_CASIOPEA':
-                carga_masiva_datos_casiopea(carga=carga)
-            fin_carga = datetime.now()
-            carga.log += '<p><b>Proceso de carga iniciado (%s) terminado (%s)</b></p>' % (inicio_carga, fin_carga)
-            carga.log += '<p><b>Tiempo empleado en la carga: %s</b></p>' % (fin_carga - inicio_carga)
-            carga.cargado = True
+def carga_masiva_from_excel(carga_id=None):
+    try:
+        # Es improbable, sino imposible que se pase un carga_id inexistente, pero en el caso de que así fuera
+        # es necesario detectarlo y dejarlo grabado en un log
+        carga = CargaMasiva.objects.get(id=carga_id)
+    except Exception as msg:
+        # Tomamos un Gauser_extra correspondiente al usuario 'gauss' que será el que regitre el Aviso
+        ge_gauss = Gauser_extra.objects.filter(gauser__username='gauss')[0]
+        msg = 'Se ha pasado un carga_id que no corresponde a ninguna carga masiva'
+        Aviso.objects.create(usuario=carga.g_e, aviso=msg, fecha=now())
+        return False
+    borra_cargas_masivas_antiguas(carga)
+    try:
+        inicio_carga = datetime.now()
+        if carga.tipo == 'EXCEL':
+            carga_masiva_tipo_EXCEL(carga)  # Función cambiada el 18/04/2021. Nuevos ficheros Racima
+        elif carga.tipo == 'PENDIENTES':
+            carga_masiva_tipo_PENDIENTES(carga)
+        elif carga.tipo == 'CENTROSRACIMA':
+            carga_masiva_tipo_CENTROSRACIMA(carga)
+        elif carga.tipo == 'DOCENTES_RACIMA':
+            carga_masiva_tipo_DOCENTES_RACIMA(carga)
+        # Las anteriores cargas habrá que borrarlas. Los nuevos tipos de cargas son:
+        # ['ALUMN_CENTRO', 'ALUMN_CENTROS', 'PERSONAL_CENTRO', 'PERSONAL_CENTROS', 'DATOS_CENTROS', 'HORARIO_PERSONAL_CENTRO', 'DATOS_CASIOPEA']
+        elif carga.tipo == 'ALUMN_CENTRO':
+            carga_masiva_alumnos(carga=carga, entidad=carga.g_e.ronda.entidad)
+        elif carga.tipo == 'ALUMN_CENTROS':
+            carga_masiva_alumnos(carga=carga, entidad=False)
+        elif carga.tipo == 'PERSONAL_CENTRO':
+            carga_masiva_personal(carga=carga, entidad=carga.g_e.ronda.entidad)
+        elif carga.tipo == 'PERSONAL_CENTROS':
+            carga_masiva_personal(carga=carga, entidad=None)
+        elif carga.tipo == 'DATOS_CENTROS':
+            carga_masiva_datos_centros(carga=carga)
+        elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
+            carga.log += 'Carga de tipo: HORARIO_PERSONAL_CENTRO<br>'
             carga.save()
-        except Exception as msg:
-            logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
-            logger.info('El mensaje de error es: %s' % str(msg))
-            carga.log += '<br>%s' % str(msg)
-            carga.error = True
-            carga.cargado = True
-            carga.save()
+            carga_masiva_horario_personal_centro(carga=carga)
+        elif carga.tipo == 'DATOS_CASIOPEA':
+            carga_masiva_datos_casiopea(carga=carga)
+        fin_carga = datetime.now()
+        carga.log += '<p><b>Proceso de carga iniciado (%s) terminado (%s)</b></p>' % (inicio_carga, fin_carga)
+        carga.log += '<p><b>Tiempo empleado en la carga: %s</b></p>' % (fin_carga - inicio_carga)
+        carga.cargado = True
+        carga.save()
+    except Exception as msg:
+        logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
+        logger.info('El mensaje de error es: %s' % str(msg))
+        carga.log += '<br>%s' % str(msg)
+        carga.error = True
+        carga.cargado = True
+        carga.save()
 
 
 # --------------------------------------------------------------------------#

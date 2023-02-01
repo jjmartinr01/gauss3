@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Sistemas de gestión aumentada | Entidades</title>
+    <title>Sistemas de gestión aumentada | ASOCIA</title>
     <link rel="shortcut icon" href="/static/images/favicon3.ico">
     <link rel="stylesheet" href="/static/css/style.css"/>
     <link rel="stylesheet" href="/static/foundation-5.5.3/css/foundation.css"/>
@@ -13,14 +13,6 @@
     <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datepicker.css"/>
     <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datetimepicker.css"/>
-    {#    <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>#}
-
-    {#    <link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css"/>#}
-    <link rel="stylesheet" type="text/css" href="/static/css/wysiwyg-color.css"/>
-
-    {#    <link rel="stylesheet" href="/static/js/jquery-ui-1.10.3/css/custom-theme/jquery-ui-1.10.3.custom.min.css"/>#}
-    {#          type="text/css">#}
-    <link rel="stylesheet" href="/static/wysiwyg.css" type="text/css">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -212,7 +204,7 @@
             </section>
         </nav>
     </div>
-
+{% comment %}
     <div class="inner-wrap">
         <aside class="left-off-canvas-menu">
             {% with g_e=request.session.gauser_extra %}
@@ -316,15 +308,15 @@
                 {% endwith %}
             </nav>
         </div>
+    {% endcomment %}
 
-        <div class="Principal columns large-10 medium-12 small-12" id="Principal">
+        <div class="Principal columns large-12 medium-12 small-12" id="Principal">
             <div class="Contenido" id="Contenido" style="min-height: 500px;">
                 {% block contenido %}{% endblock %}
             </div>
         </div>
 
     </div>
-
 </div>
 
 <div id="f_deshabilitada" class="reveal-modal small" data-reveal>
@@ -611,7 +603,7 @@
                             }
                             if (item.tipo === 'g') {
                                 return {
-                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor, item.cargos) + entidad,
+                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor) + entidad,
                                     id: item.tipo + item.id
                                 }
                             } else if (item.tipo === 'c') {

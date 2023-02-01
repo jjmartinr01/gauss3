@@ -27,292 +27,317 @@
             width: 100px;
         {#            position: fixed;#}{#            top: 20px;#}{#            right: 20px;#}
         }
+
         #boton_tabla_resultados_excel {
             display: none;
             font-weight: bold;
         }
+
+        th {
+            text-align: center;
+            max-width: 100px;
+            overflow: hidden;
+        }
     </style>
 {% endblock %}
 {% block contenido %}
-    <form action="" method="post" enctype="multipart/form-data" id="ver_gform" name="ver_gform"
-          xmlns="http://www.w3.org/1999/html">
-        {% csrf_token %}
-        <input type="hidden" name="action" id="action" value="">
-        <input type="hidden" name="gform" id="gform" value="{{ gform.id }}">
-        <div id="div_fixed_right_corner">
-            <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
-            <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.svg">
-            <a class="button tiny radius" download="{{ gform.nombre|slugify }}.xls"
-               id="boton_tabla_resultados_excel"
-               onclick="return ExcellentExport.excel(this, 'tabla_resultados', 'Sheet Name Here');"><i
-                    class="fa fa-file-excel-o"></i> Excel</a>
-        </div>
+<form action="" method="post" enctype="multipart/form-data" id="ver_gform" name="ver_gform"
+      xmlns="http://www.w3.org/1999/html">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="gform" id="gform" value="{{ gform.id }}">
+    <div id="div_fixed_right_corner">
+        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.svg">
+        <a class="button tiny radius" download="{{ gform.nombre|slugify }}.xls"
+           id="boton_tabla_resultados_excel"
+           onclick="return ExcellentExport.excel(this, 'tabla_resultados', 'Sheet Name Here');"><i
+                class="fa fa-file-excel-o"></i> Excel</a>
+    </div>
 
-        <div class="">
-            <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
-        </div>
-        <div id="div_tabla_resultados">
-            <p>&nbsp;</p>
-            <table id="tabla_resultados" style="width: 100%; overflow-x: auto; white-space: nowrap;">
-                <thead style="position: sticky;top:0">
-                <tr>
-                    <th colspan="3" style="text-align: center;">
-                        <a download="{{ gform.nombre|slugify }}.xls"
-               onclick="return ExcellentExport.excel(this, 'tabla_resultados', 'Resultados');">Datos de entrega
-                            <i class="fa fa-file-excel-o"></i>
-                        </a>
-                    </th>
-                    {% for gfs in gform.gformsection_set.all %}
-                        <th style="text-align: center;" colspan="{{ gfs.number_cells_results }}">
-                            {% autoescape off %}{{ gfs.title }}{% endautoescape %}
-                        </th>
-                    {% endfor %}
-                </tr>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Entidad</th>
-                    <th>Fecha y hora</th>
-                    {% for gfs in gform.gformsection_set.all %}
-                        {% for gfsi in gfs.gformsectioninput_set.all %}
-                            {% if gfsi.tipo in 'EM SC SO CA' %}
-                                {% for op in gfsi.gformsectioninputops_set.all %}
-                                    <th data-tooltip aria-haspopup="true" class="has-tip tip-bottom"
-                                        title="{{ gfsi.pregunta }} - Valor: {{ op.opcion }}">{{ gfsi.orden }}.{{ forloop.counter }}</th>
-                                {% endfor %}
-                            {% else %}
-                                <th data-tooltip aria-haspopup="true"
-                                    class="has-tip tip-bottom" title="{{ gfsi.pregunta }}">{{ gfsi.orden }}</th>
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                </tr>
-                </thead>
-                {% for gfr in gform_respondidos %}
-                    <tr>
-                        <td>{{ gfr.g_e.gauser.get_full_name }}</td>
-                        <td>{{ gfr.g_e.ronda.entidad.name }}</td>
-                        <td>{{ gfr.modificado|date:"d-m-Y H:i" }}</td>
-                        {% for gfri in gfr.gformrespondeinput_set.all %}
-                            {% if gfri.gfsi.tipo == 'FI' %}
-                                <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
-                            {% elif gfri.gfsi.tipo in 'EM SC SO CA' %}
-                                {% for respuesta in gfri.respuesta_array %}
-{#                                    <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ respuesta }}">{{ respuesta|truncatechars_html:20 }}</td>#}
-                                    <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ respuesta }}">{{ respuesta}}</td>
-                                {% endfor %}
-                            {% else %}
-{#                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>#}
-                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ gfri.respuesta }}">{{ gfri.respuesta}}</td>
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
+    <div class="">
+        <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
+    </div>
+    <div id="div_tabla_resultados">
+        <p>&nbsp;</p>
+        <table id="tabla_resultados" style="width: 100%; overflow-x: auto; white-space: nowrap;">
+            <thead style="position: sticky;top:0">
+            <tr>
+                <th colspan="3" style="text-align: center;">
+                    <a download="{{ gform.nombre|slugify }}.xls"
+                       onclick="return ExcellentExport.excel(this, 'tabla_resultados', 'Resultados');">Datos de entrega
+                        <i class="fa fa-file-excel-o"></i>
+                    </a>
+                </th>
+                {% for gfs in gform.gformsection_set.all %}
+                <th style="text-align: center;" colspan="{{ gfs.number_cells_results }}">
+                    {% autoescape off %}{{ gfs.title }}{% endautoescape %}
+                </th>
                 {% endfor %}
+            </tr>
+            <tr>
+                <th rowspan="2">Nombre</th>
+                <th rowspan="2">Entidad</th>
+                <th rowspan="2">Fecha y hora</th>
+                {% for gfs in gform.gformsection_set.all %}
+                    {% for gfsi in gfs.gformsectioninput_set.all %}
+                        {% if gfsi.tipo in 'EM SC SO CA' %}
+                            <th style="text-align: center;" data-tooltip aria-haspopup="true" class="has-tip tip-bottom"
+                                colspan="{{ gfsi.gformsectioninputops_set.all|length }}" title="{{ gfsi.pregunta }} -
+                                 Valor: {{ op.opcion }}">{% autoescape off %}{{ gfsi.orden }}. {{ gfsi.pregunta }}{% endautoescape %}</th>
+                            {#                            {% for op in gfsi.gformsectioninputops_set.all %}#}
+                            {#                                <th data-tooltip aria-haspopup="true" class="has-tip tip-bottom"#}
+                            {#                                    title="{{ gfsi.pregunta }} - Valor: {{ op.opcion }}">{{ gfsi.orden }}.{{ forloop.counter }}</th>#}
+                            {#                            {% endfor %}#}
+                        {% else %}
+                            <th data-tooltip aria-haspopup="true" rowspan="2"
+                                class="has-tip tip-bottom"
+                                title="{{ gfsi.pregunta }}">{% autoescape off %}{{ gfsi.orden }}.{{ gfsi.pregunta }}{% endautoescape %}</th>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for gfs in gform.gformsection_set.all %}
+                    {% for gfsi in gfs.gformsectioninput_set.all %}
+                        {% if gfsi.tipo in 'EM SC SO CA' %}
+                            {% for op in gfsi.gformsectioninputops_set.all %}
+                                <th data-tooltip aria-haspopup="true" class="has-tip tip-bottom"
+                                    title="{{ gfsi.pregunta }} - Valor: {{ op.opcion }}">{% autoescape off %}{{ gfsi.orden }}.{{ forloop.counter }}. {{ op.opcion }}{% endautoescape %}</th>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            </thead>
+            {% for gfr in gform_respondidos %}
                 <tr>
-                    <th colspan="3" style="text-align: right;">Totales:</th>
-                    {% for gfs in gform.gformsection_set.all %}
-                        {% for gfsi in gfs.gformsectioninput_set.all %}
-                            {% if gfsi.tipo in 'EM SC SO CA' %}
-                                {% for suma in gfsi.suma_renteros %}
-                                    <th>{{ suma }}</th>
-                                {% endfor %}
-                            {% else %}
-                                <th>{{ gfsi.suma_renteros }}</th>
-                            {% endif %}
-                        {% endfor %}
+                    <td>{{ gfr.g_e.gauser.get_full_name }}</td>
+                    <td>{{ gfr.g_e.ronda.entidad.name }}</td>
+                    <td>{{ gfr.modificado|date:"d-m-Y H:i" }}</td>
+                    {% for gfri in gfr.gformrespondeinput_set.all %}
+                        {% if gfri.gfsi.tipo == 'FI' %}
+                            <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
+                        {% elif gfri.gfsi.tipo in 'EM SC SO CA' %}
+                            {% for respuesta in gfri.respuesta_array %}
+                                {#                                    <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ respuesta }}">{{ respuesta|truncatechars_html:20 }}</td>#}
+                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom"
+                                    title="{{ respuesta }}">{{ respuesta }}</td>
+                            {% endfor %}
+                        {% else %}
+                            {#                                <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom" title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>#}
+                            <td data-tooltip aria-haspopup="true" class="has-tip tip-bottom"
+                                title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
+                        {% endif %}
                     {% endfor %}
                 </tr>
-            </table>
-        </div>
-        <div id="div_cont_resultados">
-            {% for gfs in gform.gformsection_set.all %}
-                <div id="gfsorden{{ gfs.orden }}"
-                     {% if forloop.first %}style="display:block"{% else %}style="display: none;"{% endif %}>
+            {% endfor %}
+            <tr>
+                <th colspan="3" style="text-align: right;">Totales:</th>
+                {% for gfs in gform.gformsection_set.all %}
+                    {% for gfsi in gfs.gformsectioninput_set.all %}
+                        {% if gfsi.tipo in 'EM SC SO CA' %}
+                            {% for suma in gfsi.suma_renteros %}
+                                <th>{{ suma }}</th>
+                            {% endfor %}
+                        {% else %}
+                            <th>{{ gfsi.suma_renteros }}</th>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+        </table>
+    </div>
+    <div id="div_cont_resultados">
+        {% for gfs in gform.gformsection_set.all %}
+        <div id="gfsorden{{ gfs.orden }}"
+             {% if forloop.first %}style="display:block"{% else %}style="display: none;"{% endif %}>
+            <div class="row">
+                <div class="columns large-12">
                     <div class="row">
                         <div class="columns large-12">
-                            <div class="row">
-                                <div class="columns large-12">
-                                    <h3>{% autoescape off %}{{ gfs.title }}{% endautoescape %}</h3>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="columns large-12">
-                                    {% autoescape off %}{{ gfs.description }}{% endautoescape %}
-                                </div>
-                            </div>
-
-                            {% for gfsi in gfs.gformsectioninput_set.all %}
-                                <hr>
-                                <fieldset style="border: none;">
-                                    <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }}
-                                        de {{ gfsi|totalgfsis }}</legend>
-                                    <div class="row">
-                                        <div class="columns large-12">
-                                            <p>{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="columns large-12" id="respuesta{{ gfsi.id }}">
-                                            {% if gfsi.tipo in 'RC RL' %}
-                                                <div class="row">
-                                                    <div class="columns large-12">
-                                                        <table style="width: 100%">
-                                                            {% for gfri in gfsi.gformrespondeinput_set.all %}
-                                                                <tr>
-                                                                    <td>{% autoescape off %}
-                                                                        {{ gfri.rtexto }}{% endautoescape %}</td>
-                                                                </tr>
-                                                            {% endfor %}
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            {% elif gfsi.tipo in 'EM SO' %}
-                                                <canvas id="pieChart{{ gfsi.id }}" width="100"></canvas>
-                                                <script>
-                                                    setTimeout(function () {
-                                                        var ctx = document.getElementById('pieChart{{ gfsi.id }}').getContext('2d');
-                                                        var pieChart = new Chart(ctx, {
-                                                            type: 'pie',
-                                                            data: {{ gfsi|get_chartdata|safe }},
-                                                            options: {
-                                                                scales: {
-                                                                    yAxes: [{
-                                                                        ticks: {
-                                                                            beginAtZero: true
-                                                                        }
-                                                                    }]
-                                                                }
-                                                            }
-                                                        });
-                                                    }, 300);
-                                                </script>
-                                            {% elif gfsi.tipo == 'SC' %}
-                                                <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
-                                                <script>
-                                                    setTimeout(function () {
-                                                        var ctx = document.getElementById('barChart{{ gfsi.id }}').getContext('2d');
-                                                        var barChart = new Chart(ctx, {
-                                                            type: 'horizontalBar',
-                                                            data: {{ gfsi|get_chartdata|safe }},
-                                                            options: {
-                                                                scales: {
-                                                                    yAxes: [{
-                                                                        ticks: {
-                                                                            beginAtZero: true
-                                                                        }
-                                                                    }]
-                                                                }
-                                                            }
-                                                        });
-                                                    }, 300);
-                                                </script>
-                                            {% elif gfsi.tipo == 'SA' %}
-                                                <div class="row">
-                                                    <div class="columns large-12">
-                                                        <table style="width: 100%">
-                                                            <thead>
-                                                            <tr>
-                                                                <td>Nombre</td>
-                                                                <td>Tipo</td>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                            {% for gfri in gfsi.gformrespondeinput_set.all %}
-                                                                <tr>
-                                                                    <td>{{ gfri.rarchivo.name }}</td>
-                                                                    <td>{{ gfri.content_type }}</td>
-                                                                </tr>
-                                                            {% endfor %}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            {% elif gfsi.tipo in 'EL EN' %}
-                                                <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
-                                                <script>
-                                                    setTimeout(function () {
-                                                        var ctx = document.getElementById('barChart{{ gfsi.id }}').getContext('2d');
-                                                        var barChart = new Chart(ctx, {
-                                                            type: 'bar',
-                                                            data: {{ gfsi|get_chartdatalinear|safe }},
-                                                            options: {
-                                                                {#tooltips: {#}
-                                                                {#    mode: 'index',#}
-                                                                {#    intersect: false#}
-                                                                {# },#}
-                                                                {#hover: {#}
-                                                                {#    mode: 'index',#}
-                                                                {#    intersect: false#}
-                                                                {# },#}
-                                                                scales: {
-                                                                    yAxes: [{
-                                                                        ticks: {
-                                                                            beginAtZero: true
-                                                                        }
-                                                                    }]
-                                                                }
-                                                            }
-                                                        });
-                                                    }, 300);
-                                                </script>
-                                            {% elif gfsi.tipo == 'FI' %}
-                                                <table style="width: 100%">
-                                                    <thead>
-                                                    <tr>
-                                                        <td>Nombre</td>
-                                                        <td>Cargo</td>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {% for gfri in gfsi.gformrespondeinput_set.all %}
-                                                        <tr>
-                                                            <td>{{ gfri.rfirma_nombre }}</td>
-                                                            <td>{{ gfri.rfirma_cargo }}</td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                    </tbody>
-                                                </table>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </fieldset>
-                            {% endfor %}
+                            <h3>{% autoescape off %}{{ gfs.title }}{% endautoescape %}</h3>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="columns large-6">
-                            {% if not forloop.first %}
-                                <a class="button secondary go_seccion_anterior" data-ordengfs="{{ gfs.orden }}">
-                                    <i class="fa fa-caret-left"></i> Sección anterior
-                                </a>
-                            {% else %}&nbsp;{% endif %}
-                        </div>
-                        <div class="columns large-6">
-                            {% if not forloop.last %}
-                                <a class="button secondary right go_seccion_siguiente" data-ordengfs="{{ gfs.orden }}">
-                                    Sección siguiente <i class="fa fa-caret-right"></i>
-                                </a>
-                            {% else %}&nbsp;{% endif %}
+                        <div class="columns large-12">
+                            {% autoescape off %}{{ gfs.description }}{% endautoescape %}
                         </div>
                     </div>
-                    {% if forloop.last %}
-                        {#                        <div class="row">#}
-                        {#                            <div class="columns large-12 medium-12 text-center">#}
-                        {#                                <ul class="button-group">#}
-                        {#                                    <li>#}
-                        {#                                        <a class="button genera_pdf" data-gform="{{ gform.id }}">#}
-                        {#                                            <i class="fa fa-file-pdf-o"></i> PDF</a>#}
-                        {#                                    </li>#}
-                        {#                                    <li>#}
-                        {#                                        <a href="#" class="button alert"><i class="fa fa-sign-out"></i> Terminar</a>#}
-                        {#                                    </li>#}
-                        {#                                </ul>#}
-                        {#                            </div>#}
-                        {#                        </div>#}
-                    {% endif %}
+
+                    {% for gfsi in gfs.gformsectioninput_set.all %}
+                    <hr>
+                    <fieldset style="border: none;">
+                        <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }}
+                            de {{ gfsi|totalgfsis }}</legend>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <p>{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+                                {% if gfsi.tipo in 'RC RL' %}
+                                <div class="row">
+                                    <div class="columns large-12">
+                                        <table style="width: 100%">
+                                            {% for gfri in gfsi.gformrespondeinput_set.all %}
+                                            <tr>
+                                                <td>{% autoescape off %}
+                                                    {{ gfri.rtexto }}{% endautoescape %}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
+                                </div>
+                                {% elif gfsi.tipo in 'EM SO' %}
+                                <canvas id="pieChart{{ gfsi.id }}" width="100"></canvas>
+                                <script>
+                                    setTimeout(function () {
+                                        var ctx = document.getElementById('pieChart{{ gfsi.id }}').getContext('2d');
+                                        var pieChart = new Chart(ctx, {
+                                            type: 'pie',
+                                            data: {{ gfsi|get_chartdata|safe }},
+                                            options: {
+                                                scales: {
+                                                    yAxes: [{
+                                                        ticks: {
+                                                            beginAtZero: true
+                                                        }
+                                                    }]
+                                                }
+                                            }
+                                        });
+                                    }, 300);
+                                </script>
+                                {% elif gfsi.tipo == 'SC' %}
+                                <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
+                                <script>
+                                    setTimeout(function () {
+                                        var ctx = document.getElementById('barChart{{ gfsi.id }}').getContext('2d');
+                                        var barChart = new Chart(ctx, {
+                                            type: 'horizontalBar',
+                                            data: {{ gfsi|get_chartdata|safe }},
+                                            options: {
+                                                scales: {
+                                                    yAxes: [{
+                                                        ticks: {
+                                                            beginAtZero: true
+                                                        }
+                                                    }]
+                                                }
+                                            }
+                                        });
+                                    }, 300);
+                                </script>
+                                {% elif gfsi.tipo == 'SA' %}
+                                <div class="row">
+                                    <div class="columns large-12">
+                                        <table style="width: 100%">
+                                            <thead>
+                                            <tr>
+                                                <td>Nombre</td>
+                                                <td>Tipo</td>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for gfri in gfsi.gformrespondeinput_set.all %}
+                                                <tr>
+                                                    <td>{{ gfri.rarchivo.name }}</td>
+                                                    <td>{{ gfri.content_type }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% elif gfsi.tipo in 'EL EN' %}
+                                <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
+                                <script>
+                                    setTimeout(function () {
+                                        var ctx = document.getElementById('barChart{{ gfsi.id }}').getContext('2d');
+                                        var barChart = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: {{ gfsi|get_chartdatalinear|safe }},
+                                            options: {
+                                                {#tooltips: {#}
+                                                {#    mode: 'index',#}
+                                                {#    intersect: false#}
+                                                {# },#}
+                                                {#hover: {#}
+                                                {#    mode: 'index',#}
+                                                {#    intersect: false#}
+                                                {# },#}
+                                                scales: {
+                                                    yAxes: [{
+                                                        ticks: {
+                                                            beginAtZero: true
+                                                        }
+                                                    }]
+                                                }
+                                            }
+                                        });
+                                    }, 300);
+                                </script>
+                                {% elif gfsi.tipo == 'FI' %}
+                                <table style="width: 100%">
+                                    <thead>
+                                    <tr>
+                                        <td>Nombre</td>
+                                        <td>Cargo</td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for gfri in gfsi.gformrespondeinput_set.all %}
+                                        <tr>
+                                            <td>{{ gfri.rfirma_nombre }}</td>
+                                            <td>{{ gfri.rfirma_cargo }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </fieldset>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            </div>
+            <div class="row">
+                <div class="columns large-6">
+                    {% if not forloop.first %}
+                        <a class="button secondary go_seccion_anterior" data-ordengfs="{{ gfs.orden }}">
+                            <i class="fa fa-caret-left"></i> Sección anterior
+                        </a>
+                    {% else %}&nbsp;{% endif %}
+                </div>
+                <div class="columns large-6">
+                    {% if not forloop.last %}
+                        <a class="button secondary right go_seccion_siguiente" data-ordengfs="{{ gfs.orden }}">
+                            Sección siguiente <i class="fa fa-caret-right"></i>
+                        </a>
+                    {% else %}&nbsp;{% endif %}
+                </div>
+            </div>
+            {% if forloop.last %}
+                {#                        <div class="row">#}
+                {#                            <div class="columns large-12 medium-12 text-center">#}
+                {#                                <ul class="button-group">#}
+                {#                                    <li>#}
+                {#                                        <a class="button genera_pdf" data-gform="{{ gform.id }}">#}
+                {#                                            <i class="fa fa-file-pdf-o"></i> PDF</a>#}
+                {#                                    </li>#}
+                {#                                    <li>#}
+                {#                                        <a href="#" class="button alert"><i class="fa fa-sign-out"></i> Terminar</a>#}
+                {#                                    </li>#}
+                {#                                </ul>#}
+                {#                            </div>#}
+                {#                        </div>#}
+            {% endif %}
         </div>
-    </form>
+        {% endfor %}
+    </div>
+</form>
 {% endblock %}
 
 {% block final %}
@@ -371,21 +396,20 @@
         {# ######## Comprobar si la tabla ya no es visible ######## #}
         {# ######################################################## #}
         {#function isScrolledIntoView(elem)#}
-        $(window).scroll(function ()
-{
-    var elem = '#tabla_resultados'
-    var docViewTop = $(window).scrollTop();
+        $(window).scroll(function () {
+            var elem = '#tabla_resultados'
+            var docViewTop = $(window).scrollTop();
 
-    var elemTop = $(elem).offset().top;
-    var elemBottom = elemTop + $(elem).height();
+            var elemTop = $(elem).offset().top;
+            var elemBottom = elemTop + $(elem).height();
 
-    if ((elemBottom <= $(window).scrollTop())){
-        $('#boton_tabla_resultados_excel').show();
-    }else{
-        $('#boton_tabla_resultados_excel').hide();
-    }
-});
-{# ######################################################## #}
+            if ((elemBottom <= $(window).scrollTop())) {
+                $('#boton_tabla_resultados_excel').show();
+            } else {
+                $('#boton_tabla_resultados_excel').hide();
+            }
+        });
+        {# ######################################################## #}
     </script>
     <script type="text/javascript"
             src="https://cdn.jsdelivr.net/npm/excellentexport@3.4.3/dist/excellentexport.min.js"></script>

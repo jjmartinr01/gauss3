@@ -51,7 +51,23 @@
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Plantillas orgánicas</strong></h4>
         </div>
-
+        <div class="panel callout" id="panel_info" style="display:none;">
+            <div class="row">
+                <div class="large-12 columns">
+                    <h5 style="text-align: center;color: #008CBA;"><strong>Los estudios de plantilla orgánica que
+                        aparecen aquí se obtienen de la carga masiva de datos</strong></h5>
+                    <p>Para realizar una carga masiva de datos debe ir, a través del menú de la izquierda,
+                        a la siguiente pantalla:</p>
+                    <p style="font-weight: bold;color: #008CBA; text-align: center;">Configuración <i
+                            class="fa fa-long-arrow-right"></i>
+                        Carga masiva</p>
+                    <p>Una vez allí, el tipo de carga que debe escoger es "Horarios del personal de su centro
+                        educativo".</p>
+                    <p>Además de cargar los horarios docentes, también se creará un estudio de la plantilla orgánica
+                        de su centro. Ese estudio es el que usted podrá ver aquí.</p>
+                </div>
+            </div>
+        </div>
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="centro_no_racima" id="centro_no_racima" value="">
         <input type="hidden" name="accordion_id" id="accordion_id" value="">
@@ -229,6 +245,11 @@
 {% block final %}
     <script>
         habilita(['s_cloud-upload']);
+        habilita(['s_info-circle']);
+        $('#info-circle_sign').click(function (event) {
+            event.preventDefault();
+            $('#panel_info').toggle();
+        });
         {% if g_e|has_permiso:'carga_datos_casiopea' %}
             habilita(['s_upload']);
             $('#upload_sign').click(function (event) {
@@ -298,12 +319,12 @@
         {# open_accordion,   #}
         {# ########################################################################################### #}
         var carga_completa = true;
-        setInterval(function (){
-            if (!carga_completa){
+        setInterval(function () {
+            if (!carga_completa) {
                 carga_contenido_accordion();
                 console.log('Intento de cargar la plantilla');
             }
-        }, 3000);
+        }, 10000);
 
         function carga_contenido_accordion() {
             var id = $('#accordion_id').val();
@@ -592,8 +613,10 @@
                 return $(this).data('actividad');
             }).get();
             console.log(x_actividades);
-            $.post("/plantilla_organica/", {action: 'actividades_grupos', po: po, x_actividades: x_actividades,
-                actividades: actividades},
+            $.post("/plantilla_organica/", {
+                    action: 'actividades_grupos', po: po, x_actividades: x_actividades,
+                    actividades: actividades
+                },
                 function (data) {
                     if (data.ok) {
                         $('#estudio_actividades' + data.po).html(data.html);
@@ -610,8 +633,10 @@
             var x_actividades = $('.actividades_grupos' + po + ':checked').map(function () {
                 return $(this).val();
             }).get();
-            $.post("/plantilla_organica/", {action: 'get_horario_docente_actividades', po: po, docente: docente,
-                                            x_actividades: x_actividades},
+            $.post("/plantilla_organica/", {
+                    action: 'get_horario_docente_actividades', po: po, docente: docente,
+                    x_actividades: x_actividades
+                },
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);
@@ -630,8 +655,10 @@
             var x_actividades = $('.actividades_grupos' + po + ':checked').map(function () {
                 return $(this).val();
             }).get();
-            $.post("/plantilla_organica/", {action: 'get_horario_grupo_actividades', po: po, grupo: grupo,
-                                            x_actividades: x_actividades},
+            $.post("/plantilla_organica/", {
+                    action: 'get_horario_grupo_actividades', po: po, grupo: grupo,
+                    x_actividades: x_actividades
+                },
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);
@@ -651,8 +678,10 @@
             var x_actividades = $('.actividades_grupos' + po + ':checked').map(function () {
                 return $(this).val();
             }).get();
-            $.post("/plantilla_organica/", {action: 'get_horario_curso_actividades', po: po, curso: curso,
-                                            x_actividades: x_actividades},
+            $.post("/plantilla_organica/", {
+                    action: 'get_horario_curso_actividades', po: po, curso: curso,
+                    x_actividades: x_actividades
+                },
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);
@@ -663,5 +692,13 @@
                     }
                 });
         });
+
+        {% if recargar %}
+            {# Recargar la página en caso de que recargar sea True #}
+            setTimeout(function(){
+                {#window.location.reload();#}
+                window.location.href = window.location.href;
+            }, 500);
+        {% endif %}
     </script>
 {% endblock %}

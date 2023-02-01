@@ -65,4 +65,8 @@ PERMISOS = [{'code_nombre': 'crea_cupos',
              'nombre': 'Tiene permiso para cargar datos de Casiopea',
              'menu': 'acceso_plantilla_organica'
              },
+            {'code_nombre': 'carga_plantillas_organicas',
+             'nombre': 'Tiene permiso para cargar plantillas orgánicas desde Plantillas/Cupo',
+             'menu': 'acceso_plantilla_organica'
+             },
             ]

@@ -14,15 +14,27 @@ from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad, CargaMasiv
 from datetime import date, timedelta, datetime
 logger = logging.getLogger('django')
 
-def borra_cargas_masivas_antiguas(carga):
-    fecha_limite = datetime.today().date() - timedelta(90)
-    cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
-    for c in cargas_antiguas:
+def borra_carga_masiva_antigua(carga):
+    if type(carga) == CargaMasiva:
         try:
-            os.remove(RUTA_BASE + c.fichero.url)
-            c.delete()
-        except Exception as msg:
-            carga.log = 'Se intenta borrar la carga "%s" (%s), pero no ha sido posible: %s<br>' % (c, c.id, str(msg))
+            os.remove(RUTA_BASE + carga.fichero.url)
+            msg = 'Se ha borrado la carga antigua: %s<br>' % carga
+        except Exception as e:
+            msg = 'Error al borrar el archivo asociado a la carga "%s". Objeto carga borrado.<br>' % carga
+        carga.delete()
+    else:
+        msg = 'Error en el borrado. El objeto indicado no es del tipo CargaMasiva.'
+    return msg
+def borra_cargas_masivas_antiguas(carga):
+    '''
+    'carga' es un objeto de tipo CargaMasiva en cuyo log se guardarán los borrados que se realicen
+    '''
+    if type(carga) == CargaMasiva:
+        fecha_limite = datetime.today().date() - timedelta(60)
+        cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
+        for c in cargas_antiguas:
+            msg = borra_carga_masiva_antigua(c)
+            carga.log += msg
             carga.save()
 
 def paginar(total, paso=15, c=1):

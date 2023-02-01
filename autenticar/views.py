@@ -32,7 +32,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.utils.encoding import smart_text
 from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
-from gauss.funciones import pass_generator, genera_nie
+from gauss.funciones import pass_generator, genera_nie, borra_carga_masiva_antigua
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default, Configauss
@@ -949,7 +949,17 @@ def create_usuario(datos, request, tipo):
 # @permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
-    if request.method == 'POST':
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'del_carga_masiva':
+            try:
+                carga = CargaMasiva.objects.get(id=request.POST['carga_id'])
+                msg = borra_carga_masiva_antigua(carga)
+                return JsonResponse({'ok': True, 'msg': msg})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+    elif request.method == 'POST':
         tipo_carga = request.POST['tipo_carga']
         file_masivo = request.FILES['file_masivo_' + tipo_carga]
         logger.info('Carga de archivo de tipo: ' + file_masivo.content_type)
@@ -985,7 +995,7 @@ def carga_masiva(request):
                         gauser_extra.tutor1 = tutor1
                         gauser_extra.tutor2 = tutor2
                         gauser_extra.save()
-        if action == 'carga_masiva_racima':
+        elif action == 'carga_masiva_racima':
             tipo2permiso = {'ALUMN_CENTRO': 'carga_alumnos_centro_educativo',
                             'ALUMN_CENTROS': 'carga_alumnos_centros_educativos',
                             'PERSONAL_CENTRO': 'carga_personal_centro_educativo',
@@ -997,14 +1007,18 @@ def carga_masiva(request):
                 return render(request, "enlazar.html", {'page': '/', })
 
             if 'excel' in file_masivo.content_type:
-                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga)
+                fecha_hora = datetime.now().strftime('%d-%m-%Y a las %H:%M')
+                msg = 'Momento en el que se realiza la carga masiva: %s<br>' % fecha_hora
+                carga = CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=file_masivo, tipo=tipo_carga,
+                                                   log=msg)
                 try:
-                    carga_masiva_from_excel.apply_async(expires=300)
+                    # carga_masiva_from_excel.apply_async(expires=300)
+                    carga_masiva_from_excel.delay(carga_id=carga.id)
                     crear_aviso(request, True, 'cmexcel_automatica')
                     crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
-                except:
+                except Exception as msg:
                     crear_aviso(request, False,
-                                'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+                                'El archivo cargado no se ha encolado. Ejecutar la carga manualmente. %s' % msg)
             else:
                 crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
                             '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
@@ -1107,7 +1121,7 @@ def perfiles_permisos(request):
         'formname': 'permisos_perfiles',
         'form': form,
         'iconos':
-            ({'tipo': 'search', 'title': 'Buscar usuario por nombre', 'permiso': 'acceso_perfiles_permisos'},
+            (#{'tipo': 'search', 'title': 'Buscar usuario por nombre', 'permiso': 'acceso_perfiles_permisos'},
              {'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
               'title': 'Aceptar los cambios realizados', 'permiso': 'asigna_permisos'},
              ),

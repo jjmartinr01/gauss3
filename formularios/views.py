@@ -666,25 +666,6 @@ def ver_gform(request, id, identificador):
 @login_required()
 def ver_resultados(request, id, identificador):
     g_e = request.session["gauser_extra"]
-
-    if request.is_ajax():
-        return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
-    elif request.method == 'POST':
-        if request.POST['action'] == 'genera_pdf':
-            dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
-            gform = Gform.objects.get(id=request.POST['gform'])
-            c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
-            return response
-    elif request.method == 'GET':
-        gform = Gform.objects.get(id=id, identificador=identificador)
-        gform_respondidos = gform.gformresponde_set.filter(respondido=True)
-        return render(request, "ver_resultados.html", {'gform': gform, 'gform_respondidos': gform_respondidos})
-
-
-
     try:
         if request.is_ajax():
             return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
@@ -699,7 +680,8 @@ def ver_resultados(request, id, identificador):
                 return response
         elif request.method == 'GET':
             gform = Gform.objects.get(id=id, identificador=identificador)
-            return render(request, "ver_resultados.html", {'gform': gform})
+            gform_respondidos = gform.gformresponde_set.filter(respondido=True)
+            return render(request, "ver_resultados.html", {'gform': gform, 'gform_respondidos': gform_respondidos})
     except:
         return HttpResponse('Error')
 
@@ -876,8 +858,8 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
     try:
         g_e = request.session["gauser_extra"]
     except:
-        full_path = request.get_full_path()
-        if 'larioja.org' in full_path:
+        # request.get_host() devuelve el dominio
+        if 'larioja.org' in request.get_host():
             return redirect('/logincas/?nexturl=/rellena_gform/' + '/'.join([str(id), identificador, gfr_identificador]))
         else:
             return redirect(

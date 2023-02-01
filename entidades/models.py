@@ -939,6 +939,11 @@ class CargaMasiva(models.Model):
         ordering = ['-id']
 
     @property
+    def es_borrable(self):
+        # Se considera que la carga es borrable transcurrido un día desde su creación
+        return True if (date.today() - self.creado).days >= 1 else False
+
+    @property
     def dias_autoborrado(self):
         dias_para_autoborrado = 90
         dias = (date.today() - self.creado).days

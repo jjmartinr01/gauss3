@@ -2610,7 +2610,7 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
                 #return JsonResponse({'ok': True, 'html': html})
         elif action == 'exportar_sap':
-            try:
+            try:## Comentarios
                 ## Se obtiene el objeto SitAprend
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 ## Se obtienen las actividades de aprendizaje asociadas
@@ -2657,14 +2657,33 @@ def progsecundaria_sb(request, id):
                 progsec = sapren.sbas.psec
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
-                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    msg = '<p>Hay cuadernos de docentes creados de tipo PRO con algún procedimiento calificado.</p>'
                     cuadernos = []
+                    n_pro = 0
+                    procedimientos_calificados = False
                     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    msg += ''.join(cuadernos)
-                    return JsonResponse({'ok': False, 'msg': msg})
-                elif sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
-                    # if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                        if cuaderno.tipo == 'PRO':
+                            n_pro = n_pro+1
+                            print('Verificando si hay procedimientos calificados....')
+                            # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
+                            # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
+                            escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
+                            for escalacp in escalacp_all:
+                                print(escalacp.id)
+                                necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
+                                print(necpv)
+                                if (necpv>0):
+                                    procedimientos_calificados = True
+                                    cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    # Existe al menos un cuaderno de tipo PRO con algún procedimiento calificado
+                    if procedimientos_calificados:
+                        msg += ''.join(cuadernos)
+                        return JsonResponse({'ok': False, 'msg': msg})
+                    # No existe ningún cuaderno de tipo PRO, luego puede borrarse la situación de aprendizaje
+                    else:
+                        sapren.delete()
+                        return JsonResponse({'ok': True})
+                elif 'E' in permiso:
                     sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
@@ -2847,10 +2866,43 @@ def progsecundaria_sb(request, id):
                 if 'C' in permiso:
                     msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
                     cuadernos = []
+                    procedimiento_calificado = False
+                    n_pro = 0
                     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    msg += ''.join(cuadernos)
-                    return JsonResponse({'ok': False, 'msg': msg})
+                        # INICIO
+                        if cuaderno.tipo == 'PRO':
+                            n_pro = n_pro + 1
+                            print('Verificando si hay procedimientos calificados....')
+                            # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
+                            # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
+                            escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
+                            for escalacp in escalacp_all:
+                                print(escalacp.id)
+                                if escalacp.ieval.id == inst.id:
+                                    print('Sí es el procedimiento')
+                                    print(escalacp.ieval.id)
+                                    necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
+                                    print('Nº de calificaciones realizadas en este procedimiento')
+                                    print(necpv)
+                                    if (necpv > 0):
+                                        print('Hay calificaciones y no se puede borrar')
+                                        procedimiento_calificado = True
+                                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                                    else:
+                                        print('No hay calificaciones y por tanto sí se puede borrar')
+                                else:
+                                    print('No es el procedimiento')
+                                    print(escalacp.ieval.id)
+                        # FIN
+                        #cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    # Existe al menos un cuaderno de tipo PRO con ese procedimiento calificado
+                    if procedimiento_calificado:
+                        msg += ''.join(cuadernos)
+                        return JsonResponse({'ok': False, 'msg': msg})
+                    # No existe ningún cuaderno de tipo PRO que califique ese procedimiento, asi que puede borrarse la situación de aprendizaje
+                    else:
+                        inst.delete()
+                        return JsonResponse({'ok': True})
                 elif inst.asapren.instreval_set.all().count() > 1:
                     if inst.asapren.sapren.sbas == sb:
                         inst.delete()
@@ -3844,3 +3896,44 @@ def arregla_instrevals(request):
         return HttpResponse('InstrEvals (%s) y RepoInstrEvals (%s) arreglados' % (info, repoinfo))
     except Exception as msg:
         return HttpResponse(str(msg))
+
+"""
+from programaciones.models import *
+from django.core import serializers
+from django.core.signing import Signer
+
+def copiaSeguridadCuaderno(cuaderno):
+    ProgSecs = ProgSec.objects.filter(id=cuaderno.psec.id)
+    CEProgSecs = CEProgSec.objects.filter(psec=cuaderno.psec)
+    CEvProgSecs = CEvProgSec.objects.filter(cepsec__psec=cuaderno.psec)
+    LibroRecursos = LibroRecurso.objects.filter(psec=cuaderno.psec)
+    ActExComs = ActExCom.objects.filter(psec=cuaderno.psec)
+    SaberBass = SaberBas.objects.filter(psec=cuaderno.psec)
+    SitAprens = SitApren.objects.filter(sbas__psec=cuaderno.psec)
+    ActSitAprens = ActSitApren.objects.filter(sapren__sbas__psec=cuaderno.psec)
+    InstrEvals = InstrEval.objects.filter(asapren__sapren__sbas__psec=cuaderno.psec)
+    CriInstrEvals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+    CuadernoProfs = [cuaderno]
+    # CalAlumCEs = cuaderno.calalumce_set.all()
+    CalAlumCEs = CalAlumCE.objects.filter(cp=cuaderno)
+    CalAlumCEvs = CalAlumCEv.objects.filter(calalumce__cp=cuaderno)
+    EscalaCPs = EscalaCP.objects.filter(cp=cuaderno)
+    EscalaCPvalors = EscalaCPvalor.objects.filter(ecp__cp=cuaderno)
+    CalAlums = CalAlum.objects.filter(cp=cuaderno)
+    CalAlumValors = CalAlumValor.objects.filter(ca__cp=cuaderno)
+    objetos = [*ProgSecs, *CEProgSecs, *CEvProgSecs, *LibroRecursos, *ActExComs, *SaberBass, *SitAprens, *ActSitAprens,
+                *InstrEvals, *CriInstrEvals, *CuadernoProfs, *CalAlumCEs, *CalAlumCEvs, *EscalaCPs, *EscalaCPvalors,
+                *CalAlums, *CalAlumValors]
+    data = serializers.serialize('jsonl', objetos)
+    signer = Signer()
+    data_signed = signer.sign(data)
+    with open("Output.cua", "w") as text_file:
+        text_file.write(data_signed)
+
+    # with open('Output.cua', 'r') as file:
+    #     data_read = file.read()
+        ## Se supone que data_read y data_signed son iguales. Por tanto se podría hacer:
+        # signer2 = Signer()
+        # datos_recuperados = signer2.unsign(data_read)
+        
+"""
