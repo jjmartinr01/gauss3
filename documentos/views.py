@@ -18,7 +18,7 @@ from entidades.views import decode_selectgcs
 from entidades.models import Subentidad, Cargo, DocConfEntidad
 from documentos.forms import Ges_documentalForm, Contrato_gaussForm
 from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental, \
-    TextoEvaluable
+    TextoEvaluable, NormativaEtiqueta, Normativa
 from gauss.funciones import usuarios_ronda
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS, RUTA_BASE
 from mensajes.models import Aviso
@@ -344,7 +344,6 @@ def documentos(request):
         #     except:
         #         return JsonResponse({'ok': False})
 
-
         elif request.POST['action'] == 'update_new_permiso':
             try:
                 doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
@@ -393,7 +392,6 @@ def documentos(request):
                 return JsonResponse({'ok': False})
         else:
             return JsonResponse({'ok': False, 'mensaje': 'Solicitud incorrecta.'})
-
 
     # -----------
     # for d in Ges_documental.objects.all():
@@ -662,19 +660,152 @@ def plantillas_te(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     })
 
+
 ####################################################################################
 ####################################################################################
 ####################################################################################
 
-# @permiso_required('acceso_plantillas_te')
-def documento_normativo(request):
+@permiso_required('acceso_normativa')
+def normativa(request):
     g_e = request.session["gauser_extra"]
-    t='''fadfa
-    adfaf
-    adfa'''
-    for i,p in enumerate(t.splitlines()):
-        if p:
-            print(i,p.strip())
+    # t='''Texto para
+    # ser separado
+    # en sus diferentes líneas'''
+    # for i, p in enumerate(t.splitlines()):
+    #     if p:
+    #         print(i, p.strip())
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'crear_etiqueta_normativa':
+            if g_e.has_permiso('crea_apartados_normativos'):
+                etiqueta = NormativaEtiqueta.objects.create(creador=g_e, nombre='Nuevo apartado normativo')
+                html = render_to_string('normativa_fieldset.html', {'etiqueta': etiqueta, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_cargar_normativa':
+            try:
+                if g_e.has_permiso('carga_normativa'):
+                    organization = g_e.ronda.entidad.organization
+                    etiquetas = NormativaEtiqueta.objects.filter(creador__ronda__entidad__organization=organization)
+                    if request.POST['normativa']:
+                        normativa = Normativa.objects.get(id=request.POST['normativa'])
+                        id_normativa = normativa.id
+                    else:
+                        normativa = {'texto': '', 'nombre': '', 'fecha_pub': '', 'url': ''}
+                        id_normativa = ''
+                    html = render_to_string('normativa_cargar_normativa.html',
+                                            {'etiquetas': etiquetas, 'normativa': normativa})
+                    return JsonResponse({'ok': True, 'html': html, 'normativa': id_normativa})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'open_accordion':
+            try:
+                n = Normativa.objects.get(id=request.POST['id'],
+                                          creador__ronda__entidad__organization=g_e.ronda.entidad.organization)
+                html = render_to_string('normativa_fieldset_accordion_content.html', {'normativa': n})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_normativa':
+            try:
+                if g_e.has_permiso('edita_normativa'):
+                    n = Normativa.objects.get(id=request.POST['normativa'],
+                                              creador__ronda__entidad__organization=g_e.ronda.entidad.organization)
+                    try:
+                        os.remove(RUTA_BASE + n.fichero.url)
+                    except:
+                        pass
+                    n.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_texto':
+            if g_e.has_permiso('edita_normativa'):
+                objeto = eval(request.POST['clase']).objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['texto'])
+                objeto.save()
+                return JsonResponse({'ok': True})
+            else:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'is_derogada':
+            if g_e.has_permiso('edita_normativa'):
+                n = Normativa.objects.get(id=request.POST['normativa'])
+                n.derogada = not n.derogada
+                n.save()
+                return JsonResponse({'ok': True, 'html': ['No', 'Sí'][n.derogada], 'normativa': n.id})
+            else:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'cargar_normativa':
+            if g_e.has_permiso('carga_normativa'):
+                try:
+                    fichero = request.FILES['fichero']
+                except:
+                    fichero = None
+                fecha_pub = datetime.strptime(request.POST['fecha_pub'], '%Y-%m-%d')
+                nombre = request.POST['nombre']
+                try:
+                    try:
+                        n = Normativa.objects.get(id=request.POST['id_normativa'])
+                        if fichero:
+                            try:
+                                os.remove(RUTA_BASE + n.fichero.url)
+                            except:
+                                pass
+                            n.fichero = fichero
+                            n.content_type = fichero.content_type
+                            n.fich_name = fichero.name
+                        n.fecha_pub = fecha_pub
+                        n.nombre = nombre
+                    except:
+                        n = Normativa.objects.create(fichero=fichero, nombre=nombre, creador=g_e, fecha_pub=fecha_pub,
+                                                     content_type=fichero.content_type, fich_name=fichero.name)
+                    etiquetas = NormativaEtiqueta.objects.filter(id__in=request.POST['etiquetas'].split(','))
+                    n.etiquetas.add(*etiquetas)
+                    n.url = request.POST['url']
+                    n.texto = request.POST['texto']
+                    n.save()
+                    htmls = []
+                    for etiqueta in etiquetas:
+                        html = render_to_string('normativa_fieldset_accordion.html', {'etiqueta': etiqueta, 'normativa': n})
+                        htmls.append({'etiqueta': etiqueta.id, 'normativa': n.id, 'html': html})
+                    return JsonResponse({'ok': True, 'htmls': htmls})
+                except:
+                    return JsonResponse(
+                        {'ok': False, 'mensaje': 'Se ha producido un error.', 'r': request.POST['etiquetas']})
+            else:
+                return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+        elif request.POST['action'] == 'descargar_normativa':
+            try:
+                n = Normativa.objects.get(creador__ronda__entidad__organization=g_e.ronda.entidad.organization,
+                                           id=request.POST['id_normativa'])
+                response = HttpResponse(n.fichero, content_type='%s' % n.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % n.fich_name
+                return response
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+    etiquetas = NormativaEtiqueta.objects.all()
+    return render(request, "normativa.html", {
+        'iconos':
+            ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir apartado normativo',
+              'title': 'Crear un nuevo apartado para la normativa',
+              'permiso': 'crea_apartados_normativos'},
+             {'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar normativa',
+              'title': 'Cargar un nuevo texto normativo',
+              'permiso': 'carga_normativa'},
+             ),
+        'g_e': g_e,
+        'etiquetas': etiquetas,
+        'formname': 'normativa',
+        'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+    })
+
+
 ####################################################################################
 ####################################################################################
 ####################################################################################

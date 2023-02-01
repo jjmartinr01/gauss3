@@ -129,6 +129,11 @@ class NormativaEtiqueta(models.Model):
     log = models.TextField('Log de acciones sobre este objeto', default='', blank=True)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
 
+def update_fichero_normativa(instance, filename):
+    nombre = filename.partition('.')
+    instance.fich_name = filename.rpartition('/')[2].replace(' ', '_')
+    nombre = pass_generator(size=20) + '.' + nombre[2]
+    return '/'.join(['normativa', str(instance.creador.ronda.entidad.code), nombre])
 
 class Normativa(models.Model):
     creador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
@@ -138,7 +143,7 @@ class Normativa(models.Model):
     fecha_pub = models.DateField('Fecha de publicación')
     derogada = models.BooleanField('¿Está derogada', default=False)
     texto = models.TextField("Texto del documento o resumen", blank=True, null=True)
-    fichero = models.FileField("Fichero con documento", upload_to=update_fichero_documental, blank=True, null=True)
+    fichero = models.FileField("Fichero con documento", upload_to=update_fichero_normativa, blank=True, null=True)
     fich_name = models.CharField("Nombre del fichero", max_length=100, blank=True, null=True)
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
     borrado = models.BooleanField("Archivo borrado?", default=False)

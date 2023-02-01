@@ -26,12 +26,20 @@ MENU_DEFAULT = [
      'pos': 2,
      'parent': 'acceso_gestion_documental'
      },
+    {'code_menu': 'acceso_normativa',
+     'texto_menu': 'Normativa',
+     'href': 'normativa',
+     'nivel': 2,
+     'tipo': 'Restringido',
+     'pos': 3,
+     'parent': 'acceso_gestion_documental'
+     },
     {'code_menu': 'acceso_plantillas_te',
      'texto_menu': 'Plantillas de textos evaluables',
      'href': 'plantillas_te',
      'nivel': 2,
      'tipo': 'Restringido',
-     'pos': 2,
+     'pos': 7,
      'parent': 'acceso_gestion_documental'
      }
 ]
@@ -88,5 +96,17 @@ PERMISOS = [{'code_nombre': 'crea_carpetas',
             {'code_nombre': 'crea_plantillas_te',
              'nombre': 'Tiene permiso para crear plantillas de textos evaluables',
              'menu': 'acceso_plantillas_te'
+             },
+            {'code_nombre': 'carga_normativa',
+             'nombre': 'Tiene permiso para cargar nueva normativa',
+             'menu': 'acceso_normativa'
+             },
+            {'code_nombre': 'crea_apartados_normativos',
+             'nombre': 'Tiene permiso para crear nuevos apartados normativos',
+             'menu': 'acceso_normativa'
+             },
+            {'code_nombre': 'edita_normativa',
+             'nombre': 'Tiene permiso para editar/borrar normativa',
+             'menu': 'acceso_normativa'
              }
             ]

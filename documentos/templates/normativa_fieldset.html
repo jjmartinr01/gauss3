@@ -1,0 +1,26 @@
+{% load entidades_extras %}
+{% load documentos_extras %}
+{#{% if buscadas %}#}
+{#    {% if informes_ie|length == 1 %}#}
+{#        <b>Se ha encontrado 1 Informe de Inspección</b>#}
+{#    {% else %}#}
+{#        <b>Se han encontrado {{ informes_ie|length }} Informes de Inspección</b>#}
+{#    {% endif %}#}
+{#{% endif %}#}
+<fieldset id="fieldset_etiqueta{{ etiqueta.id }}" class="fieldset_box">
+{% if g_e|has_permiso:'acceso_documentos' %}
+    <legend class="legend_editable" data-id="{{ etiqueta.id }}">
+        <span id="etiqueta_nombre{{ etiqueta.id }}">{{ etiqueta.nombre }}</span>
+        <input type="text" value="{{ etiqueta.nombre }}" id="etiqueta_input{{ etiqueta.id }}"
+        style="display: none;" class="update_texto" data-campo="nombre" data-clase="NormativaEtiqueta"
+        data-id="{{ etiqueta.id }}">
+    </legend>
+{% else %}
+    <legend>{{ etiqueta.nombre }}</legend>
+{% endif %}
+    <dl class="accordion" data-accordion id="list_normativa{{ etiqueta.id }}">
+        {% for normativa in etiqueta|get_normativas %}
+            {% include 'normativa_fieldset_accordion.html' %}
+        {% endfor %}
+    </dl>
+</fieldset>

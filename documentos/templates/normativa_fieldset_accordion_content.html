@@ -1,0 +1,42 @@
+{% load entidades_extras %}
+<div class="row">
+    <div class="columns large-8"><label>Está derogada:</label>
+        <a class="is_derogada" style="font-weight: bold;"
+           id="is_derogada{{ normativa.id }}" data-normativa="{{ normativa.id }}">
+            {% if normativa.derogada %}Sí{% else %}No{% endif %}
+        </a></div>
+    <div class="columns large-4">
+        <ul class="button-group centered">
+{#            {% if request.session.gauser_extra|has_permiso:'edita_normativa' %}#}
+                <li title="Editar esta Normativa">
+                    <a href="#" class="button editar_normativa"
+                       data-normativa="{{ normativa.id }}"><i class="fa fa-pencil"></i> Editar</a></li>
+{#            {% endif %}#}
+            {#            {% if request.session.gauser_extra|has_permiso:'borra_normativa' %}#}
+                <li title="Borrar esta Normativa" id="borrar_normativa{{ normativa.id }}">
+                    <a href="#" class="button borrar_normativa alert"
+                       data-normativa="{{ normativa.id }}"><i class="fa fa-trash-o"></i> Borrar</a></li>
+{#            {% endif %}#}
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-6"><label><b>Archivo descargable:</b></label>
+    <a class="descargar_normativa" data-normativa="{{ normativa.id }}">{{ normativa.fich_name }}</a></div>
+    <div class="columns large-6"><label><b>Normativa en internet:</b></label>
+    <a href="{{ normativa.url }}" target="_blank">{{ normativa.url }}</a></div>
+</div>
+
+<div class="row">
+    <div class="columns large-12"><label><b>Apartados a los que pertenece esta Normativa:</b></label>
+    {% for etiqueta in normativa.etiquetas.all %}
+        <span class="label info">{{ etiqueta.nombre }}</span>&nbsp;
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-6"><label><b></b></label></div>
+    <div class="columns large-6"><label><b></b></label></div>
+</div>
