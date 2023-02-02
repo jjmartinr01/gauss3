@@ -1,0 +1,92 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load programaciones_extras %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+
+        <div>
+            <h4 id="title_page"><strong>Estadística Programaciones</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-5">
+                <label>Selecciona el centro educativo:
+                    <select id="curso_progsec">
+                        <option value="">-------</option>
+                        {% for entidad in entidades %}
+                            <option value="{{ entidad.id }}">{{ entidad.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div id="listado_estadistica">
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#info_cargar_progsec').click(function (e) {
+            e.preventDefault();
+            show_mensajes({
+                title: 'Información <i class="fa fa-info-circle"></i>',
+                texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'
+            })
+        });
+        {#habilita(['s_search']);#}
+{#        {% if g_e|has_permiso:"crea_programaciones" %}#}
+        {#habilita(['s_plus', 's_link']);#}
+        habilita(['s_plus',]);
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            $('#formulario_crear').toggle();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+            setTimeout(function () {
+                $('#curso_progsec').select2();
+                $('#areamateria_progsec').select2();
+            }, 100);
+        });
+
+        $('#curso_progsec').change(function () {
+            var curso = $('#curso_progsec').val();
+            $.post("/progsecundaria/", {'action': 'get_areasmaterias', 'curso': curso},
+                function (data) {
+                    if (data.ok) {
+                        var element_select = $('#areamateria_progsec');
+                        element_select.prop('disabled', false).find('option').remove();
+                        element_select.append($('<option>', {
+                            value: '',
+                            text: '-------'
+                        }));
+                        $.each(data.valores, function (i, valor) {
+                            element_select.append($('<option>', {
+                                value: valor.valor,
+                                text: valor.texto
+                            }));
+                        });
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                });
+        });
+    </script>
+{% endblock %}

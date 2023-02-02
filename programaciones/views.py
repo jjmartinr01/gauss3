@@ -2841,7 +2841,7 @@ def progsecundaria_sb(request, id):
             try:
                 act = ActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.sbas == sb:
-                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento', tipo='TMONO')
                     html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
@@ -2972,6 +2972,23 @@ def progsecundaria_sb(request, id):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+# @permiso_required('acceso_estadistica_programaciones')
+def estadistica_prog(request):
+    g_e = request.session['gauser_extra']
+    return render(request, "estadistica_prog.html",
+                  {
+                      'formname': 'estadistica_prog',
+                      # 'iconos':
+                      #     ({'tipo': 'button', 'nombre': 'sign-in', 'texto': 'Importar SAP', 'permiso': 'libre',
+                      #       'title': 'Importar una situación de aprendizaje del repositorio'},
+                      #      {'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
+                      #       'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
+                      #      {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver', 'permiso': 'libre',
+                      #       'title': 'Volver a la programación didáctica'},
+                      #      ),
+                      'g_e': g_e,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 # @permiso_required('acceso_repositorio_sap')
 def repositorio_sap(request):
@@ -3093,7 +3110,7 @@ def repositorio_sap(request):
             try:
                 act = RepoActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.autor.gauser == g_e.gauser:
-                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Nombre del instrumento', tipo='TMONO')
                     html = render_to_string('repositorio_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
