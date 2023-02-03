@@ -21,7 +21,7 @@ cryptography==3.4.8
 #defer==1.0.6
 distro==1.7.0
 #distro-info===1.1build1
-Django==3.2.14
+Django==3.2.17
 django-ranged-response==0.2.0
 django-simple-captcha==0.5.17
 #duplicity==0.8.21
