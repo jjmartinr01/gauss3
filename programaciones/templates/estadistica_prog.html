@@ -5,13 +5,16 @@
 {% block contenido %}
     <style>
         #title_page {
-            text-align: center;
+            text-align: center !important;
             color: #008CBA;
         }
 
-        .ckeditor {
-            border: lightgrey 1px solid;
-            min-height: 100px;
+        .thtd {
+            text-align: center;
+        }
+        .thtdb {
+            text-align: center;
+            font-weight: bold;
         }
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
@@ -27,7 +30,7 @@
         <div class="row">
             <div class="columns large-5">
                 <label>Selecciona el centro educativo:
-                    <select id="curso_progsec">
+                    <select id="select_entidad">
                         <option value="">-------</option>
                         {% for entidad in entidades %}
                             <option value="{{ entidad.id }}">{{ entidad.name }}</option>
@@ -36,56 +39,55 @@
                 </label>
             </div>
         </div>
+        <br>
         <div id="listado_estadistica">
+            {% include 'estadistica_prog_tabla.html' %}
+            {#            <table style="width: 100%">#}
+            {#                <thead>#}
+            {#                <tr>#}
+            {#                    <th colspan="7" style="text-align: center;">#}
+            {#                        Estadística general (todos los centros educativos)#}
+            {#                    </th>#}
+            {#                </tr>#}
+            {#                <tr>#}
+            {#                    <th>Nº Programaciones</th>#}
+            {#                    <th>Definitivas</th>#}
+            {#                    <th>Borradores</th>#}
+            {#                    <th>Otros tipos</th>#}
+            {#                    <th>Nº de SAPs</th>#}
+            {#                    <th>Nº actividades</th>#}
+            {#                    <th>Nº proc. evaluación</th>#}
+            {#                </tr>#}
+            {#                </thead>#}
+            {#                <tbody>#}
+            {#                <tr>#}
+            {#                    <td>{{ est.n_psecs }}</td>#}
+            {#                    <td>{{ est.n_psec_def }}</td>#}
+            {#                    <td>{{ est.n_psec_bor }}</td>#}
+            {#                    <td>{{ est.n_psec_otr }}</td>#}
+            {#                    <td>{{ est.n_saprens }}</td>#}
+            {#                    <td>{{ est.n_asaprens }}</td>#}
+            {#                    <td>{{ est.n_procs }}</td>#}
+            {#                </tr>#}
+            {#                </tbody>#}
+            {#            </table>#}
         </div>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
-        $('#info_cargar_progsec').click(function (e) {
-            e.preventDefault();
-            show_mensajes({
-                title: 'Información <i class="fa fa-info-circle"></i>',
-                texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'
-            })
-        });
-        {#habilita(['s_search']);#}
-{#        {% if g_e|has_permiso:"crea_programaciones" %}#}
-        {#habilita(['s_plus', 's_link']);#}
-        habilita(['s_plus',]);
-        $('#plus_sign').click(function (event) {
-            event.preventDefault();
-            $('#formulario_crear').toggle();
-            $(document).scrollTop($('#title_page').offset().top - 150);
-            setTimeout(function () {
-                $('#curso_progsec').select2();
-                $('#areamateria_progsec').select2();
-            }, 100);
-        });
-
-        $('#curso_progsec').change(function () {
-            var curso = $('#curso_progsec').val();
-            $.post("/progsecundaria/", {'action': 'get_areasmaterias', 'curso': curso},
+        $('#select_entidad').select2();
+        $('#select_entidad').change(function () {
+            var entidad = $(this).val();
+            $.post("/estadistica_prog/", {'action': 'estadistica_entidad', 'entidad': entidad},
                 function (data) {
                     if (data.ok) {
-                        var element_select = $('#areamateria_progsec');
-                        element_select.prop('disabled', false).find('option').remove();
-                        element_select.append($('<option>', {
-                            value: '',
-                            text: '-------'
-                        }));
-                        $.each(data.valores, function (i, valor) {
-                            element_select.append($('<option>', {
-                                value: valor.valor,
-                                text: valor.texto
-                            }));
-                        });
+                        $('#listado_estadistica').html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
-                    $(document).scrollTop($('#title_page').offset().top - 150);
                 });
         });
     </script>

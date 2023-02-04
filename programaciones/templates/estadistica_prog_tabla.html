@@ -1,0 +1,83 @@
+{% load programaciones_extras %}
+
+{% if departamentos %}
+    <table style="width: 100%">
+        <thead>
+        <tr>
+            <th colspan="8" class="thtd">
+                Estadística de {{ objeto }}
+            </th>
+        </tr>
+        <tr>
+            <th class="thtd">Departamento</th>
+            <th class="thtd">Nº Programaciones</th>
+            <th class="thtd">Definitivas</th>
+            <th class="thtd">Borradores</th>
+            <th class="thtd">Otros tipos</th>
+            <th class="thtd">Nº de SAPs</th>
+            <th class="thtd">Nº actividades</th>
+            <th class="thtd">Nº proc. evaluación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for departamento in departamentos %}
+            {% with est=departamento|get_estadistica %}
+                <tr>
+                    <td class="thtd"><b>{{ departamento.nombre }}</b></td>
+                    <td class="thtd">{{ est.n_psecs }}</td>
+                    <td class="thtd">{{ est.n_psec_def }}</td>
+                    <td class="thtd">{{ est.n_psec_bor }}</td>
+                    <td class="thtd">{{ est.n_psec_otr }}</td>
+                    <td class="thtd">{{ est.n_saprens }}</td>
+                    <td class="thtd">{{ est.n_asaprens }}</td>
+                    <td class="thtd">{{ est.n_procs }}</td>
+                </tr>
+            {% endwith %}
+        {% endfor %}
+        {% with est=objeto|get_estadistica %}
+            <tr>
+                <td></td>
+                <td class="thtdb">{{ est.n_psecs }}</td>
+                <td class="thtdb">{{ est.n_psec_def }}</td>
+                <td class="thtdb">{{ est.n_psec_bor }}</td>
+                <td class="thtdb">{{ est.n_psec_otr }}</td>
+                <td class="thtdb">{{ est.n_saprens }}</td>
+                <td class="thtdb">{{ est.n_asaprens }}</td>
+                <td class="thtdb">{{ est.n_procs }}</td>
+            </tr>
+        {% endwith %}
+        </tbody>
+    </table>
+{% else %}
+    <table style="width: 100%">
+        <thead>
+        <tr>
+            <th colspan="7" class="thtd">
+                Estadística de {{ objeto }}
+            </th>
+        </tr>
+        <tr>
+            <th class="thtd">Nº Programaciones</th>
+            <th class="thtd">Definitivas</th>
+            <th class="thtd">Borradores</th>
+            <th class="thtd">Otros tipos</th>
+            <th class="thtd">Nº de SAPs</th>
+            <th class="thtd">Nº actividades</th>
+            <th class="thtd">Nº proc. evaluación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% with est=objeto|get_estadistica %}
+            <tr>
+                <td class="thtd">{{ est.n_psecs }}</td>
+                <td class="thtd">{{ est.n_psec_def }}</td>
+                <td class="thtd">{{ est.n_psec_bor }}</td>
+                <td class="thtd">{{ est.n_psec_otr }}</td>
+                <td class="thtd">{{ est.n_saprens }}</td>
+                <td class="thtd">{{ est.n_asaprens }}</td>
+                <td class="thtd">{{ est.n_procs }}</td>
+            </tr>
+        {% endwith %}
+        </tbody>
+    </table>
+{% endif %}

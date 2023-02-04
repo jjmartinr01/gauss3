@@ -2595,12 +2595,12 @@ def progsecundaria_sb(request, id):
                 html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
-                #sap = SitApren.objects.create(sbas=sb)
-                #html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
+                # sap = SitApren.objects.create(sbas=sb)
+                # html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-                #return JsonResponse({'ok': True, 'html': html})
+                # return JsonResponse({'ok': True, 'html': html})
         elif action == 'exportar_sap':
-            try:## Comentarios
+            try:  ## Comentarios
                 ## Se obtiene el objeto SitAprend
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 ## Se obtienen las actividades de aprendizaje asociadas
@@ -2613,27 +2613,33 @@ def progsecundaria_sb(request, id):
                 areamateria = AreaMateria.objects.get(id=progsec.areamateria.id)
                 ## Se crea un repositorio de situación de aprendizaje con el area materia
                 ## de la situación de aprendizaje de la que se exporta.
-                sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre, contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
+                sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre,
+                                                  contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
                 ## Se obtienen las competencias especificas de la situación de aprendizaje
                 for cep in sapren.ceps.all():
-                    sap.ces.add(cep.ce) #Se agregan las competencias al repo de la situacion de aprendizaje
-                for asa in actsapren_all: #Se recorren las actividades de aprendizaje
-                    act = RepoActSitApren.objects.create(sapren=sap,nombre=asa.nombre,description=asa.description)
+                    sap.ces.add(cep.ce)  # Se agregan las competencias al repo de la situacion de aprendizaje
+                for asa in actsapren_all:  # Se recorren las actividades de aprendizaje
+                    act = RepoActSitApren.objects.create(sapren=sap, nombre=asa.nombre, description=asa.description)
                     ## Se obtienen los intrumentos de evaluación, que son objetos InstrEval, de una actividad de aprendizaje
                     instreval_all = InstrEval.objects.filter(asapren=asa)
-                    for ie in instreval_all: #se recorren los instrumentos de evaluacion
+                    for ie in instreval_all:  # se recorren los instrumentos de evaluacion
                         repoIEval = RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
-                        criinstreval_all = CriInstrEval.objects.filter(ieval=ie) # se obtienen los criterios de evaluacion
+                        criinstreval_all = CriInstrEval.objects.filter(
+                            ieval=ie)  # se obtienen los criterios de evaluacion
                         for criinstreval in criinstreval_all:
-                            #Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
-                            #por que si no el refrescon en la vista de la interfaz da un error
+                            # Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
+                            # por que si no el refrescon en la vista de la interfaz da un error
                             repocev_all = RepoCEv.objects.filter(sapren=sap, cev=criinstreval.cevps.cev)
                             if repocev_all.count() == 0:
-                                repocev = RepoCEv.objects.create(sapren=sap, cev=criinstreval.cevps.cev, valor=criinstreval.peso,modificado=criinstreval.modificado)
-                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso, modificado=criinstreval.modificado)
+                                repocev = RepoCEv.objects.create(sapren=sap, cev=criinstreval.cevps.cev,
+                                                                 valor=criinstreval.peso,
+                                                                 modificado=criinstreval.modificado)
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,
+                                                                modificado=criinstreval.modificado)
                             else:
                                 repocev = repocev_all[0]
-                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,modificado=criinstreval.modificado)
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,
+                                                                modificado=criinstreval.modificado)
                 if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     return JsonResponse({'ok': True})
                 else:
@@ -2653,7 +2659,7 @@ def progsecundaria_sb(request, id):
                     procedimientos_calificados = False
                     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
                         if cuaderno.tipo == 'PRO':
-                            n_pro = n_pro+1
+                            n_pro = n_pro + 1
                             print('Verificando si hay procedimientos calificados....')
                             # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
                             # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
@@ -2662,9 +2668,10 @@ def progsecundaria_sb(request, id):
                                 print(escalacp.id)
                                 necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
                                 print(necpv)
-                                if (necpv>0):
+                                if (necpv > 0):
                                     procedimientos_calificados = True
-                                    cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                                    cuadernos.append(
+                                        '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     # Existe al menos un cuaderno de tipo PRO con algún procedimiento calificado
                     if procedimientos_calificados:
                         msg += ''.join(cuadernos)
@@ -2698,7 +2705,7 @@ def progsecundaria_sb(request, id):
                 sap_nueva.save()
                 # se copian las competencias especificas de la sap
                 # relation: many to many
-                #for cep in sap.ceps.all():
+                # for cep in sap.ceps.all():
                 #    sap_nueva.ceps.add(cep.ce)
                 sap_nueva.ceps.add(*sap.ceps.all())
                 # obtenemos las actividades
@@ -2877,14 +2884,15 @@ def progsecundaria_sb(request, id):
                                     if (necpv > 0):
                                         print('Hay calificaciones y no se puede borrar')
                                         procedimiento_calificado = True
-                                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                                        cuadernos.append(
+                                            '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                                     else:
                                         print('No hay calificaciones y por tanto sí se puede borrar')
                                 else:
                                     print('No es el procedimiento')
                                     print(escalacp.ieval.id)
                         # FIN
-                        #cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                        # cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     # Existe al menos un cuaderno de tipo PRO con ese procedimiento calificado
                     if procedimiento_calificado:
                         msg += ''.join(cuadernos)
@@ -2972,23 +2980,32 @@ def progsecundaria_sb(request, id):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-# @permiso_required('acceso_estadistica_programaciones')
+
+@permiso_required('acceso_estadistica_programaciones')
 def estadistica_prog(request):
     g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'estadistica_entidad':
+            try:
+                entidad = Entidad.objects.get(id=request.POST['entidad'])
+                dep_ids = ProgSec.objects.filter(pga__ronda=entidad.ronda).values_list('departamento__id', flat=True)
+                departamentos = Departamento.objects.filter(id__in=dep_ids)
+                html = render_to_string('estadistica_prog_tabla.html', {'objeto': entidad,
+                                                                        'departamentos': departamentos})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
     return render(request, "estadistica_prog.html",
                   {
                       'formname': 'estadistica_prog',
-                      # 'iconos':
-                      #     ({'tipo': 'button', 'nombre': 'sign-in', 'texto': 'Importar SAP', 'permiso': 'libre',
-                      #       'title': 'Importar una situación de aprendizaje del repositorio'},
-                      #      {'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
-                      #       'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
-                      #      {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver', 'permiso': 'libre',
-                      #       'title': 'Volver a la programación didáctica'},
-                      #      ),
+                      'departamentos': None,
+                      'entidades': Entidad.objects.all(),
                       'g_e': g_e,
+                      'objeto': g_e.ronda.entidad.organization,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
 
 # @permiso_required('acceso_repositorio_sap')
 def repositorio_sap(request):
@@ -3903,6 +3920,7 @@ def arregla_instrevals(request):
         return HttpResponse('InstrEvals (%s) y RepoInstrEvals (%s) arreglados' % (info, repoinfo))
     except Exception as msg:
         return HttpResponse(str(msg))
+
 
 """
 from programaciones.models import *
