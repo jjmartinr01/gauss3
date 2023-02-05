@@ -138,7 +138,7 @@ def update_fichero_normativa(instance, filename):
 class Normativa(models.Model):
     creador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
     etiquetas = models.ManyToManyField(NormativaEtiqueta, blank=True)
-    nombre = models.CharField("Nombre del documento", max_length=240)
+    nombre = models.CharField("Nombre del documento", max_length=500)
     url = models.URLField('URL de la normativa', blank=True, null=True)
     fecha_pub = models.DateField('Fecha de publicación')
     derogada = models.BooleanField('¿Está derogada', default=False)

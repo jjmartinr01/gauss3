@@ -51,6 +51,13 @@
                 {% include 'normativa_fieldset.html' %}
             {% endfor %}
         </div>
+        <div id="div_normativa_sin_etiquetas">
+            {% for nse in nses %}
+                <p id="nse{{ nse.id }}">
+                    <a class="editar_normativa" data-normativa="{{ nse.id }}">{{ nse.nombre }}</a>
+                </p>
+            {% endfor %}
+        </div>
         <div id="cargarNormativaModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
              role="dialog">
             <div id="cargarNormativaModal_contenido"></div>
@@ -61,763 +68,263 @@
 {% endblock %}
 
 {% block final %}
-    <script>
-        habilita(['s_plus', 's_cloud-upload']);
-        {# Código para crear nuevas etiquetas #}
-        $('#plus_sign').click(function (e) {
-            e.preventDefault();
-            if (!($(this).hasClass('disabled'))) {
-                $.post("/normativa/", {action: 'crear_etiqueta_normativa'},
-                    function (data) {
-                        if (data.ok) {
-                            $('#div_normativas').prepend(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
-            }
-        });
-
-        {# Código para editar texto de las etiquetas #}
-        $('body').on('click', '.legend_editable', function (e) {
-            var etiqueta = $(this).data('id');
-            $('#etiqueta_id').val(etiqueta);
-            var span_etiqueta = $('#etiqueta_nombre' + etiqueta);
-            var input_etiqueta = $('#etiqueta_input' + etiqueta);
-            if (span_etiqueta.is(":visible")) {
-                span_etiqueta.hide();
-                input_etiqueta.show().select();
-            }
-        });
-        $('body').on('focusout', '.legend_editable', function (e) {
-            $('#etiqueta_nombre' + $('#etiqueta_id').val()).show();
-            $('#etiqueta_input' + $('#etiqueta_id').val()).hide();
-        });
-
-        var funcion_tiempo_espera_update_texto;
-        $('body').on('keyup change', '.update_texto', function () {
-            clearTimeout(funcion_tiempo_espera_update_texto);
-            var element = $(this);
-            funcion_tiempo_espera_update_texto = setTimeout(function () {
-                var id = element.data('id');
-                var campo = element.data('campo');
-                var clase = element.data('clase');
-                var nuevo_texto = element.val();
-                $.post("/normativa/", {
-                        'action': 'update_texto', 'id': id, 'texto': nuevo_texto, 'campo': campo,
-                        'clase': clase
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            if (campo == 'nombre' && clase == 'NormativaEtiqueta') {
-                                $('#etiqueta_nombre' + id).html(nuevo_texto);
-                            }
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
-            }, 750);
-        });
-
-        {# Cargar normativa #}
-        $('#cloud-upload_sign').click(function (e) {
-            e.preventDefault();
-            if (!($(this).hasClass('disabled'))) {
-                $.post("/normativa/", {'action': 'ver_formulario_cargar_normativa', 'normativa': null},
-                    function (data) {
-                        if (data.ok) {
-                            $('#id_normativa').val(data.id_normativa);
-                            $('#cargarNormativa').show().html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
-            }
-        });
-        $('body').on('click', '#boton_cargar_normativa', function (e) {
-            e.preventDefault();
-            var fichero = document.getElementById('fichero_cargar_normativa').files[0];
-            var formData = new FormData();
-            if (fichero) {
-                formData.append('fichero', fichero, slugify_filename(fichero.name));
-            } else {
-                formData.append('fichero', '');
-            }
-            formData.append('action', 'cargar_normativa');
-            formData.append('nombre', $('#nombre_cargar_normativa').val());
-            formData.append('url', $('#url_cargar_normativa').val());
-            formData.append('texto', $('#texto_cargar_normativa').val());
-            formData.append('fecha_pub', $('#fecha_pub_cargar_normativa').val());
-            formData.append('id_normativa', $('#id_normativa').val());
-            formData.append('etiquetas', $('#etiquetas_cargar_normativa').val());
-            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-            var xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                if (xhr.readyState === xhr.DONE) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.ok) {
-                            $("#update_ok").show().delay(1500).fadeOut();
-                            $('#cargarNormativa').hide();
-                            for (let i = 0; i < data.htmls.length; i++) {
-                                $('#list_normativa' + data.htmls[i].etiqueta).append(data.htmls[i].html);
-                            }
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                        {#console.log(xhr.responseText);#}
-                    }
-                }
-            };
-            xhr.open('POST', "/normativa/", true);
-            xhr.send(formData);
-        });
-
-        $('body').on('click', '#hide_cargar_normativa', function (e) {
-            e.preventDefault();
-            $('#cargarNormativa').hide();
-        });
-
-        {# Apertura de los accordions: #}
-        $(document).foundation({
-            accordion: {
-                callback: function (accordion) {
-                    if (accordion.hasClass('accordion-normativa')) {
-                        var id = accordion.data('id');
-                        var etiqueta = accordion.data('etiqueta');
-                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
-                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-                            window.scrollTo(0, $('#accordion_' + etiqueta + '_' + id).offset().top - 50);
-                            $.post("/normativa/", {action: 'open_accordion', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#panel_' + etiqueta + '_' + id).html(data.html);
-                                        $('#id_normativa').val(id);
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        } else {
-                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#panel_' + etiqueta + '_' + id).html('');
-                        }
-                    }
-                }
-            }
-        });
-
-        {# Editar una normativa ya existente: #}
-        $('body').on('click', '.editar_normativa', function (e) {
-            e.preventDefault();
-            var normativa = $(this).data('normativa');
-            {#var etiqueta = $(this).data('etiqueta');#}
-            $.post("/normativa/", {'action': 'ver_formulario_cargar_normativa', 'normativa': normativa},
+<script>
+    habilita(['s_plus', 's_cloud-upload']);
+    {# Código para crear nuevas etiquetas #}
+    $('#plus_sign').click(function (e) {
+        e.preventDefault();
+        if (!($(this).hasClass('disabled'))) {
+            $.post("/normativa/", {action: 'crear_etiqueta_normativa'},
                 function (data) {
                     if (data.ok) {
-                        $('#cargarNormativa').show().html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        {# Descargar Normativa #}
-        $('body').on('click', '.descargar_normativa', function (e) {
-            e.preventDefault();
-            $('#id_normativa').val($(this).data('normativa'));
-            $('#action').val('descargar_normativa');
-            document.getElementById('{{ formname }}').submit();
-        });
-
-        {# Borrar Normativa #}
-        $('body').on('click', '.borrar_normativa', function (e) {
-            e.preventDefault();
-            $('#id_normativa').val($(this).data('normativa'));
-            var texto = 'Si aceptas la normativa se borrará por completo de la base de datos.';
-            show_mensajes({
-                title: 'Eliminar la normativa selecccionada', texto: texto, buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Aceptar": function () {
-                        hide_mensajes();
-                        var normativa = $('#id_normativa').val();
-                        console.log(normativa, 'fasdfadf')
-                        $.post("/normativa/", {'action': 'borrar_normativa', 'normativa': normativa},
-                            function (data) {
-                                if (data.ok) {
-                                    $('.accordion' + normativa).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $("#update_error").show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
-            });
-        });
-
-
-        {# Editar una normativa ya existente: #}
-        $('body').on('click', '.is_derogada', function (e) {
-            e.preventDefault();
-            var normativa = $(this).data('normativa');
-            $.post("/normativa/", {'action': 'is_derogada', 'normativa': normativa},
-                function (data) {
-                    if (data.ok) {
-                        $('#is_derogada' + data.normativa).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-
-        {# 33333333333333333333333333333333333333333333333333333 #}
-        {# 33333333333333333333333333333333333333333333333333333 #}
-        {# 33333333333333333333333333333333333333333333333333333 #}
-        {# 33333333333333333333333333333333333333333333333333333 #}
-        {# 33333333333333333333333333333333333333333333333333333 #}
-        {# 33333333333333333333333333333333333333333333333333333 #}
-        {# 33333333333333333333333333333333333333333333333333333 #}
-
-        habilita(['s_search', 's_plus', 's_cloud-upload']);
-        $('#search_sign').click(function (e) {
-            e.preventDefault();
-            if (!($(this).hasClass('disabled'))) {
-                $.post("/normativa/", {action: 'ver_formulario_buscar'},
-                    function (data) {
-                        if (data.ok) {
-                            $('#div_fieldsets').html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
-            }
-        });
-
-        function buscar_normativas() {
-            $.post("/normativa/", {
-                    action: 'update_page',
-                    inicio: $('#id_fecha_inicio').val(),
-                    fin: $('#id_fecha_fin').val(),
-                    texto: $('#busca_texto_doc').val(),
-                    etiqueta: $('#etiqueta_busqueda').val(),
-                    buscar: $('#buscar').val(),
-                    page: $('#page').val()
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#div_normativas").html(data.html);
+                        $('#div_normativas').prepend(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
         }
+    });
 
-        $('body').on('click', '#busca_docs_manual', function (e) {
-            e.preventDefault();
-            $('#buscar').val(1);
-            $('#page').val(1);
-            buscar_normativas();
-        });
+    {# Código para editar texto de las etiquetas #}
+    $('body').on('click', '.legend_texto_editable', function (e) {
+        var etiqueta = $(this).data('etiqueta');
+        $('#etiqueta_id').val(etiqueta);
+        var legend_texto = $('#legend_texto' + etiqueta);
+        var legend_form = $('#legend_form' + etiqueta);
+        var input_etiqueta = $('#etiqueta_input' + etiqueta);
+        if (legend_texto.is(":visible")) {
+            legend_texto.hide();
+            legend_form.show();
+            input_etiqueta.show().select();
+        }
+    });
+    {#$(window).click(function() {#}
+  {#$('.legend_texto_editable').show();#}
+  {#$('.legend_texto_editado').hide();#}
+{# });#}
+    {#$('body').on('focusout', '.legend_editable', function (e) {#}
+    {#    var etiqueta = $('#etiqueta_id').val();#}
+    {#    $('#legend_texto' + etiqueta).show();#}
+    {#    $('#legend_form' + etiqueta).hide();#}
+    {# });#}
 
-        $('body').on('click', '.fieldset_close_buscar', function (e) {
-            e.preventDefault();
-            $('#buscar').val(0);
-            $('#page').val(1);
-            $('#id_fecha_inicio').val('');
-            $('#id_fecha_fin').val('');
-            $('#busca_texto_doc').val('');
-            $('#etiqueta_busqueda').val('');
-            buscar_normativas();
-            $('.fieldset_box').remove();
-        });
+    var funcion_tiempo_espera_update_texto;
+    $('body').on('keyup change', '.update_texto', function (e) {
+        clearTimeout(funcion_tiempo_espera_update_texto);
+        var element = $(this);
+        funcion_tiempo_espera_update_texto = setTimeout(function () {
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var clase = element.data('clase');
+            var nuevo_texto = element.val();
+            $.post("/normativa/", {
+                    'action': 'update_texto', 'id': id, 'texto': nuevo_texto, 'campo': campo,
+                    'clase': clase
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (campo == 'nombre' && clase == 'NormativaEtiqueta') {
+                            $('#etiqueta_nombre' + id).html(nuevo_texto);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        }, 750);
+    });
 
-        $('body').on('click', '.fieldset_close', function (e) {
-            e.preventDefault();
-            var doc = $('#normativa').val();
-            $('.fieldset_box').remove();
-            $('#tabla_archivos').css('display', 'block');
-            {#document.getElementById('file' + doc).scrollIntoView();#}
-            $(document).scrollTop($('#fila' + doc).offset().top - 150);
-        });
+    {# Cargar normativa #}
+    $('#cloud-upload_sign').click(function (e) {
+        e.preventDefault();
+        if (!($(this).hasClass('disabled'))) {
+            $.post("/normativa/", {'action': 'ver_formulario_cargar_normativa', 'normativa': null},
+                function (data) {
+                    if (data.ok) {
+                        $('#id_normativa').val(data.id_normativa);
+                        $('#cargarNormativa').show().html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+    });
+    $('body').on('click', '#boton_cargar_normativa', function (e) {
+        e.preventDefault();
+        var fichero = document.getElementById('fichero_cargar_normativa').files[0];
+        var formData = new FormData();
+        if (fichero) {
+            formData.append('fichero', fichero, slugify_filename(fichero.name));
+        } else {
+            formData.append('fichero', '');
+        }
+        formData.append('action', 'cargar_normativa');
+        formData.append('nombre', $('#nombre_cargar_normativa').val());
+        formData.append('url', $('#url_cargar_normativa').val());
+        formData.append('texto', $('#texto_cargar_normativa').val());
+        formData.append('fecha_pub', $('#fecha_pub_cargar_normativa').val());
+        formData.append('id_normativa', $('#id_normativa').val());
+        formData.append('etiquetas', $('#etiquetas_cargar_normativa').val());
+        formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            if (xhr.readyState === xhr.DONE) {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#cargarNormativa').hide();
+                        for (let i = 0; i < data.htmls.length; i++) {
+                            $('#accordion_' + data.htmls[i].etiqueta + '_' + data.htmls[i].normativa).remove();
+                            $('#list_normativa' + data.htmls[i].etiqueta).append(data.htmls[i].html);
+                        }
+                        $('#nse' + data.html.normativa).remove();
+                        $('#div_normativa_sin_etiquetas').append(data.html.html);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    {#console.log(xhr.responseText);#}
+                }
+            }
+        };
+        xhr.open('POST', "/normativa/", true);
+        xhr.send(formData);
+    });
 
-        $('body').on('click', '.go_page', function (e) {
-            e.preventDefault();
-            var page = $(this).data('page');
-            $('#page').val(page);
-            if (page) {
-                buscar_normativas();
+    $('body').on('click', '#hide_cargar_normativa', function (e) {
+        e.preventDefault();
+        $('#cargarNormativa').hide();
+    });
+
+    {# Apertura de los accordions: #}
+    $(document).foundation({
+        accordion: {
+            callback: function (accordion) {
+                if (accordion.hasClass('accordion-normativa')) {
+                    var id = accordion.data('id');
+                    var etiqueta = accordion.data('etiqueta');
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        window.scrollTo(0, $('#accordion_' + etiqueta + '_' + id).offset().top - 50);
+                        $.post("/normativa/", {action: 'open_accordion', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#panel_' + etiqueta + '_' + id).html(data.html);
+                                    $('#id_normativa').val(id);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#panel_' + etiqueta + '_' + id).html('');
+                    }
+                }
+            }
+        }
+    });
+
+    {# Editar una normativa ya existente: #}
+    $('body').on('click', '.editar_normativa', function (e) {
+        e.preventDefault();
+        var normativa = $(this).data('normativa');
+        $('#id_normativa').val(normativa);
+        {#var etiqueta = $(this).data('etiqueta');#}
+        $.post("/normativa/", {'action': 'ver_formulario_cargar_normativa', 'normativa': normativa},
+            function (data) {
+                if (data.ok) {
+                    $('#cargarNormativa').show().html(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    {# Descargar Normativa #}
+    $('body').on('click', '.descargar_normativa', function (e) {
+        e.preventDefault();
+        $('#id_normativa').val($(this).data('normativa'));
+        $('#action').val('descargar_normativa');
+        document.getElementById('{{ formname }}').submit();
+    });
+
+
+    {# Borrar Etiqueta #}
+    $('body').on('click', '.borrar_etiqueta', function (e) {
+        e.preventDefault();
+        $('#etiqueta_id').val($(this).data('etiqueta'));
+        var texto1 = 'Si aceptas, este apartado normativo se borrará por completo de la base de datos.';
+        var texto2 = '<br>La normativa incluida en este apartado no se borrará.';
+        var texto = texto1 + texto2;
+        show_mensajes({
+            title: 'Eliminar el apartado selecccionado', texto: texto, buttons: {
+                "Cancelar": function () {
+                    hide_mensajes();
+                },
+                "Aceptar": function () {
+                    hide_mensajes();
+                    var etiqueta = $('#etiqueta_id').val();
+                    $.post("/normativa/", {'action': 'borrar_etiqueta', 'etiqueta': etiqueta},
+                        function (data) {
+                            if (data.ok) {
+                                $('#fieldset_etiqueta' + etiqueta).remove();
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                }
             }
         });
+    });
 
-
-
-        {% if g_e|has_permiso:'sube_archivossss' %}
-            habilita(['s_plus',]);
-            $('#plus_sign').click(function (e) {
-                e.preventDefault();
-                if (!($(this).hasClass('disabled'))) {
-                    $.post("/normativa/", {action: 'ver_formulario_subir'},
+    {# Borrar Normativa #}
+    $('body').on('click', '.borrar_normativa', function (e) {
+        e.preventDefault();
+        $('#id_normativa').val($(this).data('normativa'));
+        var texto = 'Si aceptas la normativa se borrará por completo de la base de datos.';
+        show_mensajes({
+            title: 'Eliminar la normativa selecccionada', texto: texto, buttons: {
+                "Cancelar": function () {
+                    hide_mensajes();
+                },
+                "Aceptar": function () {
+                    hide_mensajes();
+                    var normativa = $('#id_normativa').val();
+                    $.post("/normativa/", {'action': 'borrar_normativa', 'normativa': normativa},
                         function (data) {
                             if (data.ok) {
-                                $('#div_fieldsets').html(data.html);
+                                $('.accordion' + normativa).remove();
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $("#update_error").show().delay(1500).fadeOut();
                             }
                         });
                 }
-            });
-
-            $('body').on('click', '#sube_archivo', function () {
-                {#var etiquetas = [];#}
-                {#$('.borrar_etiqueta').each(function () {#}
-                {#    etiquetas.push($(this).data('etiqueta'));#}
-                {# });#}
-                $('#ajax-loader').css('display', 'block');
-
-                var input_files = document.getElementById('id_archivo').files;
-
-                for (var i = 0; i < input_files.length; i++) {
-                    console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-                }
-
-                var formData = new FormData();
-                for (var i = 0; i < input_files.length; i++) {
-                    formData.append('fichero_xhr' + i, input_files[i]);
-                }
-                formData.append('n_files', input_files.length);
-                formData.append('action', 'sube_archivo');
-                {#formData.append('etiqueta', $('#select_etiqueta').val());#}
-                {#formData.append('etiquetas', etiquetas);#}
-                formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-                var xhr = new XMLHttpRequest();
-                {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-                xhr.onload = function () {
-                    if (xhr.readyState === xhr.DONE) {
-                        if (xhr.status === 200) {
-                            console.log('Terminado');
-                            var data = JSON.parse(xhr.responseText);
-                            $("#tabla_archivos tbody").prepend(data.html);
-                            if (data.mensaje) {
-                                show_mensajes({title: 'Error', texto: data.mensaje})
-                            }
-                        }
-                        $('#ajax-loader').css('display', 'none');
-                        $('#div_fieldsets').html('');
-                    }
-                };
-                xhr.open('POST', "/normativa/", true);
-                xhr.send(formData);
-            });
-        {% endif %}
-
-        {% if g_e|has_permiso:'crea_carpetas' %}
-            {#habilita(['s_folder',]);#}
-            $('#folder_sign').click(function (e) {
-                e.preventDefault();
-                if (!($(this).hasClass('disabled'))) {
-                    $.post("/normativa/", {action: 'ver_formulario_crear_etiqueta'},
-                        function (data) {
-                            if (data.ok) {
-                                $('#div_fieldsets').html(data.html);
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            });
-
-            function crea_etiqueta(nombre, padre, doc) {
-                $.post("/normativa/", {
-                        action: 'crea_etiqueta',
-                        nombre: nombre,
-                        padre: padre
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $("#id_etiqueta_creada").val(data.id_etiqueta);
-                            $("#texto_etiqueta_creada").val(data.texto_etiqueta);
-                            if (doc) {
-                                $("#etiquetas" + doc).html(data.html);
-                            }
-                            $("list_etiquetas").html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                            if (data.mensaje) {
-                                show_mensajes({title: 'Error', texto: data.mensaje})
-                            }
-                        }
-                    });
             }
-
-            {#$('body').on('click', '#crea_etiqueta', function (e) {#}
-            {#    e.preventDefault();#}
-            {#    var nombre = $('#id_etiqueta_nueva').val();#}
-            {#    var padre = $('#select_etiqueta_padre').val();#}
-            {#    crea_etiqueta(nombre, padre, null);#}
-            {#    $('#div_fieldsets').html('');#}
-            {# });#}
-        {% endif %}
-
-        {% if g_e|has_permiso:'borra_cualquier_carpeta' %}
-            $('body').on('click', '.borrar_etiqueta', function (e) {
-                e.preventDefault();
-                $('#etiqueta_id').val($(this).data('etiqueta'));
-                var texto = 'Si aceptas, la etiqueta/carpeta seleccionada, así como todas las carpetas/etiquetas que ' +
-                    'dependan de ella serán borradas. Los normativas dentro de esas etiquetas/carpetas también serán ' +
-                    'eliminados por completo de la base de datos. Nadie tendrá acceso a ellos.';
-                show_mensajes({
-                    title: 'Eliminar completamente la carpeta/etiqueta', texto: texto, buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Aceptar": function () {
-                            hide_mensajes();
-                            var doc = $('#normativa').val();
-                            $.post("/normativa/", {
-                                    action: 'borra_etiqueta',
-                                    etiqueta: $('#etiqueta_id').val()
-                                },
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#div_fieldsets').html('');
-                                        $("#tabla_archivos tbody").html(data.html);
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
-                    }
-                });
-            });
-        {% endif %}
-
-
-
-
-        {% if g_e|has_permiso:'borra_cualquier_archivo' %}
-            $('body').on('click', '.borrar_doc_completamente', function (e) {
-                e.preventDefault();
-                $('#normativa').val($(this).data('doc'));
-                var texto = 'Si aceptas no tendrás acceso al normativa. El normativa se borrará completamente' +
-                    ' de la base de datos. Nadie tendrá acceso a él.';
-                show_mensajes({
-                    title: 'Eliminar completamente el normativa selecccionado', texto: texto, buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Aceptar": function () {
-                            hide_mensajes();
-                            var doc = $('#normativa').val();
-                            $.post("/normativa/", {action: 'borrar_doc_completamente', doc: doc},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#fila' + doc).remove();
-                                        show_mensajes({title: 'Documento borrado', texto: data.mensaje})
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
-                    }
-                });
-            });
-        {% endif %}
-
-        $('body').on('click', '.editar_doc_antiguo', function (e) {
-            e.preventDefault();
-            var doc = $(this).data('doc');
-            $.post("/normativa/", {
-                    action: 'ver_formulario_editar',
-                    doc: doc
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#normativa').val(doc);
-                        $('#editar_archivo').html(data.html);
-                        $('#editarModal').foundation('reveal', 'open');
-                        {#$('#fila' + doc).html(data.html);#}
-                        $('#action').val(doc);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
         });
+    });
 
-        $(document).on('closed.fndtn.reveal', '#editarModal', function () {
-            $.post("/normativa/", {action: 'fieldset_archivo_editar_close', doc: $('#normativa').val()},
-                function (data) {
-                    if (data.ok) {
-                        $('#fila' + data.doc).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
 
-        {#$('body').on('click', '.fieldset_archivo_editar_close', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var doc = $(this).data('doc');#}
-        {#    $.post("/normativa/", {#}
-        {#            action: 'fieldset_archivo_editar_close',#}
-        {#            doc: $(this).data('doc')#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $('#fila' + data.doc).html(data.html);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $("#update_error").show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-
-        {% if g_e|has_permiso:'edita_carpetas' %}
-            $('body').on('click', '.editar_carpeta', function (e) {
-                e.preventDefault();
-                var etiqueta = $(this).data('etiqueta');
-                $.post("/normativa/", {
-                        action: 'ver_formulario_editar_carpeta',
-                        etiqueta: etiqueta
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $('#div_fieldsets').html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
-            });
-
-            $('body').on('click', '#modifica_etiqueta', function (e) {
-                e.preventDefault();
-                $.post("/normativa/", {
-                        action: 'modifica_etiqueta',
-                        nombre: $('#nombre_etiqueta_editada').val(),
-                        etiqueta: $(this).data('etiqueta'),
-                        padre: $('#select_etiqueta_padre_editada').val()
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $('#div_fieldsets').html('');
-                            $("#tabla_archivos tbody").html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                            if (data.mensaje) {
-                                show_mensajes({title: 'Error', texto: data.mensaje})
-                            }
-                        }
-                    });
-            });
-        {% endif %}
-
-        {# ############################################################################## #}
-        {# ##################### Edición de los archivos ################################ #}
-        {# ############################################################################## #}
-
-        $('body').on('click', '.editar_doc', function (e) {
-            e.preventDefault();
-            var doc = $(this).data('doc');
-            $.post("/normativa/", {
-                    action: 'ver_formulario_editar',
-                    doc: doc
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#normativa').val(doc);
-                        $('#div_fieldsets').html(data.html);
-                        document.getElementById('title_h4').scrollIntoView();
-                        $('#tabla_archivos').css('display', 'none');
-                        $('#action').val(doc);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('keyup', '#update_nombre_archivo', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            var element = $(this);
-            var antiguo_texto = element.val();
-            setTimeout(function () {
-                var nuevo_texto = element.val();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/normativa/", {action: 'update_nombre_archivo', nombre: nuevo_texto, id: id},
-                        function (data) {
-                            if (data.ok) {
-                                $("#a_dropdown" + id).html(nuevo_texto);
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
+    {# Editar una normativa ya existente: #}
+    $('body').on('click', '.is_derogada', function (e) {
+        e.preventDefault();
+        var normativa = $(this).data('normativa');
+        $.post("/normativa/", {'action': 'is_derogada', 'normativa': normativa},
+            function (data) {
+                if (data.ok) {
+                    $('#is_derogada' + data.normativa).html(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
                 }
-            }, 750);
-        });
+            });
+    });
 
-        $('body').on('change', '#update_etiquetas_archivo', function (e) {
-            e.preventDefault();
-            var doc = $('#normativa').val();
-            var etiqueta = $(this).val();
-            $.post("/normativa/", {action: 'update_etiquetas_archivo', etiqueta: etiqueta, doc: doc},
-                function (data) {
-                    if (data.ok) {
-                        $(".list_etiquetas" + doc).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.desasigna_etiqueta', function (e) {
-            e.preventDefault();
-            var doc = $(this).data('doc');
-            var etiqueta = $(this).data('etiqueta');
-            $.post("/normativa/", {action: 'desasigna_etiquetas_archivo', etiqueta: etiqueta, doc: doc},
-                function (data) {
-                    if (data.ok) {
-                        $(".list_etiquetas" + doc).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.select_gcs_archivo', function (e) {
-            e.preventDefault();
-            var doc = $(this).data('doc');
-            $.post("/normativa/", {
-                    action: 'update_new_permiso',
-                    doc: doc,
-                    seleccionados: $(this).val()
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#div_permisos" + doc).html(data.html);
-                        $("#cgds" + doc).html(data.html_tr);
-                        $(".select_gcs_archivo").empty();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.borrar_permiso_archivo', function (e) {
-            e.preventDefault();
-            $.post("/normativa/", {
-                    action: 'borrar_permiso_archivo',
-                    cgd: $(this).data('cgd')
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#fila_permiso" + data.cgd).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.update_permiso_archivo', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            var permiso = $(this).val();
-            $.post("/normativa/", {action: 'update_permiso_archivo', permiso: permiso, id: id},
-                function (data) {
-                    if (data.ok) {
-                        $("#cgds" + data.doc).html(data.html_tr);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        {######################################################################}
-        {##### código para la selección y creación de carpetas/etiquetas ######}
-        {######################################################################}
-        {#$('body').on('change', '#select_etiqueta', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var nombre = $("#select_etiqueta option:selected").html();#}
-        {#    var id = $(this).val();#}
-        {#    var html = `<span class="label secondary" id="etiqueta` + id + `">` + nombre + `#}
-        {#                <a class="desasigna_etiqueta" data-etiqueta="` + id + `">#}
-        {#                    <i class="fa fa-times"></i></a></span> `#}
-        {#    $('#select_etiqueta').empty();#}
-        {#    $('#list_etiquetas').append(html);#}
-        {# });#}
-
-        $('body').on('click', '#abrir_modal_crear_etiqueta', function (e) {
-            e.preventDefault();
-            $.post("/normativa/", {
-                    action: 'get_etiquetas',
-                },
-                function (data) {
-                    if (data.ok) {
-                        var etiqueta = $('.select2-search__field').val();
-                        $('#update_etiquetas_archivo').select2('close');
-                        $('#addEtiquetaModal').foundation('reveal', 'open');
-                        $('#nombre_crea_etiqueta').val(etiqueta);
-                        $('#select_crea_etiqueta').html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '#close_addEtiquetaModal', function (e) {
-            e.preventDefault();
-            $('#addEtiquetaModal').foundation('reveal', 'close');
-        });
-
-        $('body').on('click', '#crear_addEtiquetaModal', function (e) {
-            e.preventDefault();
-            $.post("/normativa/", {
-                    action: 'crea_etiqueta',
-                    nombre: $('#nombre_crea_etiqueta').val(),
-                    padre: $('#select_crea_etiqueta').val()
-                },
-                function (data) {
-                    if (data.ok) {
-                        {#var doc = $('#normativa').val();#}
-                        var newOption = new Option(data.texto_etiqueta, data.id_etiqueta, true, true);
-                        $('#update_etiquetas_archivo').append(newOption).trigger('change');
-                        {#$(".list_etiquetas" + doc).html(data.html);#}
-                        $('#addEtiquetaModal').foundation('reveal', 'close');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                        if (data.mensaje) {
-                            show_mensajes({title: 'Error', texto: data.mensaje})
-                        }
-                    }
-                });
-        });
-    </script>
+</script>
 {% endblock %}

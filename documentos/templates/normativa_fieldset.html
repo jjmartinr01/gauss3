@@ -1,23 +1,33 @@
 {% load entidades_extras %}
 {% load documentos_extras %}
-{#{% if buscadas %}#}
-{#    {% if informes_ie|length == 1 %}#}
-{#        <b>Se ha encontrado 1 Informe de Inspección</b>#}
-{#    {% else %}#}
-{#        <b>Se han encontrado {{ informes_ie|length }} Informes de Inspección</b>#}
-{#    {% endif %}#}
-{#{% endif %}#}
 <fieldset id="fieldset_etiqueta{{ etiqueta.id }}" class="fieldset_box">
-{% if g_e|has_permiso:'acceso_documentos' %}
-    <legend class="legend_editable" data-id="{{ etiqueta.id }}">
-        <span id="etiqueta_nombre{{ etiqueta.id }}">{{ etiqueta.nombre }}</span>
-        <input type="text" value="{{ etiqueta.nombre }}" id="etiqueta_input{{ etiqueta.id }}"
-        style="display: none;" class="update_texto" data-campo="nombre" data-clase="NormativaEtiqueta"
-        data-id="{{ etiqueta.id }}">
-    </legend>
-{% else %}
-    <legend>{{ etiqueta.nombre }}</legend>
-{% endif %}
+    {% if g_e|has_permiso:'acceso_documentos' %}
+        <legend class="legend_editable" data-id="{{ etiqueta.id }}">
+            <div class="row collapse legend_texto_editable" data-etiqueta="{{ etiqueta.id }}"
+                 id="legend_texto{{ etiqueta.id }}">
+                <div class="small-12 columns">
+                    <span id="etiqueta_nombre{{ etiqueta.id }}">{{ etiqueta.nombre }}</span>
+                </div>
+            </div>
+
+            <div class="row collapse legend_texto_editado" id="legend_form{{ etiqueta.id }}" style="display: none;">
+                <div class="small-9 columns">
+                    <input type="text" value="{{ etiqueta.nombre }}" id="etiqueta_input{{ etiqueta.id }}"
+                           class="update_texto" data-campo="nombre" data-clase="NormativaEtiqueta"
+                           data-id="{{ etiqueta.id }}">
+                </div>
+                <div class="small-3 columns">
+                    <span class="postfix" id="etiqueta_button{{ etiqueta.id }}">
+                        <a class="borrar_etiqueta" data-etiqueta="{{ etiqueta.id }}">
+                            <i class="fa fa-trash"></i> Borrar
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </legend>
+    {% else %}
+        <legend>{{ etiqueta.nombre }}</legend>
+    {% endif %}
     <dl class="accordion" data-accordion id="list_normativa{{ etiqueta.id }}">
         {% for normativa in etiqueta|get_normativas %}
             {% include 'normativa_fieldset_accordion.html' %}
