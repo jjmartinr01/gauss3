@@ -2,7 +2,7 @@
 {% load documentos_extras %}
 <fieldset id="fieldset_etiqueta{{ etiqueta.id }}" class="fieldset_box">
     {% if g_e|has_permiso:'acceso_documentos' %}
-        <legend class="legend_editable" data-id="{{ etiqueta.id }}">
+        <legend class="legend_editable" data-etiqueta="{{ etiqueta.id }}">
             <div class="row collapse legend_texto_editable" data-etiqueta="{{ etiqueta.id }}"
                  id="legend_texto{{ etiqueta.id }}">
                 <div class="small-12 columns">
@@ -16,12 +16,17 @@
                            class="update_texto" data-campo="nombre" data-clase="NormativaEtiqueta"
                            data-id="{{ etiqueta.id }}">
                 </div>
-                <div class="small-3 columns">
+                <div class="small-3 columns" style="position: relative;">
                     <span class="postfix" id="etiqueta_button{{ etiqueta.id }}">
                         <a class="borrar_etiqueta" data-etiqueta="{{ etiqueta.id }}">
                             <i class="fa fa-trash"></i> Borrar
                         </a>
                     </span>
+                    <div style="position:absolute;right: -15px;top:-15px;">
+                        <a class="close_legend_texto_editado" data-etiqueta="{{ etiqueta.id }}">
+                            <i class="fa fa-times-circle"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </legend>
