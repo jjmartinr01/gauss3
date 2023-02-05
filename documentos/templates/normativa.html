@@ -44,12 +44,38 @@
         <h4 style="text-align: center;color: #008CBA;" id="title_h4">
             <strong> Normativa registrada</strong>
         </h4>
+        <div id="div_etiquetas_normativas" class="panel callout">
+            <label style="font-weight: bold;">Selecciona los apartados normativos que deseas ver:</label>
+            {% for etiqueta in etiquetas %}
+                <a class="buscar_etiqueta_normativa" data-etiqueta="{{ etiqueta.id }}">
+                <span class="label secondary radius" id="label_etiqueta_normativa{{ etiqueta.id }}">
+                    <b>{{ etiqueta.nombre }}</b>
+                </span>
+                </a>
+            {% endfor %}
+            <br><br><label style="font-weight: bold;">... o busca normativa a que incluya el siguiente texto:</label>
+            <div class="row collapse">
+                <div class="columns large-9"><input type="text" id="input_buscar_texto" value=""></div>
+                <div class="columns large-3">
+                <span class="postfix">
+                        <a id="buscar_normativa_texto">
+                            <i class="fa fa-search"></i> Buscar
+                        </a>
+                    </span>
+                </div>
+            </div>
+
+        </div>
         <div id="cargarNormativa" class="panel hide" style="position: relative;">
         </div>
+    <div id="div_normativas_buscadas">
+        <dl class="accordion" data-accordion id="accordion_normativas_buscadas">
+        </dl>
+    </div>
         <div id="div_normativas">
-            {% for etiqueta in etiquetas %}
-                {% include 'normativa_fieldset.html' %}
-            {% endfor %}
+            {#            {% for etiqueta in etiquetas %}#}
+            {#                {% include 'normativa_fieldset.html' %}#}
+            {#            {% endfor %}#}
         </div>
         <div id="div_normativa_sin_etiquetas">
             {% for nse in nses %}
@@ -70,6 +96,41 @@
 {% block final %}
     <script>
         habilita(['s_plus', 's_cloud-upload']);
+        $('body').on('click', '.buscar_etiqueta_normativa', function (e) {
+            var etiqueta = $(this).data('etiqueta');
+            var label_element = $('#label_etiqueta_normativa' + etiqueta);
+            if (label_element.hasClass('secondary')) {
+                label_element.removeClass('secondary').addClass('success');
+                $.post("/normativa/", {action: 'buscar_etiqueta_normativa', 'etiqueta': etiqueta},
+                    function (data) {
+                        if (data.ok) {
+                            $('#div_normativas').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            } else {
+                label_element.removeClass('success').addClass('secondary');
+                $('#fieldset_etiqueta' + etiqueta).remove();
+            }
+        });
+
+        $('#buscar_normativa_texto').click(function (e){
+            var texto = $('#input_buscar_texto').val();
+            $.post("/normativa/", {action: 'buscar_normativa_texto', 'texto': texto},
+                    function (data) {
+                        if (data.ok) {
+                            $('#accordion_normativas_buscadas').html('')
+                            for (let i = 0; i < data.htmls.length; i++) {
+                                $('#accordion_normativas_buscadas').append(data.htmls[i].html);
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+        });
         {# Código para crear nuevas etiquetas #}
         $('#plus_sign').click(function (e) {
             e.preventDefault();
@@ -130,10 +191,10 @@
         });
 
         $('body').on('click', '.close_legend_texto_editado', function (e) {
-            var etiqueta = $('#etiqueta_id').val();
+            var etiqueta = $(this).data('etiqueta');
             $('#legend_texto' + etiqueta).show();
             $('#legend_form' + etiqueta).hide();
-         });
+        });
 
         var funcion_tiempo_espera_update_texto;
         $('body').on('keyup change', '.update_texto', function (e) {

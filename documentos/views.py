@@ -682,6 +682,36 @@ def normativa(request):
                 return JsonResponse({'ok': True, 'html': html})
             else:
                 JsonResponse({'ok': False})
+        elif request.POST['action'] == 'buscar_etiqueta_normativa':
+            try:
+                organization = g_e.ronda.entidad.organization
+                etiqueta = NormativaEtiqueta.objects.get(creador__ronda__entidad__organization=organization,
+                                                         id=request.POST['etiqueta'])
+                html = render_to_string('normativa_fieldset.html', {'etiqueta': etiqueta, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'buscar_normativa_texto':
+            try:
+                organization = g_e.ronda.entidad.organization
+                texto = request.POST['texto']
+                palabras = texto.split()
+                q = (Q(nombre__icontains=palabras[0]) | Q(texto__icontains=palabras[0]))
+                for palabra in palabras[1:]:
+                    qnueva = (Q(nombre__icontains=palabra) | Q(texto__icontains=palabra))
+                    q = q & qnueva
+                ns = Normativa.objects.filter(Q(creador__ronda__entidad__organization=organization), q).distinct()
+                etiquetas = NormativaEtiqueta.objects.filter(id__in=list(set(ns.values_list('etiquetas', flat=True))))
+                htmls = []
+                for n in ns:
+                    etiqueta = n.etiquetas.all()[0]
+                    if etiqueta:
+                        html = render_to_string('normativa_fieldset_accordion.html',
+                                                {'etiqueta': etiqueta, 'normativa': n})
+                        htmls.append({'etiqueta': etiqueta.id, 'normativa': n.id, 'html': html})
+                return JsonResponse({'ok': True, 'htmls': htmls})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'ver_formulario_cargar_normativa':
             try:
                 if g_e.has_permiso('carga_normativa'):
