@@ -679,7 +679,8 @@ def normativa(request):
             if g_e.has_permiso('crea_apartados_normativos'):
                 etiqueta = NormativaEtiqueta.objects.create(creador=g_e, nombre='Nuevo apartado normativo')
                 html = render_to_string('normativa_fieldset.html', {'etiqueta': etiqueta, 'g_e': g_e})
-                return JsonResponse({'ok': True, 'html': html})
+                html_etiqueta = render_to_string('normativa_etiqueta.html', {'etiqueta': etiqueta, 'creada': True})
+                return JsonResponse({'ok': True, 'html': html, 'html_etiqueta': html_etiqueta})
             else:
                 JsonResponse({'ok': False})
         elif request.POST['action'] == 'buscar_etiqueta_normativa':
@@ -784,56 +785,51 @@ def normativa(request):
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'cargar_normativa':
             if g_e.has_permiso('carga_normativa'):
-                try:
+                fecha_pub = datetime.strptime(request.POST['fecha_pub'], '%Y-%m-%d')
+                nombre = request.POST['nombre']
+                url = request.POST['url'] if 'url' in request.POST else ''
+                texto = request.POST['texto'] if 'texto' in request.POST else ''
+                if 'fichero' in request.FILES:
                     fichero = request.FILES['fichero']
                     content_type = fichero.content_type
                     fich_name = fichero.name
-                except:
-                    fichero = None
-                    content_type = ''
-                    fich_name = ''
-                fecha_pub = datetime.strptime(request.POST['fecha_pub'], '%Y-%m-%d')
-                nombre = request.POST['nombre']
+                else:
+                    fichero, content_type, fich_name = None, '', ''
                 try:
-                    try:
-                        n = Normativa.objects.get(id=request.POST['id_normativa'])
-                        if fichero:
-                            try:
-                                os.remove(RUTA_BASE + n.fichero.url)
-                            except:
-                                pass
+                    n = Normativa.objects.get(id=request.POST['id_normativa'])
+                    n.fecha_pub = fecha_pub
+                    n.nombre = nombre
+                    n.url = url
+                    n.texto = texto
+                    if fichero:
+                        try:
+                            os.remove(RUTA_BASE + n.fichero.url)
+                        except:
+                            pass
                         n.fichero = fichero
                         n.content_type = content_type
                         n.fich_name = fich_name
-                        n.fecha_pub = fecha_pub
-                        n.nombre = nombre
-                    except:
-                        n = Normativa.objects.create(fichero=fichero, nombre=nombre, creador=g_e, fecha_pub=fecha_pub,
-                                                     content_type=content_type, fich_name=fich_name)
-                    try:
-                        etiquetas = NormativaEtiqueta.objects.filter(id__in=request.POST['etiquetas'].split(','))
-                        n.etiquetas.add(*etiquetas)
-                    except:
-                        etiquetas = NormativaEtiqueta.objects.none()
-                    n.url = request.POST['url']
-                    n.texto = request.POST['texto']
                     n.save()
-                    htmls = []
-                    if etiquetas.count() > 0:
-                        for etiqueta in etiquetas:
-                            html = render_to_string('normativa_fieldset_accordion.html',
-                                                    {'etiqueta': etiqueta, 'normativa': n})
-                            htmls.append({'etiqueta': etiqueta.id, 'normativa': n.id, 'html': html})
-                        html = ''
-                    else:
-                        html = '<p><a data-normativa="%s" class="editar_normativa">%s</a></p>' % (n.id, n.nombre)
-                    return JsonResponse({'ok': True, 'htmls': htmls, 'html': {'normativa': n.id, 'html': html}})
-                except Exception as msg:
-                    return JsonResponse(
-                        {'ok': False, 'mensaje': 'Se ha producido un error.', 'r': request.POST['etiquetas'],
-                         'msg': str(msg)})
+                except:
+                    n = Normativa.objects.create(nombre=nombre, creador=g_e, fecha_pub=fecha_pub, texto=texto, url=url,
+                                                 fichero=fichero, content_type=content_type, fich_name=fich_name)
+                try:
+                    etiquetas = NormativaEtiqueta.objects.filter(id__in=request.POST['etiquetas'].split(','))
+                    n.etiquetas.add(*etiquetas)
+                except:
+                    etiquetas = NormativaEtiqueta.objects.none()
+                htmls = []
+                if etiquetas.count() > 0:
+                    for etiqueta in etiquetas:
+                        html = render_to_string('normativa_fieldset_accordion.html',
+                                                {'etiqueta': etiqueta, 'normativa': n})
+                        htmls.append({'etiqueta': etiqueta.id, 'normativa': n.id, 'html': html})
+                    html = ''
+                else:
+                    html = '<p><a data-normativa="%s" class="editar_normativa">%s</a></p>' % (n.id, n.nombre)
+                return JsonResponse({'ok': True, 'htmls': htmls, 'html': {'normativa': n.id, 'html': html}})
             else:
-                return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes.'})
         elif request.POST['action'] == 'descargar_normativa':
             try:
                 n = Normativa.objects.get(creador__ronda__entidad__organization=g_e.ronda.entidad.organization,

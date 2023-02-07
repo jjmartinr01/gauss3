@@ -46,13 +46,11 @@
         </h4>
         <div id="div_etiquetas_normativas" class="panel callout">
             <label style="font-weight: bold;">Selecciona los apartados normativos que deseas ver:</label>
-            {% for etiqueta in etiquetas %}
-                <a class="buscar_etiqueta_normativa" data-etiqueta="{{ etiqueta.id }}">
-                <span class="label secondary radius" id="label_etiqueta_normativa{{ etiqueta.id }}">
-                    <b>{{ etiqueta.nombre }}</b>
-                </span>
-                </a>
-            {% endfor %}
+            <div id="div_etiquetas_normativas_list">
+                {% for etiqueta in etiquetas %}
+                    {% include 'normativa_etiqueta.html' %}
+                {% endfor %}
+            </div>
             <br><br><label style="font-weight: bold;">... o busca normativa a que incluya el siguiente texto:</label>
             <div class="row collapse">
                 <div class="columns large-9"><input type="text" id="input_buscar_texto" value=""></div>
@@ -68,10 +66,10 @@
         </div>
         <div id="cargarNormativa" class="panel hide" style="position: relative;">
         </div>
-    <div id="div_normativas_buscadas">
-        <dl class="accordion" data-accordion id="accordion_normativas_buscadas">
-        </dl>
-    </div>
+        <div id="div_normativas_buscadas">
+            <dl class="accordion" data-accordion id="accordion_normativas_buscadas">
+            </dl>
+        </div>
         <div id="div_normativas">
             {#            {% for etiqueta in etiquetas %}#}
             {#                {% include 'normativa_fieldset.html' %}#}
@@ -116,20 +114,20 @@
             }
         });
 
-        $('#buscar_normativa_texto').click(function (e){
+        $('#buscar_normativa_texto').click(function (e) {
             var texto = $('#input_buscar_texto').val();
             $.post("/normativa/", {action: 'buscar_normativa_texto', 'texto': texto},
-                    function (data) {
-                        if (data.ok) {
-                            $('#accordion_normativas_buscadas').html('')
-                            for (let i = 0; i < data.htmls.length; i++) {
-                                $('#accordion_normativas_buscadas').append(data.htmls[i].html);
-                            }
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
+                function (data) {
+                    if (data.ok) {
+                        $('#accordion_normativas_buscadas').html('')
+                        for (let i = 0; i < data.htmls.length; i++) {
+                            $('#accordion_normativas_buscadas').append(data.htmls[i].html);
                         }
-                    });
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
         {# Código para crear nuevas etiquetas #}
         $('#plus_sign').click(function (e) {
@@ -139,6 +137,7 @@
                     function (data) {
                         if (data.ok) {
                             $('#div_normativas').prepend(data.html);
+                            $('#div_etiquetas_normativas_list').prepend(data.html_etiqueta);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
@@ -180,6 +179,7 @@
                             function (data) {
                                 if (data.ok) {
                                     $('#fieldset_etiqueta' + etiqueta).remove();
+                                    $('#a_etiqueta' + etiqueta).remove();
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
@@ -213,6 +213,7 @@
                         if (data.ok) {
                             if (campo == 'nombre' && clase == 'NormativaEtiqueta') {
                                 $('#etiqueta_nombre' + id).html(nuevo_texto);
+                                $('#label_etiqueta_normativa' + id).html(nuevo_texto);
                             }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
