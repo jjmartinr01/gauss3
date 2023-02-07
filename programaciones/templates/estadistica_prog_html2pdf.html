@@ -70,10 +70,10 @@
 
         $('#file-pdf-o_sign').click(function (e) {
                 e.preventDefault();
-                var style = '<style>table, td, th{border:1px}</style>';
                 var html = $('#listado_estadistica').html();
-                $('#textarea_listado_estadistica').val(style + html);
+                $('#textarea_listado_estadistica').val(html);
                 $('#action').val('genera_pdf');
+                console.log()
                 document.getElementById('{{ formname }}').submit();
             });
     </script>

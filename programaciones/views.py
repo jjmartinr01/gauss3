@@ -2981,12 +2981,12 @@ def progsecundaria_sb(request, id):
                   })
 
 
-@permiso_required('acceso_estadistica_programaciones')
+# @permiso_required('acceso_estadistica_programaciones')
 def estadistica_prog(request):
     g_e = request.session['gauser_extra']
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST':
         action = request.POST['action']
-        if action == 'estadistica_entidad':
+        if action == 'estadistica_entidad' and request.is_ajax():
             try:
                 entidad = Entidad.objects.get(id=request.POST['entidad'])
                 dep_ids = ProgSec.objects.filter(pga__ronda=entidad.ronda).values_list('departamento__id', flat=True)
@@ -2996,9 +2996,37 @@ def estadistica_prog(request):
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'genera_pdf':
+            doc_progsec_estadistica = 'Configuración de estadística para las programaciones'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec_estadistica)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_progsec_estadistica
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            c = request.POST['textarea_listado_estadistica']
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
+            response = HttpResponse(fich, content_type='application/pdf')
+            nombre = 'Informe_estadística'
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            return response
+
     return render(request, "estadistica_prog.html",
                   {
                       'formname': 'estadistica_prog',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'libre',
+                            'title': 'Generar PDF a partir de la información mostrada en pantalla'},
+                           ),
                       'departamentos': None,
                       'entidades': Entidad.objects.all(),
                       'g_e': g_e,
