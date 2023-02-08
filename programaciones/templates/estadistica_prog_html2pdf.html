@@ -1,80 +1,36 @@
-{% extends "base_select2-4.html" %}
-{% load my_templatetags %}
-{% load programaciones_extras %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Informe con estadística de programaciones</title>
 
-{% block contenido %}
     <style>
-        #title_page {
-            text-align: center !important;
-            color: #008CBA;
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            text-align: justify;
         }
 
-        .thtd {
+        h1 {
             text-align: center;
+         }
+        th, td {
+            text-align: center;
+            border: 1px gray solid!important;
         }
-        .thtdb {
-            text-align: center;
-            font-weight: bold;
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 30px;
+            border-collapse: collapse!important;
         }
     </style>
-    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
-        {% csrf_token %}
-        <input type="hidden" name="action" id="action" value="">
-        <input type="hidden" name="q" id="q" value="">
-        <input type="hidden" name="page" id="page" value="">
-
-        <div>
-            <h4 id="title_page"><strong>Estadística Programaciones</strong></h4>
-        </div>
-
-        <div class="row">
-            <div class="columns large-5">
-                <label>Selecciona el centro educativo:
-                    <select id="select_entidad">
-                        <option value="">-------</option>
-                        {% for entidad in entidades %}
-                            <option value="{{ entidad.id }}">{{ entidad.name }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-            </div>
-        </div>
-        <br>
-        <div id="listado_estadistica">
-            {% include 'estadistica_prog_tabla.html' %}
-        </div>
-    <textarea style="display: none;" id="textarea_listado_estadistica" name="textarea_listado_estadistica"></textarea>
-    </form>
-{% endblock %}
-
-{% block final %}
-    <script>
-        habilita(['s_file-pdf-o'])
-        $('#select_entidad').select2();
-        $('#select_entidad').change(function () {
-            var entidad = $(this).val();
-            $.post("/estadistica_prog/", {'action': 'estadistica_entidad', 'entidad': entidad},
-                function (data) {
-                    if (data.ok) {
-                        $('#listado_estadistica').append(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.remove_tabla', function (e){
-            $(this).closest('table').remove();
-        });
-
-        $('#file-pdf-o_sign').click(function (e) {
-                e.preventDefault();
-                var html = $('#listado_estadistica').html();
-                $('#textarea_listado_estadistica').val(html);
-                $('#action').val('genera_pdf');
-                console.log()
-                document.getElementById('{{ formname }}').submit();
-            });
-    </script>
-{% endblock %}
+</head>
+<body>
+<h1>INFORME ESTADÍSTICA PROGRAMACIONES</h1>
+{% autoescape off %}
+{{ tablas }}
+{% endautoescape %}
+</body>
+</html>

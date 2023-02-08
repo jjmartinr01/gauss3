@@ -3012,7 +3012,8 @@ def estadistica_prog(request):
                 dce.predeterminado = False
                 dce.editable = False
                 dce.save()
-            c = request.POST['textarea_listado_estadistica']
+            tablas = request.POST['textarea_listado_estadistica']
+            c = render_to_string('estadistica_prog_html2pdf.html', {'tablas': tablas})
             pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
             fich = open(dce.url_pdf, 'rb')
             response = HttpResponse(fich, content_type='application/pdf')
