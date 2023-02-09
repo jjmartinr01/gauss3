@@ -580,6 +580,7 @@
         {# array con los 'clave_cargo' de los cargos en los que buscar #}
         var subs = arguments.subs || [];
         {# array con los id de las subentidades en las que buscar #}
+        var scope = arguments.scope || 'ronda';
         var ph = arguments.placeholder || "Escribe parte del nombre";
         var mil = arguments.minimumInputLength || 3;
         var lan = arguments.language || "es";
@@ -597,7 +598,8 @@
                         q: params.term,
                         tipo: gcs, {# 'g' indica que se buscan gauser_extras #}
                         cars: cars, {# Array con los ids de los cargos en los que buscar los usuarios o cargos #}
-                        subs: subs {# Array con los ids de las subentidades en las que buscar los usuarios o subs #}
+                        subs: subs, {# Array con los ids de las subentidades en las que buscar los usuarios o subs #}
+                        scope: scope {# ámbito de búsqueda: 'ronda' o 'rondas' dentro de la organization #}
                     };
                 },
                 processResults: function (data, params) {
@@ -611,13 +613,17 @@
                             }
                             if (item.tipo === 'g') {
                                 return {
-                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor, item.cargos) + entidad,
+                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor, item.cargos, item.entidad),
                                     id: item.tipo + item.id
                                 }
                             } else if (item.tipo === 'c') {
-                                return {text: item.cargo + entidad, id: item.tipo + item.id}
+                                return {
+                                    text: format_g.format(item.cargo, '', '', '', '', item.entidad),
+                                    id: item.tipo + item.id}
                             } else if (item.tipo === 's') {
-                                return {text: item.subentidad + entidad, id: item.tipo + item.id}
+                                return {
+                                    text: format_g.format(item.subentidad, '', '', '', '', item.entidad),
+                                    id: item.tipo + item.id}
                             }
                         })
                     };

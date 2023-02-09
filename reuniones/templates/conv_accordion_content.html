@@ -71,8 +71,12 @@
     <div class="columns large-4">
         <label><b>Persona que convoca</b>
             <select id="convoca{{ conv.id }}" data-id="{{ conv.id }}">
-                <option value="establecida"
-                        selected="selected">{{ conv.convoca.get_full_name }}</option>
+                {% if conv.convoca %}
+                    <option value="establecida"
+                            selected="selected">{{ conv.convoca.get_full_name }}</option>
+                {% else %}
+                    <option value="">---------</option>
+                {% endif %}
             </select>
         </label>
     </div>
@@ -96,8 +100,12 @@
     <div class="columns large-4">
         <label><b>Persona que redacta el acta</b>
             <select id="redacta{{ conv.id }}" data-id="{{ conv.id }}">
-                <option value="establecida"
-                        selected="selected">{{ conv.actareunion_set.all.0.redacta.get_full_name }}</option>
+                {% if conv.actareunion_set.all.0.redacta %}
+                    <option value="establecida"
+                            selected="selected">{{ conv.actareunion_set.all.0.redacta.get_full_name }}</option>
+                {% else %}
+                    <option value="">----------</option>
+                {% endif %}
             </select>
         </label>
     </div>
@@ -138,7 +146,7 @@
              style="border: lightgrey solid 1px; padding:10px;"
              data-id="{{ conv.id }}" contenteditable="true">
             {% autoescape off %}
-                {{ conv.texto_convocatoria }}
+            {{ conv.texto_convocatoria }}
             {% endautoescape %}
         </div>
     </div>
@@ -157,7 +165,8 @@
 
 <div class="row">
     <div class="columns large-12">
-        En {{ conv.entidad.localidad }} a <a class="fecha_conv_reunion" data-id="{{ conv.id }}" data-fecha="">{{ conv.fecha|date:"j \d\e F \d\e Y"|lower }}</a>,
+        En {{ conv.entidad.localidad }} a <a class="fecha_conv_reunion" data-id="{{ conv.id }}" data-fecha="">
+        {{ conv.fecha|date:"j \d\e F \d\e Y"|lower }}</a>,
     </div>
 </div>
 <p>&nbsp;</p>
@@ -170,33 +179,32 @@
 
 
 <script>
-    $('#convoca{{ conv.id }}').select2();
     $('#subentidades_convocadas{{ conv.id }}').select2();
 
     config = {
-            removePlugins: 'exportpdf',
-            toolbar: [
-                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
-                },
-                '/',
-                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
-                {name: 'colors', items: ['TextColor', 'BGColor']},
-                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
-                {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About', 'generapdfbutton']}
-            ],
-            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
-        }
+        removePlugins: 'exportpdf',
+        toolbar: [
+            {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+            {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+            {
+                name: 'basicstyles',
+                items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+            },
+            {
+                name: 'paragraph',
+                items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+            },
+            '/',
+            {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+            {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+            {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+            {name: 'colors', items: ['TextColor', 'BGColor']},
+            {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+            {name: 'document', items: ['Source']},
+            {name: 'about', items: ['About', 'generapdfbutton']}
+        ],
+        extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+    }
     var editor_contenido_convocatoria = CKEDITOR.inline('texto_base{{ conv.id }}', config);
     {# extraAllowedContent: entre [] los atributos, entre {} los estilos y entre () los nombres de las clases permitidas #}
     editor_contenido_convocatoria.config.extraAllowedContent = 'li ol[id, title]; span(sub_convocadas, day_name, day_num, month_name, month_num, year, datetime_date, datetime_time, place, convocante, cargo_convocante, noeditable); h1(title, noeditable);span[id, title, contenteditable]';
@@ -237,7 +245,7 @@
             comprueba_cambio_texto(texto, conv);
         }, 1000);
         re_adjust_check_time();
-     });
+    });
 
     $('.texto_base').on('click', '.noeditable', function () {
         if ($(this).prop('id') == 'datetime_now') {
@@ -259,48 +267,20 @@
                 texto: 'Este texto cambiará automáticamente al asignar los parámetros de la convocatoria.'
             });
         }
-     });
+    });
 
-    $('#convoca{{ conv.id }}').select2({
-        placeholder: "Para buscar una persona, escribe parte de su nombre",
-        allowClear: true,
-        ajax: {
-            url: "/buscar_usuarios/",
-            type: 'GET',
-            dataType: 'json',
-            delay: 250,
-            data: function (params) { // page is the one-based page number tracked by Select2
-                return {
-                    action: 'select2',
-                    q: params.term, //search term
-                    page: params.page // page number
-                };
-            },
-            processResults: function (data, page) {
-                return {
-                    results: $.map(data, function (item) {
-                        return {
-                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
-                            id: item.id
-                        }
-                    })
-                };
-            },
-            cache: true
-        },
-        escapeMarkup: function (markup) {
-            return markup;
-        }, // let our custom formatter work
-        minimumInputLength: 3,
-        language: {
-            inputTooShort: function () {
-                return "Introduce al menos 3 caracteres para iniciar búsqueda";
-            }
-        }
-     });
+    setTimeout(function () {
+        $('#convoca{{ conv.id }}').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'format_g': '{0}, {1} ({4})',
+                'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
+            }));
+    }, 100);
 
     $('body').on('change', '#convoca{{ conv.id }}', function (e) {
-        var convoca = $(this).val();
+        var convoca = $(this).val().substring(1);
         var conv = $(this).data('id');
         $.post("/conv_reunion_ajax/", {
                 action: 'update_convoca_conv_reunion',
@@ -320,48 +300,20 @@
                     $("#update_error").show().delay(1500).fadeOut();
                 }
             });
-     });
+    });
 
-    $('#redacta{{ conv.id }}').select2({
-        placeholder: "Para buscar una persona, escribe parte de su nombre",
-        allowClear: true,
-        ajax: {
-            url: "/buscar_usuarios/",
-            type: 'GET',
-            dataType: 'json',
-            delay: 250,
-            data: function (params) { // page is the one-based page number tracked by Select2
-                return {
-                    action: 'select2',
-                    q: params.term, //search term
-                    page: params.page // page number
-                };
-            },
-            processResults: function (data, page) {
-                return {
-                    results: $.map(data, function (item) {
-                        return {
-                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
-                            id: item.id
-                        }
-                    })
-                };
-            },
-            cache: true
-        },
-        escapeMarkup: function (markup) {
-            return markup;
-        }, // let our custom formatter work
-        minimumInputLength: 3,
-        language: {
-            inputTooShort: function () {
-                return "Introduce al menos 3 caracteres para iniciar búsqueda";
-            }
-        }
-     });
+    setTimeout(function () {
+        $('#redacta{{ conv.id }}').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'format_g': '{0}, {1} ({4})',
+                'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
+            }));
+    }, 100);
 
     $('body').on('change', '#redacta{{ conv.id }}', function (e) {
-        var redacta = $(this).val();
+        var redacta = $(this).val().substring(1);
         var conv = $(this).data('id');
         $.post("/conv_reunion_ajax/", {
                 action: 'update_redacta_acta',
@@ -375,6 +327,6 @@
                     $("#update_error").show().delay(1500).fadeOut();
                 }
             });
-     });
+    });
 
 </script>
