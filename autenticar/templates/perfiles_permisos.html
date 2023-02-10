@@ -304,13 +304,14 @@
                 'url': '/selectgcs/',
                 'gcs': 'g',
                 'format_g': '{0}, {1} ({4})',
+                'format_prefix': 'None',
                 'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
             })
         );
 
         $("#buscar_usuario").change(function () {
             {# Para eliminar la 'g' inicial devuelta por el conf_select2 utilizamos substring: #}
-            $('#gauser_extra_selected').val($(this).val().substring(1));
+            $('#gauser_extra_selected').val($(this).val());
             $('#action').val('gauser_extra_selected');
             document.getElementById("{{ formname }}").submit();
         });

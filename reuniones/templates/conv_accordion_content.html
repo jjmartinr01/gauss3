@@ -274,13 +274,14 @@
             conf_select2({
                 'url': '/selectgcs/',
                 'gcs': 'g',
+                'format_prefix': 'None',
                 'format_g': '{0}, {1} ({4})',
                 'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
             }));
     }, 100);
 
     $('body').on('change', '#convoca{{ conv.id }}', function (e) {
-        var convoca = $(this).val().substring(1);
+        var convoca = $(this).val();
         var conv = $(this).data('id');
         $.post("/conv_reunion_ajax/", {
                 action: 'update_convoca_conv_reunion',
