@@ -4,18 +4,33 @@
 <p style="text-align: justify;">Realizada la evaluación del funcionario/de la funcionaria en prácticas
     D./Dª {{ efpa.docente.gauser.get_full_name }}, esta Inspección emite el siguiente</p>
 <h3 style="text-align: center;">INFORME</h3>
-<p style="text-align: justify;">De acuerdo con la Resolución 55/2021, de
-    13 de septiembre, de la Dirección General de Gestión Educativa, por la que se regula la fase de prácticas de los
-    aspirantes seleccionados en los procedimientos selectivos convocados por Resolución de 16 de enero de 2021, de la
-    Consejería de Educación, Cultura. Deporte y Juventud, para el ingreso y accesos a los cuerpos de profesores de
-    enseñanza secundaria; profesores técnicos de formación profesional; profesores de escuelas oficiales de idiomas;
-    profesores de música y artes escénicas; y profesores de artes plásticas y diseño; y procedimiento para la
-    adquisición de nuevas especialidades por los funcionarios de los mencionados cuerpos, en relación con el
-    funcionario/la funcionaria en prácticas, con dni {{ efpa.docente.gauser.dni }} de la especialidad de
-    {{ efpa.docente.puesto }} y destino en el
-    centro educativo {{ efpa.docente.ronda.entidad.name }} de {{ efpa.docente.ronda.entidad.localidad }} (La Rioja);
-    {% if efpa.inspector.gauser.sexo == 'H' %}el Inspector {% else %}la Inspectora{% endif %} de Educación
-    que suscribe. en virtud de lo previsto en el apartado Tercero.3) de la Resolución citada, emite una</p>
+<p style="text-align: justify;">
+    De acuerdo con la Resolución 61/2022, de 3 de octubre, de la Dirección General de Gestión Educativa, por la que se
+    regula la fase de prácticas de los aspirantes seleccionados en los procedimientos selectivos convocados por
+    Resolución 6/2022 de 1 de febrero 2022, de la Consejería de Educación, Cultura. Deporte y Juventud, para el ingreso
+    y acceso al cuerpo de Maestros y procedimiento para la adquisición de nuevas especialidades por los funcionarios del
+    mencionado cuerpo y en relación con la funcionaria en prácticas, con DNI {{ efpa.docente.gauser.dni }} de la
+    especialidad de {{ efpa.docente.puesto }} y destino en el centro educativo {{ efpa.docente.ronda.entidad.name }} de
+    {{ efpa.docente.ronda.entidad.localidad }} (La Rioja);
+    {% if efpa.inspector.gauser.sexo == 'H' %}el Inspector {% else %}la Inspectora{% endif %} de
+    Educación que suscribe, en virtud de lo previsto en el apartado Tercero.3) de la Resolución anteriormente citada,
+    emite una
+    {% comment %}
+        De acuerdo con la Resolución 55/2021, de
+        13 de septiembre, de la Dirección General de Gestión Educativa, por la que se regula la fase de prácticas de los
+        aspirantes seleccionados en los procedimientos selectivos convocados por Resolución de 16 de enero de 2021, de
+        la
+        Consejería de Educación, Cultura. Deporte y Juventud, para el ingreso y accesos a los cuerpos de profesores de
+        enseñanza secundaria; profesores técnicos de formación profesional; profesores de escuelas oficiales de idiomas;
+        profesores de música y artes escénicas; y profesores de artes plásticas y diseño; y procedimiento para la
+        adquisición de nuevas especialidades por los funcionarios de los mencionados cuerpos, en relación con el
+        funcionario/la funcionaria en prácticas, con dni {{ efpa.docente.gauser.dni }} de la especialidad de
+        {{ efpa.docente.puesto }} y destino en el
+        centro educativo {{ efpa.docente.ronda.entidad.name }} de {{ efpa.docente.ronda.entidad.localidad }} (La Rioja);
+        {% if efpa.inspector.gauser.sexo == 'H' %}el Inspector {% else %}la Inspectora{% endif %} de Educación
+        que suscribe, en virtud de lo previsto en el apartado Tercero.3) de la Resolución citada, emite una
+    {% endcomment %}
+</p>
 <p style="text-align: center;font-weight: bold;">
     VALORACIÓN POSITIVA DE LA FUNCIÓN DOCENTE</p>
 <p style="text-align: justify;">
@@ -91,15 +106,7 @@
 {#    {{ efpa.docente.gauser.get_full_name }}.</p>#}
 
 <p style="text-align: justify;">Atendiendo al apartado Tercero.4 de la
-    Resolución 55/2021, de 13 de septiembre, de la Dirección General de Gestión
-    Educativa, por la que se regula la fase de prácticas de los aspirantes seleccionados
-    en los procedimiento selectivos convocados por Resolución de 16 de enero de
-    2021, de la Consejería de Educación, Cultura, Deporte y Juventud, para el ingreso
-    y accesos a los cuerpos de profesores de enseñanza secundaria; profesores
-    técnicos de formación profesional; profesores de escuelas oficiales de idiomas;
-    profesores de música y artes escénicas; y profesores de artes plásticas y diseño;
-    y procedimiento para la adquisición de nuevas especialidades por los funcionarios
-    de los mencionados cuerpos, esta Inspección traslada a la comisión de evaluación que
+    Resolución anteriormente citada, esta Inspección traslada a la comisión de evaluación que
     <b>el funcionario/funcionaria en prácticas D./Dª{{ efpa.docente.gauser.get_full_name }}
         ha obtenido una puntuación de {{ efpa.cal_total }} puntos, sobre un máximo
         de {{ efpa.calificacion_maxima_posible }}</b> .
