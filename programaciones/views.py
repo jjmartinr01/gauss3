@@ -2648,26 +2648,11 @@ def progsecundaria_sb(request, id):
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
                     msg = '<p>Hay cuadernos de docentes creados de tipo PRO con algún procedimiento calificado.</p>'
-                    cuadernos = []
-                    n_pro = 0
-                    procedimientos_calificados = False
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        if cuaderno.tipo == 'PRO':
-                            n_pro = n_pro+1
-                            print('Verificando si hay procedimientos calificados....')
-                            # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
-                            # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
-                            escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
-                            for escalacp in escalacp_all:
-                                print(escalacp.id)
-                                necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
-                                print(necpv)
-                                if (necpv>0):
-                                    procedimientos_calificados = True
-                                    cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    print('Se puede borrar eh: ',)
+                    procedimientos_calificados = not sapren.es_eliminable(progsec)
                     # Existe al menos un cuaderno de tipo PRO con algún procedimiento calificado
                     if procedimientos_calificados:
-                        msg += ''.join(cuadernos)
+                        msg += ''#''.join(cuadernos)
                         return JsonResponse({'ok': False, 'msg': msg})
                     # No existe ningún cuaderno de tipo PRO, luego puede borrarse la situación de aprendizaje
                     else:
@@ -2855,42 +2840,15 @@ def progsecundaria_sb(request, id):
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
                     msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                    cuadernos = []
-                    procedimiento_calificado = False
-                    n_pro = 0
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        # INICIO
-                        if cuaderno.tipo == 'PRO':
-                            n_pro = n_pro + 1
-                            print('Verificando si hay procedimientos calificados....')
-                            # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
-                            # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
-                            escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
-                            for escalacp in escalacp_all:
-                                print(escalacp.id)
-                                if escalacp.ieval.id == inst.id:
-                                    print('Sí es el procedimiento')
-                                    print(escalacp.ieval.id)
-                                    necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
-                                    print('Nº de calificaciones realizadas en este procedimiento')
-                                    print(necpv)
-                                    if (necpv > 0):
-                                        print('Hay calificaciones y no se puede borrar')
-                                        procedimiento_calificado = True
-                                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                                    else:
-                                        print('No hay calificaciones y por tanto sí se puede borrar')
-                                else:
-                                    print('No es el procedimiento')
-                                    print(escalacp.ieval.id)
-                        # FIN
-                        #cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    procedimiento_calificado = not inst.es_eliminable(progsec)
+                    #cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     # Existe al menos un cuaderno de tipo PRO con ese procedimiento calificado
                     if procedimiento_calificado:
-                        msg += ''.join(cuadernos)
+                        msg += ''.join('Existen cuadernos de tipo PRO con este procedimiento calificado')
                         return JsonResponse({'ok': False, 'msg': msg})
                     # No existe ningún cuaderno de tipo PRO que califique ese procedimiento, asi que puede borrarse la situación de aprendizaje
                     else:
+                        print('Se puede borrar el procedimiento de forma segura')
                         inst.delete()
                         return JsonResponse({'ok': True})
                 elif inst.asapren.instreval_set.all().count() > 1:
@@ -3011,7 +2969,7 @@ def repositorio_sap(request):
                                                                                    'areamaterias': AreaMateria.objects.all()})
                 return JsonResponse({'ok': True, 'html': html})
             except:
-                return JsonResponse({'ok': False})
+                return JsonResponse({'ok': False, 'r':True})
         elif action == 'click_star':
             try:
                 rsap = RepoSitApren.objects.get(id=request.POST['sap'])

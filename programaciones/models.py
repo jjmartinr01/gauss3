@@ -982,6 +982,50 @@ class SitApren(models.Model):
         verbose_name_plural = 'Situaciones de aprendizaje'
         ordering = ['sbas__psec', 'sbas', 'id']
 
+
+    def es_eliminable(self, progsec):
+        procedimientos_calificados = False
+        cuadernos = []
+        for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+            if cuaderno.tipo == 'PRO':
+                print('Verificando si hay procedimientos calificados....')
+                escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
+                for escalacp in escalacp_all:
+                    inst = InstrEval.objects.get(id=escalacp.ieval.id)
+                    ## Se obtienen los criterios activados del procedimiento (peso>=1)
+                    criterios_con_peso = []
+                    for cri in inst.criinstreval_set.all():  # equivalente a CriInstrEval.objects.filter(ieval=inst.id)
+                        if cri.peso >= 1:
+                            criterios_con_peso.append(cri.id)
+                    print('Los ids son', criterios_con_peso)
+                    ### TEST - INICIO
+                    ## Se obtienen las calificaciones asociadas a alumnos para esos criterios activos previos
+                    ## en CAlAlum
+                    calificaciones = []
+                    for cri_conpeso_id in criterios_con_peso:
+                        cal_alumnos = CalAlum.objects.filter(cp=cuaderno.id, cie=cri_conpeso_id)
+                        for cal_al in cal_alumnos:
+                            print('Cal: ', cal_al.id)
+                            calificaciones.append(cal_al.id)
+                    ## Se obtienen las referencias de los valores de las calificaciones previas en CalAlumValor
+                    calalumvalor = CalAlumValor.objects.filter(ca__in=calificaciones)
+                    calalumvalor_array = []
+                    for c_a_v in calalumvalor.all():
+                        calalumvalor_array.append(c_a_v.ecpv.id)
+                        print('ecpv_id: ', c_a_v.ecpv.id)
+                    ## Se obtienen los valores numéricos en EscalaCPValor y se determina
+                    ## si existe al menos una calificación mayor de cero. En caso de existir,
+                    ## no se puede borrar el procedimiento
+                    escalacpvalores = EscalaCPvalor.objects.filter(id__in=calalumvalor_array)
+                    for escalacpvalor in escalacpvalores:
+                        print('Valor: ', escalacpvalor.valor, escalacpvalor.id)
+                        if escalacpvalor.valor > 0:
+                            procedimientos_calificados = True
+                            print('Hay calificaciones >0  y no se puede borrar')
+                            cuadernos.append(
+                                '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    ### TEST - FIN
+        return not procedimientos_calificados
     @property
     def num_asapren(self):
         return self.actsitapren_set.count()
@@ -1040,6 +1084,62 @@ class InstrEval(models.Model):
         verbose_name_plural = 'Instrumentos/Procedimientos de evaluación'
         ordering = ['asapren__sapren__sbas__psec', 'asapren__sapren__sbas', 'asapren__sapren', 'asapren', 'id']
 
+    def es_eliminable(self, progsec):
+        cuadernos = []
+        procedimiento_calificado = False
+        n_pro = 0
+        ## Se obtienen los criterios activados del procedimiento (peso>=1)
+        criterios_con_peso = []
+        for cri in self.criinstreval_set.all():  # equivalente a CriInstrEval.objects.filter(ieval=inst.id)
+            if cri.peso >= 1:
+                criterios_con_peso.append(cri.id)
+        print('Los ids son', criterios_con_peso)
+        for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+            # INICIO
+            if cuaderno.tipo == 'PRO':
+                n_pro = n_pro + 1
+                print('Verificando si hay procedimientos calificados....')
+                # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
+                # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
+                escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
+                for escalacp in escalacp_all:
+                    # print(escalacp.id)
+                    if escalacp.ieval.id == self.id:
+                        print('Sí es el procedimiento')
+                        print(escalacp.ieval.id)
+
+                        ### TEST - INICIO
+                        ## Se obtienen las calificaciones asociadas a alumnos para esos criterios activos previos
+                        ## en CAlAlum
+                        calificaciones = []
+                        for cri_conpeso_id in criterios_con_peso:
+                            cal_alumnos = CalAlum.objects.filter(cp=cuaderno.id, cie=cri_conpeso_id)
+                            for cal_al in cal_alumnos:
+                                print('Cal: ', cal_al.id)
+                                calificaciones.append(cal_al.id)
+                        ## Se obtienen las referencias de los valores de las calificaciones previas en CalAlumValor
+                        calalumvalor = CalAlumValor.objects.filter(ca__in=calificaciones)
+                        calalumvalor_array = []
+                        for c_a_v in calalumvalor.all():
+                            calalumvalor_array.append(c_a_v.ecpv.id)
+                            print('ecpv_id: ', c_a_v.ecpv.id)
+                        ## Se obtienen los valores numéricos en EscalaCPValor y se determina
+                        ## si existe al menos una calificación mayor de cero. En caso de existir,
+                        ## no se puede borrar el procedimiento
+                        escalacpvalores = EscalaCPvalor.objects.filter(id__in=calalumvalor_array)
+                        for escalacpvalor in escalacpvalores:
+                            print('Valor: ', escalacpvalor.valor, escalacpvalor.id)
+                            if escalacpvalor.valor > 0:
+                                procedimiento_calificado = True
+                                print('Hay calificaciones >0  y no se puede borrar')
+                                cuadernos.append(
+                                    '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                        ### TEST - FIN
+                    else:
+                        print('No es el procedimiento')
+                #   print(escalacp.ieval.id)
+            # FIN
+        return not procedimiento_calificado
     @property
     def get_criinstreval(self):
         # Para evitar utilizar criinstreval_set.all que devolvería también aquellos que tienen peso 0
