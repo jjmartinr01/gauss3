@@ -2152,6 +2152,70 @@ def progsecundaria(request):
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': False})
+        # Espe: Enviar Copia de la programación al docente seleccionado
+        elif action == 'enviar_copia_progsec':
+            try:
+                ps = ProgSec.objects.get(id=request.POST['progsec'])
+                docente = Gauser_extra.objects.get(id=request.POST['docente'])
+                doc_progsec = Gauser_extra_programaciones.objects.get(ge=docente)
+                # crea_departamentos(g_e.ronda) para que gauser extra ?
+                crea_departamentos(docente.ronda)
+                ps_nueva = ProgSec.objects.get(id=ps.id)
+                ps_nueva.pk = None
+                ps_nueva.pga = pga
+                # ps_nueva.gep = g_ep
+                ps_nueva.gep = doc_progsec
+                ps_nueva.nombre = ps.nombre + ' (Copia de: ' + g_ep.ge.gauser.first_name
+                ps_nueva.departamento = None
+                ps_nueva.tipo = 'BOR'
+                ps_nueva.save()
+                # DocProgSec.objects.create(psec=ps_nueva, gep=g_ep, permiso='X')
+                DocProgSec.objects.create(psec=ps_nueva, gep=doc_progsec, permiso='X')
+                for ceps in ps.ceprogsec_set.all():
+                    ceps_nueva = CEProgSec.objects.create(psec=ps_nueva, ce=ceps.ce, valor=ceps.valor)
+                    for cevps in ceps.cevprogsec_set.all():
+                        CEvProgSec.objects.create(cepsec=ceps_nueva, cev=cevps.cev, valor=cevps.valor)
+                for lr in ps.librorecurso_set.all():
+                    lr.pk = None
+                    lr.psec = ps_nueva
+                    lr.save()
+                for actex in ps.actexcom_set.all():
+                    actex.pk = None
+                    actex.psec = ps_nueva
+                    actex.save()
+                for sb in ps.saberbas_set.all():
+                    sb_nuevo = SaberBas.objects.get(id=sb.id)
+                    sb_nuevo.pk = None
+                    sb_nuevo.psec = ps_nueva
+                    sb_nuevo.save()
+                    for actex in sb.actexcoms.all():
+                        sb_nuevo.actexcoms.add(*ps_nueva.actexcom_set.filter(nombre=actex.nombre))
+                    for lr in sb.librorecursos.all():
+                        sb_nuevo.actexcoms.add(*ps_nueva.librorecurso_set.filter(nombre=lr.nombre))
+                    for sa in sb.sitapren_set.all():
+                        sa_nueva = SitApren.objects.create(sbas=sb_nuevo, objetivo=sa.objetivo, nombre=sa.nombre,
+                                                           contenidos_sbas=sa.contenidos_sbas)
+                        for cep in sa.ceps.all():
+                            sa_nueva.ceps.add(*ps_nueva.ceprogsec_set.filter(ce=cep.ce))
+                        for asa in sa.actsitapren_set.all():
+                            asa_nueva = ActSitApren.objects.get(id=asa.id)
+                            asa_nueva.pk = None
+                            asa_nueva.sapren = sa_nueva
+                            asa_nueva.save()
+                            for ieval in asa.instreval_set.all():
+                                ieval_nuevo = InstrEval.objects.get(id=ieval.id)
+                                ieval_nuevo.pk = None
+                                ieval_nuevo.asapren = asa_nueva
+                                ieval_nuevo.save()
+                                for cieval in ieval.criinstreval_set.all():
+                                    cevps = CEvProgSec.objects.get(cepsec__psec=ps_nueva, cev=cieval.cevps.cev)
+                                    CriInstrEval.objects.create(ieval=ieval_nuevo, cevps=cevps, peso=cieval.peso)
+                html = render_to_string('progsec_accordion.html',
+                                        {'buscadas': False, 'progsecs': [ps_nueva], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
+        # Espe: Fin Enviar Copia de la programación
         elif action == 'update_texto':
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,

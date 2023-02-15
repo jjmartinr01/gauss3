@@ -54,10 +54,22 @@
                    title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
                 Borrar</a></li>
             {#            {% endif %}#}
+
+            <!-- Modificación Espe: Enviar copiar programación a otro docente
+            --Codigo inicial original
+            <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
+                   title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i>
+                Copiar</a>
+            --Fin codigo Inicial -->
             <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
                    title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i>
                 Copiar</a>
             </li>
+            <li><a class="button enviar_copia tiny" data-progsec="{{ progsec.id }}"
+                   title="Enviar una copia (un duplicado) de esta programación didáctica a otro docente"><i class="fa fa-send"></i>
+                Enviar copia</a>
+            </li>
+            <!-- FIN Modificación Espe: Enviar copia programación -->
             <li><a class="button tiny" target="_blank" title="Ver la programación en el navegador"
                    href="/verprogramacion/{{ progsec.pga.ronda.entidad.secret }}/{{ progsec.id }}/"><i
                     class="fa fa-file-text"></i> Texto</a>
@@ -68,6 +80,27 @@
         </ul>
     </div>
 </div>
+<!-- Modificación Espe: Enviar copiar programación a otro docente. Muestra listado de docentes -->
+<input name="gauser_extra_selected" id="gauser_extra_selected" value="{{ gauser_extra.id }}">
+<div id="lista_docentes{{ progsec.id }}">
+            <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <div class="row">
+                    <div class="columns large-7">
+                        <label>
+                            <b>Buscar el docente para enviarle una copia de la programación:</b>
+                            <select id="buscar_docente"></select>
+                        </label>
+                    </div>
+                    <!--<div><a href=""><i class="fa fa-send"></i> Enviar</a></div>-->
+                    <div><a class="enviar_copia_progsec" data-progsec="{{ progsec.id }}"
+                   title="Enviar copia de esta programación al docente seleccionado"><i class="fa fa-send"></i>
+                Enviar</a></div>
+                </div>
+            </section>
+            </div>
+</div>
+<!-- FIN Modificación Espe: Enviar copia programación -->
 <div class="row">
     <div class="columns large-4">
         <label><b>Nombre específico: </b>
@@ -673,4 +706,21 @@
 </div>
 <script>
     $('select').select2();
+    //Espe: Enviar programación a otro docente
+    //Función conf_select2 definida en base_select2-4.html
+    $('#buscar_docente').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'cars': ['g_docente',],
+                'format_g': '{0}, {1} ({4})',
+                'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
+            })
+    );
+    $("#buscar_docente").change(function () {
+        {# Para eliminar la 'g' inicial devuelta por el conf_select2 utilizamos substring: #}
+        $('#gauser_extra_selected').val($(this).val().substring(1));
+        {# $('#gauser_extra_selected').val($(this).val()); #}
+    });
+    //Espe: Fin Enviar programación a otro docente
 </script>
