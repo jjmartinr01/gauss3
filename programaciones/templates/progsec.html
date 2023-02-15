@@ -615,6 +615,24 @@
                     });
             });
 
+            <!-- Espe: Enviar programación a otro usuario -->
+            $('body').on('click', '.enviar_copia_progsec', function () {
+                var progsec = $(this).data('progsec');
+                var docente = $('#gauser_extra_selected').val();
+                $.post("/progsecundaria/", {
+                        action: 'enviar_copia_progsec', progsec: progsec, docente: docente
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_progsec').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            // $('#lista_docentes' + id).html(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            <!-- Espe: Fin Enviar programación a otro usuario -->
 
             {######################################################## #}
 
