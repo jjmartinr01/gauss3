@@ -2157,12 +2157,14 @@ def progsecundaria(request):
             try:
                 ps = ProgSec.objects.get(id=request.POST['progsec'])
                 docente = Gauser_extra.objects.get(id=request.POST['docente'])
-                doc_progsec = Gauser_extra_programaciones.objects.get(ge=docente)
+                ronda_destino = docente.ronda
+                pga_destino, c = PGA.objects.get_or_create(ronda=ronda_destino)
+                doc_progsec, c = Gauser_extra_programaciones.objects.get_or_create(ge=docente)
                 # crea_departamentos(g_e.ronda) para que gauser extra ?
-                crea_departamentos(docente.ronda)
+                crea_departamentos(ronda_destino)
                 ps_nueva = ProgSec.objects.get(id=ps.id)
                 ps_nueva.pk = None
-                ps_nueva.pga = pga
+                ps_nueva.pga = pga_destino
                 # ps_nueva.gep = g_ep
                 ps_nueva.gep = doc_progsec
                 ps_nueva.nombre = ps.nombre + ' (Copia de: ' + g_ep.ge.gauser.first_name

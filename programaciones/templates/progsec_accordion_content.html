@@ -81,7 +81,6 @@
     </div>
 </div>
 <!-- Modificación Espe: Enviar copiar programación a otro docente. Muestra listado de docentes -->
-<input name="gauser_extra_selected" id="gauser_extra_selected" value="{{ gauser_extra.id }}">
 <div id="lista_docentes{{ progsec.id }}">
             <div class="tabs-content">
             <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
@@ -89,7 +88,7 @@
                     <div class="columns large-7">
                         <label>
                             <b>Buscar el docente para enviarle una copia de la programación:</b>
-                            <select id="buscar_docente"></select>
+                            <select id="gauser_extra_selected"></select>
                         </label>
                     </div>
                     <!--<div><a href=""><i class="fa fa-send"></i> Enviar</a></div>-->
@@ -705,22 +704,23 @@
 </div>
 </div>
 <script>
-    $('select').select2();
     //Espe: Enviar programación a otro docente
     //Función conf_select2 definida en base_select2-4.html
-    $('#buscar_docente').select2(
+    $('#gauser_extra_selected').select2(
             conf_select2({
                 'url': '/selectgcs/',
                 'gcs': 'g',
                 'cars': ['g_docente',],
-                'format_g': '{0}, {1} ({4})',
+                'format_g': '{0}, {1} ({5})',
+                'format_prefix': 'None',
+                'scope': 'rondas',
                 'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
             })
     );
-    $("#buscar_docente").change(function () {
+    {#$("#buscar_docente").change(function () {#}
         {# Para eliminar la 'g' inicial devuelta por el conf_select2 utilizamos substring: #}
-        $('#gauser_extra_selected').val($(this).val().substring(1));
+    {#    $('#gauser_extra_selected').val($(this).val().substring(1));#}
         {# $('#gauser_extra_selected').val($(this).val()); #}
-    });
+    {# });#}
     //Espe: Fin Enviar programación a otro docente
 </script>
