@@ -17,7 +17,7 @@ from autenticar.control_acceso import permiso_required
 from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento, get_apartados, get_columnas, \
     get_columnas_edb
 from entidades.templatetags.entidades_extras import puestos_especialidad
-from gauss.funciones import html_to_pdf
+from gauss.funciones import html_to_pdf, pass_generator
 from gauss.rutas import *
 from django.http import HttpResponse, FileResponse
 from django.db.models import Q
@@ -408,77 +408,80 @@ def ajax_cupo(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
         elif action == 'copy_cupo' and g_e.has_permiso('copia_cupo_profesorado'):
-            orig = Cupo.objects.get(id=request.POST['cupo'])
-            if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
-                return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
-            cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre))
-            CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
-            # crea_departamentos(g_e.ronda)
-            for e in orig.especialidadcupo_set.all():
-                e.pk = None
-                e.cupo = cupo
-                # try:
-                #     e.departamento = Departamento.objects.get(ronda=g_e.ronda, abreviatura=e.departamento.abreviatura)
-                # except:
-                #     e.departamento = None
-                #     crear_aviso(request, False, 'No se encuentra departamento para %s' % e.nombre)
-                e.save()
-            for etapa in orig.etapaescolarcupo_set.all():
-                etapa.pk = None
-                etapa.cupo = cupo
-                etapa.save()
-            for curso in orig.cursocupo_set.all():
-                if curso.etapa_escolar:
-                    etapa = cupo.etapaescolarcupo_set.get(clave_ex=curso.etapa_escolar.clave_ex)
-                else:
-                    etapa = None
-                curso.pk = None
-                curso.etapa_escolar = etapa
-                curso.cupo = cupo
-                curso.save()
-            for m in orig.materia_cupo_set.all():
-                if m.curso_cupo:
-                    curso = cupo.cursocupo_set.get(clave_ex=m.curso_cupo.clave_ex)
-                else:
-                    curso = None
-                m.pk = None
-                m.cupo = cupo
-                m.curso_cupo = curso
-                try:
-                    especialidad = EspecialidadCupo.objects.get(cupo=cupo, nombre=m.especialidad.nombre)
-                    m.especialidad = especialidad
-                except:
-                    m.especialidad = None
-                try:
-                    curso = Curso.objects.get(ronda=cupo.ronda, clave_ex=m.curso.clave_ex)
-                    m.curso = curso
-                except:
-                    if m.curso:
-                        crear_aviso(request, False, 'No se encuentra curso para %s' % m.nombre)
-                    m.curso = None
-                m.save()
-            for f in orig.filtrocupo_set.all():
-                f.pk = None
-                f.cupo = cupo
-                f.save()
-            for p in orig.profesores_cupo_set.all():
-                p_cs = p.profesor_cupo_set.all()
-                p.pk = None
-                p.cupo = cupo
-                try:
-                    especialidad = EspecialidadCupo.objects.get(cupo=cupo, nombre=p.especialidad.nombre)
-                    p.especialidad = especialidad
-                except:
-                    p.especialidad = None
-                p.save()
-                for p_c in p_cs:
-                    p_c.pk = None
-                    p_c.profesorado = p
-                    p_c.save()
+            try:
+                orig = Cupo.objects.get(id=request.POST['cupo'])
+                if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
+                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre))
+                CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
+                # crea_departamentos(g_e.ronda)
+                for e in orig.especialidadcupo_set.all():
+                    e.pk = None
+                    e.cupo = cupo
+                    # try:
+                    #     e.departamento = Departamento.objects.get(ronda=g_e.ronda, abreviatura=e.departamento.abreviatura)
+                    # except:
+                    #     e.departamento = None
+                    #     crear_aviso(request, False, 'No se encuentra departamento para %s' % e.nombre)
+                    e.save()
+                for etapa in orig.etapaescolarcupo_set.all():
+                    etapa.pk = None
+                    etapa.cupo = cupo
+                    etapa.save()
+                for curso in orig.cursocupo_set.all():
+                    if curso.etapa_escolar:
+                        etapa = cupo.etapaescolarcupo_set.get(clave_ex=curso.etapa_escolar.clave_ex)
+                    else:
+                        etapa = None
+                    curso.pk = None
+                    curso.etapa_escolar = etapa
+                    curso.cupo = cupo
+                    curso.save()
+                for m in orig.materia_cupo_set.all():
+                    if m.curso_cupo:
+                        curso = cupo.cursocupo_set.get(clave_ex=m.curso_cupo.clave_ex, nombre=m.curso_cupo.nombre)
+                    else:
+                        curso = None
+                    m.pk = None
+                    m.cupo = cupo
+                    m.curso_cupo = curso
+                    try:
+                        especialidad = EspecialidadCupo.objects.get(cupo=cupo, nombre=m.especialidad.nombre)
+                        m.especialidad = especialidad
+                    except:
+                        m.especialidad = None
+                    try:
+                        curso = Curso.objects.get(ronda=cupo.ronda, clave_ex=m.curso.clave_ex)
+                        m.curso = curso
+                    except:
+                        if m.curso:
+                            crear_aviso(request, False, 'No se encuentra curso para %s' % m.nombre)
+                        m.curso = None
+                    m.save()
+                for f in orig.filtrocupo_set.all():
+                    f.pk = None
+                    f.cupo = cupo
+                    f.save()
+                for p in orig.profesores_cupo_set.all():
+                    p_cs = p.profesor_cupo_set.all()
+                    p.pk = None
+                    p.cupo = cupo
+                    try:
+                        especialidad = EspecialidadCupo.objects.get(cupo=cupo, nombre=p.especialidad.nombre)
+                        p.especialidad = especialidad
+                    except:
+                        p.especialidad = None
+                    p.save()
+                    for p_c in p_cs:
+                        p_c.pk = None
+                        p_c.profesorado = p
+                        p_c.save()
 
-            logger.info('%s, copy_cupo id=%s -> id=%s' % (g_e, orig.id, cupo.id))
-            html = render_to_string('cupo_accordion.html', {'cupo': cupo})
-            return JsonResponse({'ok': True, 'html': html})
+                logger.info('%s, copy_cupo id=%s -> id=%s' % (g_e, orig.id, cupo.id))
+                html = render_to_string('cupo_accordion.html', {'cupo': cupo})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
         elif action == 'delete_cupo' and g_e.has_permiso('borra_cupo_profesorado'):
             try:
@@ -716,6 +719,7 @@ def ajax_cupo(request):
                     cc_original = CursoCupo.objects.get(cupo=cupo, id=request.POST['curso'])
                     cc_nuevo = CursoCupo.objects.get(cupo=cupo, id=request.POST['curso'])
                     cc_nuevo.pk = None
+                    cc_nuevo.clave_ex = pass_generator()
                     cc_nuevo.nombre = cc_nuevo.nombre + ' (copia)'
                     cc_nuevo.save()
                     for mc in cc_original.materia_cupo_set.all():
