@@ -616,6 +616,11 @@
             });
 
             <!-- Espe: Enviar programación a otro usuario -->
+            $('body').on('click', '.enviar_copia', function (e) {
+                e.preventDefault();
+                $('#lista_docentes').toggle();
+            });
+
             $('body').on('click', '.enviar_copia_progsec', function () {
                 var progsec = $(this).data('progsec');
                 var docente = $('#gauser_extra_selected').val();

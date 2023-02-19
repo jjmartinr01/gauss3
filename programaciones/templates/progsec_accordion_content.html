@@ -55,12 +55,7 @@
                 Borrar</a></li>
             {#            {% endif %}#}
 
-            <!-- Modificación Espe: Enviar copiar programación a otro docente
-            --Codigo inicial original
-            <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
-                   title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i>
-                Copiar</a>
-            --Fin codigo Inicial -->
+            <!-- Modificación Espe: Enviar copiar programación a otro docente -->
             <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
                    title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i>
                 Copiar</a>
@@ -81,20 +76,20 @@
     </div>
 </div>
 <!-- Modificación Espe: Enviar copiar programación a otro docente. Muestra listado de docentes -->
-<div id="lista_docentes{{ progsec.id }}">
+<div style="display:none" id="lista_docentes">
             <div class="tabs-content">
             <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
                 <div class="row">
-                    <div class="columns large-7">
+                    <div class="columns large-10">
                         <label>
-                            <b>Buscar el docente para enviarle una copia de la programación:</b>
-                            <select id="gauser_extra_selected"></select>
+                            <b>Buscar el docente para enviarle una copia de la programación:</b><br>
+                            <select id="gauser_extra_selected" style="width:100%"></select>
                         </label>
                     </div>
-                    <!--<div><a href=""><i class="fa fa-send"></i> Enviar</a></div>-->
-                    <div><a class="enviar_copia_progsec" data-progsec="{{ progsec.id }}"
+                    <div><br><a class="button tiny enviar_copia_progsec" data-progsec="{{ progsec.id }}"
                    title="Enviar copia de esta programación al docente seleccionado"><i class="fa fa-send"></i>
-                Enviar</a></div>
+                Enviar</a>
+                    </div>
                 </div>
             </section>
             </div>
@@ -704,8 +699,8 @@
 </div>
 </div>
 <script>
-    //Espe: Enviar programación a otro docente
-    //Función conf_select2 definida en base_select2-4.html
+    // Espe: Enviar programación a otro docente
+    // Función conf_select2 definida en base_select2-4.html
     $('#gauser_extra_selected').select2(
             conf_select2({
                 'url': '/selectgcs/',
@@ -717,10 +712,5 @@
                 'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
             })
     );
-    {#$("#buscar_docente").change(function () {#}
-        {# Para eliminar la 'g' inicial devuelta por el conf_select2 utilizamos substring: #}
-    {#    $('#gauser_extra_selected').val($(this).val().substring(1));#}
-        {# $('#gauser_extra_selected').val($(this).val()); #}
-    {# });#}
-    //Espe: Fin Enviar programación a otro docente
+    // Espe: Fin Enviar programación a otro docente
 </script>
