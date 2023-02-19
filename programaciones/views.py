@@ -2211,9 +2211,10 @@ def progsecundaria(request):
                                 for cieval in ieval.criinstreval_set.all():
                                     cevps = CEvProgSec.objects.get(cepsec__psec=ps_nueva, cev=cieval.cevps.cev)
                                     CriInstrEval.objects.create(ieval=ieval_nuevo, cevps=cevps, peso=cieval.peso)
-                html = render_to_string('progsec_accordion.html',
-                                        {'buscadas': False, 'progsecs': [ps_nueva], 'g_e': g_e, 'nueva': True})
-                return JsonResponse({'ok': True, 'html': html})
+                # html = render_to_string('progsec_accordion.html',
+                #                         {'buscadas': False, 'progsecs': [ps_nueva], 'g_e': g_e, 'nueva': True})
+                # return JsonResponse({'ok': True, 'html': html})
+                return JsonResponse({'ok': True, 'msg': 'Programación enviada correctamente'})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': False})
         # Espe: Fin Enviar Copia de la programación

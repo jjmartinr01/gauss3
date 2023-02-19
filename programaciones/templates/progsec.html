@@ -629,9 +629,7 @@
                     },
                     function (data) {
                         if (data.ok) {
-                            $('#list_progsec').prepend(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
-                            // $('#lista_docentes' + id).html(data.html);
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
                         }
