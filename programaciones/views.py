@@ -3951,10 +3951,17 @@ def arregla_instrevals(request):
         return HttpResponse(str(msg))
 
 
-"""
+
 from programaciones.models import *
 from django.core import serializers
 from django.core.signing import Signer
+
+# t='''Texto para
+    # ser separado
+    # en sus diferentes líneas'''
+    # for i, p in enumerate(t.splitlines()):
+    #     if p:
+    #         print(i, p.strip())
 
 def copiaSeguridadCuaderno(cuaderno):
     ProgSecs = ProgSec.objects.filter(id=cuaderno.psec.id)
@@ -3984,10 +3991,24 @@ def copiaSeguridadCuaderno(cuaderno):
     with open("Output.cua", "w") as text_file:
         text_file.write(data_signed)
 
+def restaurarCopiaSeguridadCuaderno(ruta_archivo):
     # with open('Output.cua', 'r') as file:
-    #     data_read = file.read()
-        ## Se supone que data_read y data_signed son iguales. Por tanto se podría hacer:
-        # signer2 = Signer()
-        # datos_recuperados = signer2.unsign(data_read)
-        
-"""
+    with open(ruta_archivo, 'r') as file:
+        data_read = file.read()
+        # Se supone que data_read y data_signed son iguales. Por tanto, se podría hacer:
+        signer2 = Signer()
+        datos_recuperados = signer2.unsign(data_read)
+        dict_relaciones = {}
+        for deserialized_object in serializers.deserialize("jsonl", datos_recuperados):
+            pk_antiguo = deserialized_object.object.pk
+            deserialized_object.save()
+            pk_nuevo = deserialized_object.object.pk
+            try:
+                dict_relaciones[deserialized_object.object.__class__.__name__][pk_antiguo] = pk_nuevo
+            except:
+                dict_relaciones[deserialized_object.object.__class__.__name__] = {}
+                dict_relaciones[deserialized_object.object.__class__.__name__][pk_antiguo] = pk_nuevo
+
+            # Guardaremos en un diccionario la relación entre los antiguos objetos y los nuevos:
+
+
