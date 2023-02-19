@@ -109,7 +109,7 @@
         {% endif %}
 
 
-        <dl class="accordion" data-accordion id="list_cupos" title="Lista de cupos">
+        <dl class="accordion" data-accordion id="list_cupos">
             {% for cupo in cupos %}
                 {% include "cupo_accordion.html" %}
             {% endfor %}
@@ -157,9 +157,10 @@
                 $(".usuarios_invitados").select2(
                     conf_select2({
                         'gcs': 'g',
-                        'format_g': '{0}, {1}',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
                         'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
-                        'url': '/selectgcs_organization/'
+                        'url': '/selectgcs/'
                     })
                 );
             }, 300);
