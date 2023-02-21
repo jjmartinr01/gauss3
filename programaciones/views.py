@@ -2077,6 +2077,8 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_progsec':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
@@ -2495,6 +2497,8 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_saber':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
@@ -2714,6 +2718,8 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_sap':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 progsec = sapren.sbas.psec
@@ -2890,6 +2896,8 @@ def progsecundaria_sb(request, id):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'borrar_sap_actividad':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 act = ActSitApren.objects.get(id=request.POST['id'])
                 progsec = act.sapren.sbas.psec
@@ -2922,6 +2930,8 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_act_instrumento':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 inst = InstrEval.objects.get(id=request.POST['id'])
                 progsec = inst.asapren.sapren.sbas.psec
