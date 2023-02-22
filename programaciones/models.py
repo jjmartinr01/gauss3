@@ -982,8 +982,20 @@ class SitApren(models.Model):
         verbose_name_plural = 'Situaciones de aprendizaje'
         ordering = ['sbas__psec', 'sbas', 'id']
 
+    @property
+    def es_eliminable(self):
+        progsec = self.sbas.psec
+        cal_gt_c = CalAlumValor.objects.filter(ecpv__ecp__cp__psec=progsec, ecpv__valor__gt=0,
+                                               ecpv__ecp__cp__tipo='PRO').count()
+        print('Calificaciones mayores de cero:', cal_gt_c)
+        if cal_gt_c > 0:
+            return False
+        else:
+            return True
 
-    def es_eliminable(self, progsec):
+    @property
+    def es_eliminable_old(self):
+        progsec = self.sbas.psec
         procedimientos_calificados = False
         cuadernos = []
         for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
@@ -1084,7 +1096,17 @@ class InstrEval(models.Model):
         verbose_name_plural = 'Instrumentos/Procedimientos de evaluación'
         ordering = ['asapren__sapren__sbas__psec', 'asapren__sapren__sbas', 'asapren__sapren', 'asapren', 'id']
 
-    def es_eliminable(self, progsec):
+    @property
+    def es_eliminable(self):
+        cal_gt_c = CalAlumValor.objects.filter(ca__cie__ieval=self, ecpv__valor__gt=0,ecpv__ecp__cp__tipo='PRO').count()
+        print('Calificaciones mayores de cero:', cal_gt_c)
+        if cal_gt_c>0:
+            return False
+        else:
+            return True
+    @property
+    def es_eliminable_old(self):
+        progsec = self.asapren.sapren.sbas.psec
         cuadernos = []
         procedimiento_calificado = False
         n_pro = 0
@@ -1094,6 +1116,7 @@ class InstrEval(models.Model):
             if cri.peso >= 1:
                 criterios_con_peso.append(cri.id)
         print('Los ids son', criterios_con_peso)
+
         for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
             # INICIO
             if cuaderno.tipo == 'PRO':

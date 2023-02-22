@@ -2654,8 +2654,7 @@ def progsecundaria_sb(request, id):
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
                     msg = '<p>Hay cuadernos de docentes creados de tipo PRO con algún procedimiento calificado.</p>'
-                    print('Se puede borrar eh: ',)
-                    procedimientos_calificados = not sapren.es_eliminable(progsec)
+                    procedimientos_calificados = not sapren.es_eliminable
                     # Existe al menos un cuaderno de tipo PRO con algún procedimiento calificado
                     if procedimientos_calificados:
                         msg += ''#''.join(cuadernos)
@@ -2846,7 +2845,7 @@ def progsecundaria_sb(request, id):
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
                     msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                    procedimiento_calificado = not inst.es_eliminable(progsec)
+                    procedimiento_calificado = not inst.es_eliminable
                     #cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     # Existe al menos un cuaderno de tipo PRO con ese procedimiento calificado
                     if procedimiento_calificado:
