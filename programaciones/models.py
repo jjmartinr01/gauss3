@@ -1374,6 +1374,63 @@ class CuadernoProf(models.Model):
             saps = sb.sitapren_set.all()
             if saps.count() == 0:
                 sb_element['sb_columns'] += 1
+                sap_dict = {'sap': False, 'sap_columns': 1, 'asaps': []}
+                asap_dict = {'asap': False, 'asap_columns': 1, 'ievals': []}
+                ieval_dict = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
+                ieval_dict['cievals'].append(False)
+                asap_dict['ievals'].append(ieval_dict)
+                sap_dict['asaps'].append(asap_dict)
+                sb_element['saps'].append(sap_dict)
+            for sap in sb.sitapren_set.all():
+                sap_element = {'sap': sap, 'sap_columns': 0, 'asaps': []}
+                asaps = sap.actsitapren_set.all()
+                if asaps.count() == 0:
+                    sb_element['sb_columns'] += 1
+                    sap_element['sap_columns'] += 1
+                    asap_dict = {'asap': False, 'asap_columns': 1, 'ievals': []}
+                    ieval_dict = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
+                    ieval_dict['cievals'].append(False)
+                    asap_dict['ievals'].append(ieval_dict)
+                    sap_dict['asaps'].append(asap_dict)
+                for asap in asaps:
+                    asap_element = {'asap': asap, 'asap_columns': 0, 'ievals': []}
+                    ievals = asap.instreval_set.all()
+                    if ievals.count() == 0:
+                        sb_element['sb_columns'] += 1
+                        sap_element['sap_columns'] += 1
+                        asap_element['asap_columns'] += 1
+                        ieval_dict = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
+                        asap_element['ievals'].append(ieval_dict)
+                        ieval_dict['cievals'].append(False)
+                    for ieval in ievals:
+                        ieval_element = {'ieval': ieval, 'ieval_columns': 0, 'cievals': []}
+                        cievals = ieval.get_criinstreval
+                        if cievals.count() == 0:
+                            sb_element['sb_columns'] += 1
+                            sap_element['sap_columns'] += 1
+                            asap_element['asap_columns'] += 1
+                            ieval_element['ieval_columns'] += 1
+                            ieval_element['cievals'].append(False)
+                        for cieval in cievals:
+                            sb_element['sb_columns'] += 1
+                            sap_element['sap_columns'] += 1
+                            asap_element['asap_columns'] += 1
+                            ieval_element['ieval_columns'] += 1
+                            ieval_element['cievals'].append(cieval)
+                        asap_element['ievals'].append(ieval_element)
+                    sap_element['asaps'].append(asap_element)
+                sb_element['saps'].append(sap_element)
+            sbs_array.append(sb_element)
+        return sbs_array
+
+    @property
+    def estructura_cuaderno_antiguo(self):
+        sbs_array = []
+        for sb in self.psec.saberbas_set.all():
+            sb_element = {'sb': sb, 'sb_columns': 0, 'saps': []}
+            saps = sb.sitapren_set.all()
+            if saps.count() == 0:
+                sb_element['sb_columns'] += 1
                 sap = {'sap': False, 'sap_columns': 1, 'asaps': []}
                 asap = {'asap': False, 'asap_columns': 1, 'ievals': []}
                 ieval = {'ieval': False, 'ieval_columns': 1, 'cievals': []}

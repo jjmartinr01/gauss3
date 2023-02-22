@@ -3332,7 +3332,6 @@ def cuadernodocente(request):
                 docentes = profesorado(g_e.ronda.entidad)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
                                                                                    'docentes': docentes})
-                # html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
                 cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
                 cuaderno.save()
                 return JsonResponse({'ok': True, 'html': html})
