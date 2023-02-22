@@ -669,6 +669,7 @@ class ProgSec(models.Model):
     procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
     planrecup = models.TextField('Organización y seguimiento de los PREs', blank=True, null=True, default='')
     identificador = models.CharField('Identificador', max_length=11, default=pass_generator)
+    borrado = models.BooleanField('¿ProgSec borrada?', default=False)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
@@ -820,6 +821,7 @@ class CEProgSec(models.Model):
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     nivel = models.CharField('Nivel de referencia para evaluar al alumno/a', max_length=7, default='', blank=True,
                              null=True, choices=NIVELES)
+    description = models.TextField('Descripción de la modificación asociada', default='')
     grado = models.IntegerField('Grado de adquisción de la competencia específica', default=100, choices=GRADOS)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
@@ -859,6 +861,7 @@ class CEvProgSec(models.Model):
     cepsec = models.ForeignKey(CEProgSec, on_delete=models.CASCADE, blank=True, null=True)
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
+    description = models.TextField('Descripción de la aplicación asociada al CEV', default='')
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property
@@ -925,6 +928,7 @@ class SaberBas(models.Model):
     librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    borrado = models.BooleanField('¿SaberBas borrado?', default=False)
 
     @property
     def fin(self):
@@ -977,6 +981,7 @@ class SitApren(models.Model):
     ceps = models.ManyToManyField(CEProgSec, blank=True)
     contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
     # producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
+    borrado = models.BooleanField('¿SitApren borrada?', default=False)
 
     class Meta:
         verbose_name_plural = 'Situaciones de aprendizaje'
@@ -1003,6 +1008,8 @@ class ActSitApren(models.Model):
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     description = models.TextField('Descripción de la actividad ligada a la situación de aprendizaje', blank=True)
     producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
+    borrado = models.BooleanField('¿ActSitApren borrado?', default=False)
+
 
     class Meta:
         verbose_name_plural = 'Actividades en situaciones de aprendizaje'
@@ -1035,6 +1042,7 @@ class InstrEval(models.Model):
     asapren = models.ForeignKey(ActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
+    borrado = models.BooleanField('¿InstrEval borrado?', default=False)
 
     class Meta:
         verbose_name_plural = 'Instrumentos/Procedimientos de evaluación'
@@ -1057,6 +1065,7 @@ class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=0)
+    borrado = models.BooleanField('¿CriInstrEval borrado?', default=False)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     class Meta:
