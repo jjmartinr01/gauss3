@@ -674,6 +674,11 @@ class ProgSec(models.Model):
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
+    def es_borrable(self):
+        return CalAlumValor.objects.filter(ca__cp__psec=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False).count() == 0
+
+    @property
     def dias_curso(self):
         return range(1, 176)  # Un total de 175 días: 1, 2, 3, ..., 174, 175
 
@@ -931,6 +936,11 @@ class SaberBas(models.Model):
     borrado = models.BooleanField('¿SaberBas borrado?', default=False)
 
     @property
+    def es_borrable(self):
+        return CalAlumValor.objects.filter(ca__cie__ieval__asapren__sapren__sbas=self, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False, ecpv__valor__gt=0).count() == 0
+
+    @property
     def fin(self):
         # Fecha de finalización aproximada calculada para este saber básico:
         inicio = self.psec.inicio_clases
@@ -988,6 +998,11 @@ class SitApren(models.Model):
         ordering = ['sbas__psec', 'sbas', 'id']
 
     @property
+    def es_borrable(self):
+        return CalAlumValor.objects.filter(ca__cie__ieval__asapren__sapren=self, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False, ecpv__valor__gt=0).count() == 0
+
+    @property
     def num_asapren(self):
         return self.actsitapren_set.count()
 
@@ -1010,10 +1025,14 @@ class ActSitApren(models.Model):
     producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
     borrado = models.BooleanField('¿ActSitApren borrado?', default=False)
 
-
     class Meta:
         verbose_name_plural = 'Actividades en situaciones de aprendizaje'
         ordering = ['sapren__sbas__psec', 'sapren__sbas', 'sapren', 'id']
+
+    @property
+    def es_borrable(self):
+        return CalAlumValor.objects.filter(ca__cie__ieval__asapren=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False).count() == 0
 
     @property
     def num_criinstreval(self):
@@ -1049,6 +1068,11 @@ class InstrEval(models.Model):
         ordering = ['asapren__sapren__sbas__psec', 'asapren__sapren__sbas', 'asapren__sapren', 'asapren', 'id']
 
     @property
+    def es_borrable(self):
+        return CalAlumValor.objects.filter(ca__cie__ieval=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False).count() == 0
+
+    @property
     def get_criinstreval(self):
         # Para evitar utilizar criinstreval_set.all que devolvería también aquellos que tienen peso 0
         return CriInstrEval.objects.filter(ieval=self, peso__gt=0)
@@ -1071,6 +1095,11 @@ class CriInstrEval(models.Model):
     class Meta:
         verbose_name_plural = 'Criterios de Evaluación asociados a un instrumento/procedimiento'
         ordering = ['cevps__cepsec__ce__asignatura', 'cevps__cepsec__ce__orden', 'cevps__cev__orden']
+
+    @property
+    def es_borrable(self):
+        return CalAlumValor.objects.filter(ca__cie=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False).count() == 0
 
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
