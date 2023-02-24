@@ -50,7 +50,7 @@ from vut.tasks import comunica_viajero2PNGC
 import locale
 
 # Create your views here.
-locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 logger = logging.getLogger('django')
 
 
