@@ -233,46 +233,17 @@
         }
     });
 
-    $('#convoca{{ convocatoria.id }}').select2({
-        placeholder: "Para buscar una persona, escribe parte de su nombre",
-        allowClear: true,
-        ajax: {
-            url: "/buscar_usuarios/",
-            type: 'GET',
-            dataType: 'json',
-            delay: 250,
-            data: function (params) { // page is the one-based page number tracked by Select2
-                return {
-                    action: 'select2',
-                    q: params.term, //search term
-                    page: params.page // page number
-                };
-            },
-            processResults: function (data, page) {
-                return {
-                    results: $.map(data, function (item) {
-                        return {
-                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
-                            id: item.id
-                        }
-                    })
-                };
-            },
-            cache: true
-        },
-        escapeMarkup: function (markup) {
-            return markup;
-        }, // let our custom formatter work
-        minimumInputLength: 3,
-        language: {
-            inputTooShort: function () {
-                return "Introduce al menos 3 caracteres para iniciar búsqueda";
-            }
-        }
-    });
+    $('#convoca{{ convocatoria.id }}').select2(
+        conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'format_g': '{0}, {1} ({4})',
+                'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
+            })
+    );
 
     $('body').on('change', '#convoca{{ convocatoria.id }}', function (e) {
-        var convoca = $(this).val();
+        var convoca = $(this).val().substring(1);
         var convocatoria = $(this).data('id');
         $.post("/convocatorias_ajax/", {
                 action: 'update_convoca_convocatoria',
@@ -294,46 +265,18 @@
             });
     });
 
-    $('#redacta{{ convocatoria.id }}').select2({
-        placeholder: "Para buscar una persona, escribe parte de su nombre",
-        allowClear: true,
-        ajax: {
-            url: "/buscar_usuarios/",
-            type: 'GET',
-            dataType: 'json',
-            delay: 250,
-            data: function (params) { // page is the one-based page number tracked by Select2
-                return {
-                    action: 'select2',
-                    q: params.term, //search term
-                    page: params.page // page number
-                };
-            },
-            processResults: function (data, page) {
-                return {
-                    results: $.map(data, function (item) {
-                        return {
-                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
-                            id: item.id
-                        }
-                    })
-                };
-            },
-            cache: true
-        },
-        escapeMarkup: function (markup) {
-            return markup;
-        }, // let our custom formatter work
-        minimumInputLength: 3,
-        language: {
-            inputTooShort: function () {
-                return "Introduce al menos 3 caracteres para iniciar búsqueda";
-            }
-        }
-    });
+    setTimeout(function () {
+        $('#redacta{{ convocatoria.id }}').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'format_g': '{0}, {1} ({4})',
+                'placeholder': 'Escribe parte del nombre, apellido o dni para buscarlo'
+            }));
+    }, 100);
 
     $('body').on('change', '#redacta{{ convocatoria.id }}', function (e) {
-        var redacta = $(this).val();
+        var redacta = $(this).val().substring(1);
         var convocatoria = $(this).data('id');
         $.post("/convocatorias_ajax/", {
                 action: 'update_redacta_acta',

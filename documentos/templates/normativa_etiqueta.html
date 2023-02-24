@@ -1,0 +1,11 @@
+<a class="buscar_etiqueta_normativa" data-etiqueta="{{ etiqueta.id }}" id="a_etiqueta{{ etiqueta.id }}">
+    {% if creada %}
+        <span class="label success radius" id="label_etiqueta_normativa{{ etiqueta.id }}" style="font-weight: bold;">
+            {{ etiqueta.nombre }}
+        </span>
+    {% else %}
+        <span class="label secondary radius" id="label_etiqueta_normativa{{ etiqueta.id }}" style="font-weight: bold;">
+            {{ etiqueta.nombre }}
+        </span>
+    {% endif %}
+</a>

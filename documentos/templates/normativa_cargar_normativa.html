@@ -1,0 +1,80 @@
+<a id="hide_cargar_normativa" style="position: absolute; top: 15px; right: 15px;">
+    <i class="fa fa-times fa-2x"></i>
+</a>
+<h2 style="text-align: center;font-weight: bold;">Formulario para cargar normativa</h2>
+<div class="row">
+    <div class="columns large-6">
+        <label><b>Texto identificativo de la normativa</b>
+            <input type="text" value="{{ normativa.nombre }}" id="nombre_cargar_normativa">
+        </label>
+    </div>
+    <div class="columns large-6">
+        <label title="Link de internet en el que encontrar la normativa"><b>URL de la normativa</b>
+            <input type="text" value="{{ normativa.url }}" id="url_cargar_normativa">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label title="Seleccione los apartados normativos con los que está relacionada esta normativa">
+            <b>Seleccione los apartados normativos</b>
+            <select id="etiquetas_cargar_normativa" multiple>
+                {#                    <option value="">-------</option>#}
+                {% for etiqueta in etiquetas %}
+                    <option value="{{ etiqueta.id }}" {% if etiqueta in normativa.etiquetas.all %}selected{% endif %}>
+                        {{ etiqueta.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label title="Indique el texto de la normativa. Se usuará para realizar búsquedas.">
+            <b>Texto de la normativa que desea registrar</b>
+            <textarea id="texto_cargar_normativa" rows="5">{{ normativa.texto }}</textarea>
+        </label>
+    </div>
+</div>
+{% if normativa.id > 0 %}
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Fecha de publicación</b>
+                <input type="date" value="{{ normativa.fecha_pub|date:'Y-m-d' }}" id="fecha_pub_cargar_normativa">
+            </label>
+        </div>
+        {#    <div class="columns large-6">#}
+        {#        <label title="Selecciona el archivo almacenado en tu ordenador"><b>Selecciona el archivo</b>#}
+        {#            {{ normativa.fichero }}#}
+        {#        </label>#}
+        {#    </div>#}
+        <div class="columns large-6">
+            <label title="Selecciona el archivo almacenado en tu ordenador"><b>Selecciona el archivo</b>
+                <input type="file" id="fichero_cargar_normativa">
+            </label>
+        </div>
+        <div class="columns large-3">
+            <a class="button" id="boton_cargar_normativa">Aceptar</a>
+        </div>
+        {#    <div class="columns large-3">#}
+        {#        <a class="button alert" id="boton_borrar_normativa">Borrar</a>#}
+        {#    </div>#}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Fecha de publicación</b>
+                <input type="date" value="{{ normativa.fecha_pub }}" id="fecha_pub_cargar_normativa">
+            </label>
+        </div>
+        <div class="columns large-6">
+            <label title="Selecciona el archivo almacenado en tu ordenador"><b>Selecciona el archivo</b>
+                <input type="file" id="fichero_cargar_normativa">
+            </label>
+        </div>
+        <div class="columns large-3">
+            <a class="button" id="boton_cargar_normativa">Aceptar</a>
+        </div>
+    </div>
+{% endif %}

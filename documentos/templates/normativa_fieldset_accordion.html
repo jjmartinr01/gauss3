@@ -1,0 +1,20 @@
+{% load entidades_extras %}
+{% load documentos_extras %}
+{#{% if buscadas %}#}
+{#    {% if informes_ie|length == 1 %}#}
+{#        <b>Se ha encontrado 1 Informe de Inspección</b>#}
+{#    {% else %}#}
+{#        <b>Se han encontrado {{ informes_ie|length }} Informes de Inspección</b>#}
+{#    {% endif %}#}
+{#{% endif %}#}
+<dd class="accordion-navigation accordion{{ normativa.id }}" id="accordion_{{ etiqueta.id }}_{{ normativa.id }}"
+    style="border-bottom: dotted 1px black">
+    <a href="#panel_{{ etiqueta.id }}_{{ normativa.id }}">
+        <i id="circle{{ normativa.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <b id="normativa{{ normativa.id }}">{{ normativa.nombre }}</b>
+    </a>
+
+    <div id="panel_{{ etiqueta.id }}_{{ normativa.id }}" class="content accordion-normativa"
+         data-id="{{ normativa.id }}" data-etiqueta="{{ etiqueta.id }}">
+    </div>
+</dd>

@@ -277,7 +277,7 @@ def usuarios_organization(ronda, subentidades=False, cargos=False, edad_min=-1, 
     if subentidades:
         filtro = filtro & Q(subentidades__in=subentidades)
 
-    return Gauser_extra.objects.filter(filtro).order_by('gauser__last_name', 'gauser__first_name')
+    return Gauser_extra.objects.filter(filtro & Q(activo=True)).order_by('gauser__last_name', 'gauser__first_name')
 
 # Obtención de los usuarios de la entidad que no están de baja:
 def usuarios_ronda(ronda, subentidades=False, cargos=False, edad_min=-1, edad_max=220):

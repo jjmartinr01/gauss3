@@ -2072,6 +2072,8 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_progsec':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
@@ -2147,6 +2149,72 @@ def progsecundaria(request):
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': False})
+        # Espe: Enviar Copia de la programación al docente seleccionado
+        elif action == 'enviar_copia_progsec':
+            try:
+                ps = ProgSec.objects.get(id=request.POST['progsec'])
+                doc_sel = Gauser_extra.objects.get(id=request.POST['docente'])
+                ronda_destino = doc_sel.ronda
+                pga_destino, c = PGA.objects.get_or_create(ronda=ronda_destino)
+                doc_progsec, c = Gauser_extra_programaciones.objects.get_or_create(ge=doc_sel)
+                crea_departamentos(ronda_destino)
+                ps_nueva = ProgSec.objects.get(id=ps.id)
+                ps_nueva.pk = None
+                ps_nueva.pga = pga_destino
+                # ps_nueva.gep = g_ep
+                ps_nueva.gep = doc_progsec
+                ps_nueva.nombre = ps.nombre + ' (Copia de: ' + g_ep.ge.gauser.first_name + ')'
+                ps_nueva.departamento = None
+                ps_nueva.tipo = 'BOR'
+                ps_nueva.save()
+                # DocProgSec.objects.create(psec=ps_nueva, gep=g_ep, permiso='X')
+                DocProgSec.objects.create(psec=ps_nueva, gep=doc_progsec, permiso='X')
+                for ceps in ps.ceprogsec_set.all():
+                    ceps_nueva = CEProgSec.objects.create(psec=ps_nueva, ce=ceps.ce, valor=ceps.valor)
+                    for cevps in ceps.cevprogsec_set.all():
+                        CEvProgSec.objects.create(cepsec=ceps_nueva, cev=cevps.cev, valor=cevps.valor)
+                for lr in ps.librorecurso_set.all():
+                    lr.pk = None
+                    lr.psec = ps_nueva
+                    lr.save()
+                for actex in ps.actexcom_set.all():
+                    actex.pk = None
+                    actex.psec = ps_nueva
+                    actex.save()
+                for sb in ps.saberbas_set.all():
+                    sb_nuevo = SaberBas.objects.get(id=sb.id)
+                    sb_nuevo.pk = None
+                    sb_nuevo.psec = ps_nueva
+                    sb_nuevo.save()
+                    for actex in sb.actexcoms.all():
+                        sb_nuevo.actexcoms.add(*ps_nueva.actexcom_set.filter(nombre=actex.nombre))
+                    for lr in sb.librorecursos.all():
+                        sb_nuevo.actexcoms.add(*ps_nueva.librorecurso_set.filter(nombre=lr.nombre))
+                    for sa in sb.sitapren_set.all():
+                        sa_nueva = SitApren.objects.create(sbas=sb_nuevo, objetivo=sa.objetivo, nombre=sa.nombre,
+                                                           contenidos_sbas=sa.contenidos_sbas)
+                        for cep in sa.ceps.all():
+                            sa_nueva.ceps.add(*ps_nueva.ceprogsec_set.filter(ce=cep.ce))
+                        for asa in sa.actsitapren_set.all():
+                            asa_nueva = ActSitApren.objects.get(id=asa.id)
+                            asa_nueva.pk = None
+                            asa_nueva.sapren = sa_nueva
+                            asa_nueva.save()
+                            for ieval in asa.instreval_set.all():
+                                ieval_nuevo = InstrEval.objects.get(id=ieval.id)
+                                ieval_nuevo.pk = None
+                                ieval_nuevo.asapren = asa_nueva
+                                ieval_nuevo.save()
+                                for cieval in ieval.criinstreval_set.all():
+                                    cevps = CEvProgSec.objects.get(cepsec__psec=ps_nueva, cev=cieval.cevps.cev)
+                                    CriInstrEval.objects.create(ieval=ieval_nuevo, cevps=cevps, peso=cieval.peso)
+                # html = render_to_string('progsec_accordion.html',
+                #                         {'buscadas': False, 'progsecs': [ps_nueva], 'g_e': g_e, 'nueva': True})
+                # return JsonResponse({'ok': True, 'html': html})
+                return JsonResponse({'ok': True, 'msg': 'Programación enviada correctamente'})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
+        # Espe: Fin Enviar Copia de la programación
         elif action == 'update_texto':
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
@@ -2424,6 +2492,8 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_saber':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
@@ -2605,12 +2675,12 @@ def progsecundaria_sb(request, id):
                 html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
-                #sap = SitApren.objects.create(sbas=sb)
-                #html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
+                # sap = SitApren.objects.create(sbas=sb)
+                # html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-                #return JsonResponse({'ok': True, 'html': html})
+                # return JsonResponse({'ok': True, 'html': html})
         elif action == 'exportar_sap':
-            try:## Comentarios
+            try:  ## Comentarios
                 ## Se obtiene el objeto SitAprend
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 ## Se obtienen las actividades de aprendizaje asociadas
@@ -2623,27 +2693,33 @@ def progsecundaria_sb(request, id):
                 areamateria = AreaMateria.objects.get(id=progsec.areamateria.id)
                 ## Se crea un repositorio de situación de aprendizaje con el area materia
                 ## de la situación de aprendizaje de la que se exporta.
-                sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre, contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
+                sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre,
+                                                  contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
                 ## Se obtienen las competencias especificas de la situación de aprendizaje
                 for cep in sapren.ceps.all():
-                    sap.ces.add(cep.ce) #Se agregan las competencias al repo de la situacion de aprendizaje
-                for asa in actsapren_all: #Se recorren las actividades de aprendizaje
-                    act = RepoActSitApren.objects.create(sapren=sap,nombre=asa.nombre,description=asa.description)
+                    sap.ces.add(cep.ce)  # Se agregan las competencias al repo de la situacion de aprendizaje
+                for asa in actsapren_all:  # Se recorren las actividades de aprendizaje
+                    act = RepoActSitApren.objects.create(sapren=sap, nombre=asa.nombre, description=asa.description)
                     ## Se obtienen los intrumentos de evaluación, que son objetos InstrEval, de una actividad de aprendizaje
                     instreval_all = InstrEval.objects.filter(asapren=asa)
-                    for ie in instreval_all: #se recorren los instrumentos de evaluacion
+                    for ie in instreval_all:  # se recorren los instrumentos de evaluacion
                         repoIEval = RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
-                        criinstreval_all = CriInstrEval.objects.filter(ieval=ie) # se obtienen los criterios de evaluacion
+                        criinstreval_all = CriInstrEval.objects.filter(
+                            ieval=ie)  # se obtienen los criterios de evaluacion
                         for criinstreval in criinstreval_all:
-                            #Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
-                            #por que si no el refrescon en la vista de la interfaz da un error
+                            # Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
+                            # por que si no el refrescon en la vista de la interfaz da un error
                             repocev_all = RepoCEv.objects.filter(sapren=sap, cev=criinstreval.cevps.cev)
                             if repocev_all.count() == 0:
-                                repocev = RepoCEv.objects.create(sapren=sap, cev=criinstreval.cevps.cev, valor=criinstreval.peso,modificado=criinstreval.modificado)
-                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso, modificado=criinstreval.modificado)
+                                repocev = RepoCEv.objects.create(sapren=sap, cev=criinstreval.cevps.cev,
+                                                                 valor=criinstreval.peso,
+                                                                 modificado=criinstreval.modificado)
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,
+                                                                modificado=criinstreval.modificado)
                             else:
                                 repocev = repocev_all[0]
-                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,modificado=criinstreval.modificado)
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,
+                                                                modificado=criinstreval.modificado)
                 if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     return JsonResponse({'ok': True})
                 else:
@@ -2652,6 +2728,8 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_sap':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 progsec = sapren.sbas.psec
@@ -2663,7 +2741,7 @@ def progsecundaria_sb(request, id):
                     procedimientos_calificados = False
                     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
                         if cuaderno.tipo == 'PRO':
-                            n_pro = n_pro+1
+                            n_pro = n_pro + 1
                             print('Verificando si hay procedimientos calificados....')
                             # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
                             # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
@@ -2672,9 +2750,10 @@ def progsecundaria_sb(request, id):
                                 print(escalacp.id)
                                 necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
                                 print(necpv)
-                                if (necpv>0):
+                                if (necpv > 0):
                                     procedimientos_calificados = True
-                                    cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                                    cuadernos.append(
+                                        '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     # Existe al menos un cuaderno de tipo PRO con algún procedimiento calificado
                     if procedimientos_calificados:
                         msg += ''.join(cuadernos)
@@ -2708,7 +2787,7 @@ def progsecundaria_sb(request, id):
                 sap_nueva.save()
                 # se copian las competencias especificas de la sap
                 # relation: many to many
-                #for cep in sap.ceps.all():
+                # for cep in sap.ceps.all():
                 #    sap_nueva.ceps.add(cep.ce)
                 sap_nueva.ceps.add(*sap.ceps.all())
                 # obtenemos las actividades
@@ -2827,6 +2906,8 @@ def progsecundaria_sb(request, id):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'borrar_sap_actividad':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 act = ActSitApren.objects.get(id=request.POST['id'])
                 progsec = act.sapren.sbas.psec
@@ -2851,7 +2932,7 @@ def progsecundaria_sb(request, id):
             try:
                 act = ActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.sbas == sb:
-                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento', tipo='TMONO')
                     html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
@@ -2859,6 +2940,8 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_act_instrumento':
+            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
+            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 inst = InstrEval.objects.get(id=request.POST['id'])
                 progsec = inst.asapren.sapren.sbas.psec
@@ -2887,14 +2970,15 @@ def progsecundaria_sb(request, id):
                                     if (necpv > 0):
                                         print('Hay calificaciones y no se puede borrar')
                                         procedimiento_calificado = True
-                                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                                        cuadernos.append(
+                                            '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                                     else:
                                         print('No hay calificaciones y por tanto sí se puede borrar')
                                 else:
                                     print('No es el procedimiento')
                                     print(escalacp.ieval.id)
                         # FIN
-                        #cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                        # cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                     # Existe al menos un cuaderno de tipo PRO con ese procedimiento calificado
                     if procedimiento_calificado:
                         msg += ''.join(cuadernos)
@@ -2979,6 +3063,61 @@ def progsecundaria_sb(request, id):
                            ),
                       'g_e': g_e,
                       'sb': sb,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+# @permiso_required('acceso_estadistica_programaciones')
+def estadistica_prog(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST':
+        action = request.POST['action']
+        if action == 'estadistica_entidad' and request.is_ajax():
+            try:
+                entidad = Entidad.objects.get(id=request.POST['entidad'])
+                dep_ids = ProgSec.objects.filter(pga__ronda=entidad.ronda).values_list('departamento__id', flat=True)
+                departamentos = Departamento.objects.filter(id__in=dep_ids)
+                html = render_to_string('estadistica_prog_tabla.html', {'objeto': entidad,
+                                                                        'departamentos': departamentos})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'genera_pdf':
+            doc_progsec_estadistica = 'Configuración de estadística para las programaciones'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec_estadistica)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_progsec_estadistica
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            tablas = request.POST['textarea_listado_estadistica']
+            c = render_to_string('estadistica_prog_html2pdf.html', {'tablas': tablas})
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
+            response = HttpResponse(fich, content_type='application/pdf')
+            nombre = 'Informe_estadística'
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            return response
+
+    return render(request, "estadistica_prog.html",
+                  {
+                      'formname': 'estadistica_prog',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'libre',
+                            'title': 'Generar PDF a partir de la información mostrada en pantalla'},
+                           ),
+                      'departamentos': None,
+                      'entidades': Entidad.objects.all(),
+                      'g_e': g_e,
+                      'objeto': g_e.ronda.entidad.organization,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
@@ -3103,7 +3242,7 @@ def repositorio_sap(request):
             try:
                 act = RepoActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.autor.gauser == g_e.gauser:
-                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Nombre del instrumento', tipo='TMONO')
                     html = render_to_string('repositorio_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
@@ -3203,7 +3342,6 @@ def cuadernodocente(request):
                 docentes = profesorado(g_e.ronda.entidad)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
                                                                                    'docentes': docentes})
-                # html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
                 cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
                 cuaderno.save()
                 return JsonResponse({'ok': True, 'html': html})
@@ -3897,10 +4035,18 @@ def arregla_instrevals(request):
     except Exception as msg:
         return HttpResponse(str(msg))
 
-"""
+
+
 from programaciones.models import *
 from django.core import serializers
 from django.core.signing import Signer
+
+# t='''Texto para
+    # ser separado
+    # en sus diferentes líneas'''
+    # for i, p in enumerate(t.splitlines()):
+    #     if p:
+    #         print(i, p.strip())
 
 def copiaSeguridadCuaderno(cuaderno):
     ProgSecs = ProgSec.objects.filter(id=cuaderno.psec.id)
@@ -3930,10 +4076,24 @@ def copiaSeguridadCuaderno(cuaderno):
     with open("Output.cua", "w") as text_file:
         text_file.write(data_signed)
 
+def restaurarCopiaSeguridadCuaderno(ruta_archivo):
     # with open('Output.cua', 'r') as file:
-    #     data_read = file.read()
-        ## Se supone que data_read y data_signed son iguales. Por tanto se podría hacer:
-        # signer2 = Signer()
-        # datos_recuperados = signer2.unsign(data_read)
-        
-"""
+    with open(ruta_archivo, 'r') as file:
+        data_read = file.read()
+        # Se supone que data_read y data_signed son iguales. Por tanto, se podría hacer:
+        signer2 = Signer()
+        datos_recuperados = signer2.unsign(data_read)
+        dict_relaciones = {}
+        for deserialized_object in serializers.deserialize("jsonl", datos_recuperados):
+            pk_antiguo = deserialized_object.object.pk
+            deserialized_object.save()
+            pk_nuevo = deserialized_object.object.pk
+            try:
+                dict_relaciones[deserialized_object.object.__class__.__name__][pk_antiguo] = pk_nuevo
+            except:
+                dict_relaciones[deserialized_object.object.__class__.__name__] = {}
+                dict_relaciones[deserialized_object.object.__class__.__name__][pk_antiguo] = pk_nuevo
+
+            # Guardaremos en un diccionario la relación entre los antiguos objetos y los nuevos:
+
+
