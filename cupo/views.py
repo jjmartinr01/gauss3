@@ -71,6 +71,19 @@ def cupo(request):
                 return response
             else:
                 crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+        elif request.POST['action'] == 'genera_informeRRHH':
+            cupo = Cupo.objects.get(id=request.POST['cupo'])
+            if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
+                fichero = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                texto_html = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
+                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
+                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                logger.info('%s, genera pdf del cupo %s' % (g_e, cupo.id))
+                return response
+            else:
+                crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
         elif request.POST['action'] == 'genera_excel':
             cupo = Cupo.objects.get(id=request.POST['cupo'])
             if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
@@ -1190,7 +1203,7 @@ def ajax_cupo(request):
                 campo = request.POST['campo']
                 valor = request.POST['valor']
                 p_c = Profesor_cupo.objects.get(id=request.POST['id'], profesorado__cupo__id=cupo)
-                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin':
+                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin' or campo == 'vacante':
                     valores = {'true': True, 'false': False}
                     valor = valores[valor]
                 elif campo == 'borrar':
@@ -1259,6 +1272,14 @@ def edit_cupo(request, cupo_id):
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
                 return response
+            elif request.POST['action'] == 'genera_informeRRHH':
+                fichero = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                texto_html = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
+                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
+                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                return response
 
         cursos = CursoCupo.objects.filter(cupo=cupo)
         cursos = sorted(cursos, key=lambda curso: clave_ex2int(curso))
@@ -1274,6 +1295,9 @@ def edit_cupo(request, cupo_id):
                                                       ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'Informe',
                                                         'title': 'Generar el documento con el cupo',
                                                         'permiso': 'pdf_cupo'},
+                                                       {'tipo': 'button', 'nombre': 'file-text-o',
+                                                        'title': 'Generar el documento con el cupo para RRHH',
+                                                        'texto': 'Informe RRHH', 'permiso': 'pdf_cupo'},
                                                        {'tipo': 'button', 'nombre': 'arrow-left',
                                                         'texto': 'Listado de cupos',
                                                         'title': 'Volver al listado de cupos disponibles',

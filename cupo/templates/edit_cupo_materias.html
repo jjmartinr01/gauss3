@@ -175,13 +175,13 @@
             <table style="width: 100%;" id="tabla_lista_profesores{{ p.id }}">
                 <thead>
                 <tr>
-                <th style="text-align: center;" colspan="6">Docentes necesarios en función de las horas asignadas</th>
+                <th style="text-align: center;" colspan="7">Docentes necesarios en función de las horas asignadas</th>
             </tr>
                 <tr>
                     <th style="text-align: center;">Nombre</th>
                     <th style="text-align: center;">Tipo docente</th>
                     <th style="text-align: center;">Jornada</th>
-                    <th style="text-align: center;" colspan="3">Otros datos</th>
+                    <th style="text-align: center;" colspan="4">Otros datos</th>
                 </tr>
                 </thead>
                 {% for p in especialidad|profesores_especialidad %}

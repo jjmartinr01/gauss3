@@ -225,7 +225,9 @@ class Profesor_cupo(models.Model):
     bilingue = models.BooleanField('Es bilingüe?', default=False)
     itinerante = models.BooleanField('Es itinerante?', default=False)
     noafin = models.BooleanField('Es no afín?', default=False)
+    vacante = models.BooleanField('Es una vacante?', default=False)
     observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
+    observaciones_ocultas = models.TextField('Observaciones ocultas', blank=True, null=True, default='')
 
     class Meta:
         verbose_name_plural = 'Profesores del cupo'

@@ -1,0 +1,85 @@
+{% load mathfilters my_templatetags %}
+
+<style>
+    html {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        text-align: justify;
+    }
+
+    h1 {
+        text-align: center;
+    }
+    h3 {
+        text-align: center;
+    }
+
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .pri {
+        line-height: 12px;
+        padding: 2px 0px 2px 0px;
+        text-align: center;
+        font-weight: bold;
+        background: #B4B5B0;
+    }
+
+    .pri2 {
+        text-align: center;
+        font-weight: bold;
+        background: #B4B5B0;
+    }
+</style>
+<h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Solicitud de profesores interinos de cupo</h1>
+<h3>{{ cupo.ronda.entidad.name }}</h3>
+<table style="width:100%;">
+    {#    <tr>#}
+    {#        <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong></td>#}
+    {#        <td style="text-align:center;padding-top:2px;"><strong>Jornada</strong></td>#}
+    {#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Bilingüe</td>#}
+    {#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Observaciones</td>#}
+    {#    </tr>#}
+    {% for p in cupo|interinos %}
+    {% ifchanged p.profesorado.especialidad %}
+    <tr>
+        <td style="border-top: solid 1px darkgray;font-weight: 800;"
+            colspan="5">{{ p.profesorado.especialidad.nombre }}</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td>&nbsp;</td>
+        <td style="border-top: solid 1px coral;font-weight: 800;"
+            colspan="4">&nbsp;
+        </td>
+    </tr>
+    {% endifchanged %}
+    <tr>
+        {#            <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.profesorado.especialidad.nombre }}</td>#}
+        <td style="padding-top:2px;padding-left: 25px;width: 24%;">1 {{ p.get_jornada_display }}</td>
+        {#            <td style="text-align:center;padding-top:2px;font-weight: 700;width: 30%;">#}
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">
+            Itinerante {% if p.itinerante %}&#9746;{% else %}&#9744;{% endif %}</td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">
+            No afín {% if p.noafin %}&#9746;{% else %}&#9744;{% endif %}</td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">
+            Bilingüe {% if p.bilingue %} &#9746;{% else %}&#9744;{% endif %}</td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">
+            Vacante {% if p.noafin %}&#9746;{% else %}&#9744;{% endif %}</td>
+    </tr>
+    {% if p.observaciones %}
+        <tr>
+            <td style="padding-top:2px;padding-left: 25px;width: 24%;">&nbsp;</td>
+            <td colspan="5"><b>Observaciones:</b> {{ p.observaciones }}</td>
+        </tr>
+    {% endif %}
+    {% if p.observaciones_ocultas %}
+        <tr>
+            <td style="padding-top:2px;padding-left: 25px;width: 24%;">&nbsp;</td>
+            <td colspan="5"><b>Observaciones ocultas:</b> {{ p.observaciones_ocultas }}</td>
+        </tr>
+    {% endif %}
+    {% endfor %}
+</table>
