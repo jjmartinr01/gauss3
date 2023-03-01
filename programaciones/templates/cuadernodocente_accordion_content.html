@@ -189,8 +189,9 @@
                         </td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged cep.ce.asignatura %}
-{#                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>#}
-                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|get_asignatura:cep.ce.asignatura|calificacion_alumno_asignatura:alumno }}</td>
+                                {#                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>#}
+                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">
+                                    {{ cuaderno|get_asignatura:cep.ce.asignatura|calificacion_alumno_asignatura:alumno }}</td>
                             {% endifchanged %}
                             {% with calalumce=cuaderno|get_cep:cep|get_calalumce:alumno %}
                                 {#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
@@ -264,7 +265,8 @@
                         <td id="cal_am_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged %}
-                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">{{ cuaderno|get_cep:cep|get_calalumce_valor:alumno|floatformat:2 }}</td>
+                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">
+                                    {{ cuaderno|get_cep:cep|get_calalumce_valor:alumno|floatformat:2 }}</td>
                             {% endifchanged %}
                             {% for cevp in cep.cevprogsec_set.all %}
                                 {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}
@@ -292,6 +294,14 @@
         {% if cuaderno.vista == 'NOR' %}
             {#{% elif cuaderno %}#}
             {% with estructura_cuaderno=cuaderno.estructura_cuaderno %}
+                {% for sb in estructura_cuaderno %}
+                    <a class="ver_ocultar_sb" data-toggle="sb__{{ sb.sb.id }}"
+                       title="Mostrar/ocultar {{ sb.sb.nombre }}">
+                            <span class="label info" style="font-weight: bold;">
+                                <i class="fa fa-eye"></i>/<i class="fa fa-eye-slash"></i> {{ sb.sb.nombre }}
+                            </span>
+                    </a>
+                {% endfor %}
                 <div class="div_table{{ cuaderno.id }}">
                     <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
                         <thead style="position: sticky;top:0">
@@ -314,13 +324,14 @@
                             </th>
                             {% for sb in estructura_cuaderno %}
                                 <th colspan="{{ sb.sb_columns }}" id="sb{{ forloop.counter }}"
+                                    class="sb__{{ sb.sb.id }}"
                                     title="{{ sb.sb.nombre }}">{{ sb.sb.nombre|truncatechars:160 }}</th>
                             {% endfor %}
                         </tr>
                         <tr>
                             {% for sb in estructura_cuaderno %}
                                 {% for sap in sb.saps %}
-                                    <th colspan="{{ sap.sap_columns }}"
+                                    <th colspan="{{ sap.sap_columns }}" class="sb__{{ sb.sb.id }}"
                                         title="{{ sap.sap.nombre }}">{{ sap.sap.nombre|truncatechars:80 }}</th>
                                 {% endfor %}
                             {% endfor %}
@@ -330,7 +341,7 @@
                             {% for sb in estructura_cuaderno %}
                                 {% for sap in sb.saps %}
                                     {% for asap in sap.asaps %}
-                                        <th colspan="{{ asap.asap_columns }}"
+                                        <th colspan="{{ asap.asap_columns }}" class="sb__{{ sb.sb.id }}"
                                             title="{{ asap.asap.nombre }}">{{ asap.asap.nombre|truncatechars:40 }}</th>
                                     {% endfor %}
                                 {% endfor %}
@@ -341,7 +352,8 @@
                                 {% for sap in sb.saps %}
                                     {% for asap in sap.asaps %}
                                         {% for ieval in asap.ievals %}
-                                            <th colspan="{{ ieval.ieval_columns }}" title="{{ ieval.ieval.nombre }}">
+                                            <th colspan="{{ ieval.ieval_columns }}" class="sb__{{ sb.sb.id }}"
+                                                title="{{ ieval.ieval.nombre }}">
                                                 <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp"
                                                    data-cuaderno="{{ cuaderno.id }}">
                                                     {{ ieval.ieval.nombre|truncatechars:20 }}
@@ -360,12 +372,12 @@
                                             {% for cieval in ieval.cievals %}
                                                 {% if cieval %}
                                                     <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
-                                               {{ cieval.cevps.cev.texto }}">
+                                               {{ cieval.cevps.cev.texto }}" class="sb__{{ sb.sb.id }}">
                                                         {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
                                                         {{ cieval.cevps.cev.texto|truncatechars:10 }}
                                                     </th>
                                                 {% else %}
-                                                    <th>&nbsp;</th>
+                                                    <th class="sb__{{ sb.sb.id }}">&nbsp;</th>
                                                 {% endif %}
                                             {% endfor %}
                                         {% endfor %}
@@ -386,8 +398,9 @@
                                             {% for ieval in asap.ievals %}
                                                 {% for cieval in ieval.cievals %}
                                                     {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
-                                                        <td class="update_calalum" data-calalum="{{ calalum.id }}"
+                                                        <td class="update_calalum sb__{{ sb.sb.id }}"
                                                             data-cieval="{{ cieval.id }}"
+                                                            data-calalum="{{ calalum.id }}"
                                                             data-cuaderno="{{ cuaderno.id }}"
                                                             data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"
                                                                 {#                                                        id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
@@ -495,3 +508,7 @@
         {% endif %}
     {% endif %}
 {% endif %}
+
+{#<script>#}
+{#$('.sb___').hide();#}
+{#</script>#}

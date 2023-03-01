@@ -758,7 +758,10 @@
                 });
         });
 
-
+        $('body').on('click', '.ver_ocultar_sb', function(){
+            var sb = $(this).data('toggle');
+            $('.' + sb).toggle();
+        });
     </script>
 
 {% endblock %}
