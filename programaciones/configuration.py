@@ -113,6 +113,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 13,
      'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_estadistica_programaciones',
+     'texto_menu': 'Estadística Programaciones',
+     'href': 'estadistica_prog',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 13,
+     'parent': 'acceso_programaciones_didacticas'
      }
 ]
 # Se añaden otros permisos para el usuario

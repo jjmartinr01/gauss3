@@ -51,8 +51,6 @@ import locale, platform
 
 # Create your views here.
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-
-
 logger = logging.getLogger('django')
 
 

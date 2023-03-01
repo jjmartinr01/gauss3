@@ -33,4 +33,5 @@ urlpatterns = [
     path('calificacc/', views.calificacc),
     path('crea_calalumce_cev/', views.crea_calalumce_cev),
     path('arregla_instrevals/', views.arregla_instrevals),
+    path('estadistica_prog/', views.estadistica_prog),
 ]

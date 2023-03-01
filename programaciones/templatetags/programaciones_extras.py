@@ -2,10 +2,35 @@
 from django.template import Library
 from django.db.models import Q
 from autenticar.models import Permiso
+from entidades.models import Organization, Entidad
 from estudios.models import Gauser_extra_estudios
 from programaciones.models import *
 
 register = Library()
+
+@register.filter
+def get_estadistica(objeto):
+    if type(objeto) == Organization:
+        anyo = datetime.now().year if datetime.now().month in [9, 10, 11, 12] else datetime.now().year - 1
+        fecha_comienzo_ronda = datetime(anyo, 9, 1)
+        psecs = ProgSec.objects.filter(pga__ronda__entidad__organization=objeto,
+                                       pga__ronda__inicio__gte=fecha_comienzo_ronda)
+    elif type(objeto) == Entidad:
+        psecs = ProgSec.objects.filter(pga__ronda=objeto.ronda)
+    elif type(objeto) == Departamento:
+        psecs = ProgSec.objects.filter(departamento=objeto)
+    else:
+        return 'Error'
+    psec_bor = psecs.filter(tipo='BOR')
+    psec_def = psecs.filter(tipo='DEF')
+    psec_otr = psecs.exclude(
+        id__in=[*psec_bor.values_list('id', flat=True)] + [*psec_def.values_list('id', flat=True)])
+    saprens = SitApren.objects.filter(sbas__psec__in=psecs)
+    asaprens = ActSitApren.objects.filter(sapren__in=saprens)
+    procs = InstrEval.objects.filter(asapren__in=asaprens)
+    return {'n_psecs': psecs.count(), 'n_psec_bor': psec_bor.count(), 'n_psec_def': psec_def.count(),
+            'n_psec_otr': psec_otr.count(), 'n_saprens': saprens.count(), 'n_procs': procs.count(),
+            'n_asaprens': asaprens.count()}
 
 
 @register.filter  # sag

@@ -512,6 +512,12 @@
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible el borrado',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
                                     }
                                 });
                         }
@@ -623,6 +629,27 @@
                     });
             });
 
+            <!-- Espe: Enviar programación a otro usuario -->
+            $('body').on('click', '.enviar_copia', function (e) {
+                e.preventDefault();
+                $('#lista_docentes').toggle();
+            });
+
+            $('body').on('click', '.enviar_copia_progsec', function () {
+                var progsec = $(this).data('progsec');
+                var docente = $('#gauser_extra_selected').val();
+                $.post("/progsecundaria/", {
+                        action: 'enviar_copia_progsec', progsec: progsec, docente: docente
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            <!-- Espe: Fin Enviar programación a otro usuario -->
 
             {######################################################## #}
 

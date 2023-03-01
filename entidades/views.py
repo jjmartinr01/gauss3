@@ -2655,21 +2655,30 @@ def selectgcs(request):
     if request.is_ajax():
         if request.method == 'GET':
             texto = request.GET['q']
+            if request.GET['scope'] == 'ronda':
+                entidades = [g_e.ronda.entidad]
+                rondas = [g_e.ronda]
+            else:
+                entidades = Entidad.objects.filter(organization=g_e.ronda.entidad.organization)
+                rondas = entidades.values_list('ronda', flat=True)
+
             if 'subs[]' in request.GET:
-                subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('subs[]'))
+                # subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('subs[]'))
+                subs = Subentidad.objects.filter(entidad__in=entidades, id__in=request.GET.getlist('subs[]'))
             else:
                 subs = Subentidad.objects.none()
             if 'cars[]' in request.GET:
-                # cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('cars[]'))
-                cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo__in=request.GET.getlist('cars[]'))
+                # cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo__in=request.GET.getlist('cars[]'))
+                cars = Cargo.objects.filter(entidad__in=entidades, clave_cargo__in=request.GET.getlist('cars[]'))
             else:
                 cars = Cargo.objects.none()
             ges, cargos, subentidades = Gauser_extra.objects.none(), Cargo.objects.none(), Subentidad.objects.none()
             for tipo in request.GET['tipo']:  # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
                 if tipo == 'g':
-                    usronda = usuarios_ronda(g_e.ronda, subentidades=subs, cargos=cars)
-
-
+                    if request.GET['scope'] == 'ronda':
+                        usposibles = usuarios_ronda(g_e.ronda, subentidades=subs, cargos=cars)
+                    else:
+                        usposibles = usuarios_organization(g_e.ronda, subentidades=subs, cargos=cars)
                     palabras = texto.split()
                     q = Q(gauser__first_name__icontains=palabras[0]) | Q(gauser__last_name__icontains=palabras[0]) | Q(
                         gauser__dni__icontains=palabras[0]) | Q(gauser__username__icontains=palabras[0])
@@ -2677,20 +2686,18 @@ def selectgcs(request):
                         qnueva = Q(gauser__first_name__icontains=palabra) | Q(gauser__last_name__icontains=palabra) | Q(
                             gauser__dni__icontains=palabra) | Q(gauser__username__icontains=palabra)
                         q = q & qnueva
-
-
-
-                    ges = usronda.filter(q)
+                    # ges = usronda.filter(q)
+                    ges = usposibles.filter(q)
                 elif tipo == 'c':
                     if cars:
                         cargos = cars
                     else:
-                        cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad, cargo__icontains=texto)
+                        cargos = Cargo.objects.filter(entidad__in=entidades, cargo__icontains=texto)
                 elif tipo == 's':
                     if subs:
                         subentidades = subs
                     else:
-                        subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, nombre__icontains=texto)
+                        subentidades = Subentidad.objects.filter(entidad__in=entidades, nombre__icontains=texto)
             # sub_alumnos = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='alumnos')
             # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_alumnos])
             # filtrados = usuarios.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
@@ -2705,11 +2712,12 @@ def selectgcs(request):
                 cargos_ge = [c.cargo for c in ge.cargos.all()]
                 options.append(
                     {'id': ge.id, 'first_name': ge.gauser.first_name, 'last_name': ge.gauser.last_name,
-                     'grupo': grupo, 'tutor': tutor, 'cotutor': cotutor, 'tipo': 'g', 'cargos': ', '.join(cargos_ge)})
+                     'grupo': grupo, 'tutor': tutor, 'cotutor': cotutor, 'tipo': 'g', 'cargos': ', '.join(cargos_ge),
+                     'entidad': ge.ronda.entidad.name})
             for c in cargos.distinct():
-                options.append({'id': c.id, 'cargo': c.cargo, 'tipo': 'c'})
+                options.append({'id': c.id, 'cargo': c.cargo, 'tipo': 'c', 'entidad': c.entidad.name})
             for s in subentidades.distinct():
-                options.append({'id': s.id, 'subentidad': s.nombre, 'tipo': 's'})
+                options.append({'id': s.id, 'subentidad': s.nombre, 'tipo': 's', 'entidad': s.entidad.name})
             return JsonResponse(options, safe=False)
         else:
             return JsonResponse({'ok': False, 'm': 'No es GET'})
