@@ -272,6 +272,7 @@ class BkProgsec:  # sag
 
     def __crearCalAlumnos(self, calalumnos, newEscalaCP_id, newCuadernoProf_id):
         # Recorrer cal_alumnos del cuadernoprof de la programación
+        datos=""
         for cal in calalumnos:
             if cal.tag == 'datos':
                 datos += str(cal.find('obs').text) + '<br>' \
