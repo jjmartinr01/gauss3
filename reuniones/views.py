@@ -31,7 +31,7 @@ from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola, enviar_correo
 
 # locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
-locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
 logger = logging.getLogger('django')
 

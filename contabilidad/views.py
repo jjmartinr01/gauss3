@@ -36,7 +36,7 @@ from mensajes.models import Aviso
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
-locale.setlocale(locale.LC_ALL, 'es_ES.utf8')
+locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 
 logger = logging.getLogger('django')
 

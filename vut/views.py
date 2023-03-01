@@ -47,10 +47,12 @@ from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PA
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
     DayWebVivienda, PropuestaPropietario, ContratoVUT, ViviendaCommodities, COMMODITIES, RemoteConection
 from vut.tasks import comunica_viajero2PNGC
-import locale
+import locale, platform
 
 # Create your views here.
-locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+
+
 logger = logging.getLogger('django')
 
 
