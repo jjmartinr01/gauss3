@@ -94,7 +94,7 @@ def get_inspectores(request):
     return inspectores
 
 
-# @permiso_required('acceso_tareas_ie')
+@permiso_required('acceso_tareas_ie')
 def tareas_ie(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)
@@ -571,7 +571,7 @@ def get_informe_ie(request, id):
     return JsonResponse({'asunto': ie.asunto, 'texto': ie.texto})
 
 
-# @permiso_required('acceso_informes_ie')
+@permiso_required('acceso_informes_ie')
 def informes_ie(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST' and request.is_ajax():
@@ -914,7 +914,7 @@ def get_puntos_inspector(inspectores):
     return resultados
 
 
-# @permiso_required('acceso_asignar_centros_inspeccion')
+@permiso_required('acceso_asignar_centros_inspeccion')
 def asignar_centros_inspeccion(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)
@@ -1102,7 +1102,7 @@ def carga_masiva_inspeccion(request):
                   })
 
 
-# @permiso_required('acceso_actas_firmadas')
+@permiso_required('acceso_actas_firmadas')
 def actas_firmadas(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':

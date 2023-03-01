@@ -735,8 +735,8 @@ def programaciones(request):
                   })
 
 
-@login_required()
 # @access_required
+@login_required()
 def objetivos_criterios(request):
     g_e = request.session['gauser_extra']
     crear_aviso(request, True, 'Entra en objetivos criterios')
@@ -1959,7 +1959,7 @@ def reordenar_saberes_comienzo(psec):
     return render_to_string('progsec_accordion_content_saberes.html', {'progsec': psec})
 
 
-# @permiso_required('acceso_progsecundaria')
+@permiso_required('acceso_progsecundaria')
 def progsecundaria(request):
     # for p in ProgSec.objects.all():
     #     p.identificador = pass_generator()
@@ -2655,7 +2655,7 @@ def verprogramaciones(request, secret):
         return HttpResponse('<h1>Se ha producido un error. Petición no llevada a cabo.</h1>')
 
 
-# @permiso_required('acceso_progsecundaria')
+@permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
@@ -3067,7 +3067,7 @@ def progsecundaria_sb(request, id):
                   })
 
 
-# @permiso_required('acceso_estadistica_programaciones')
+@permiso_required('acceso_estadistica_programaciones')
 def estadistica_prog(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -3122,7 +3122,7 @@ def estadistica_prog(request):
                   })
 
 
-# @permiso_required('acceso_repositorio_sap')
+@permiso_required('acceso_repositorio_sap')
 def repositorio_sap(request):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
@@ -3303,7 +3303,7 @@ def repositorio_sap(request):
                   })
 
 
-# @permiso_required('acceso_cuaderno_docente')
+@permiso_required('acceso_cuaderno_docente')
 def cuadernodocente(request):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)

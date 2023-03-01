@@ -505,7 +505,7 @@ def crea_query(filtrado):
     return eval(operacion)
 
 
-# @login_required()
+@login_required()
 @permiso_required('acceso_listados_usuarios')
 def ajax_filtro(request):
     g_e = request.session['gauser_extra']
@@ -2316,7 +2316,7 @@ def modulos_entidad(request):
         return redirect('/calendario/')
 
 
-# @gauss_required
+@gauss_required
 def get_entidad_general():
     errores = []
     o, c = Organization.objects.get_or_create(organization='Organización_general', iniciales='OG',

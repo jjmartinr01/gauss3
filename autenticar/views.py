@@ -946,7 +946,7 @@ def create_usuario(datos, request, tipo):
     return gauser_extra
 
 
-# @permiso_required('acceso_carga_masiva')
+@permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
 
