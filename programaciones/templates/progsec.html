@@ -485,7 +485,7 @@
             });
 
             $('body').on('click', '.borrar_saber', function () {
-                id = $(this).data('progsec');
+                progsec = $(this).data('progsec');
                 saber = $(this).data('saber');
                 show_mensajes({
                     title: '<i class="fa fa-warning"></i> ¿Borrar esta unidad de programación?',
@@ -496,11 +496,10 @@
                         },
                         "Borrar": function () {
                             hide_mensajes();
-                            $.post("/progsecundaria/", {action: 'borrar_saber', id: id, saber: saber},
+                            $.post("/progsecundaria/", {action: 'borrar_saber', progsec: progsec, saber: saber},
                                 function (data) {
                                     if (data.ok) {
-                                        {#$('#tbody_saberes' + id).html(data.html);#}
-                                        $('#lista_saberes' + id).html(data.html);
+                                        $('#lista_saberes' + progsec).html(data.html);
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $('#update_error').show().delay(1500).fadeOut();

@@ -675,8 +675,7 @@ class ProgSec(models.Model):
 
     @property
     def es_borrable(self):
-        return CalAlumValor.objects.filter(ca__cp__psec=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',
-                                           ca__cp__borrado=False).count() == 0
+        return CalAlumCE.objects.filter(cp__psec=self, valor__gt=0, cp__borrado=False).count() == 0
 
     @property
     def dias_curso(self):
@@ -936,6 +935,10 @@ class SaberBas(models.Model):
     borrado = models.BooleanField('¿SaberBas borrado?', default=False)
 
     @property
+    def get_sitaprens(self):
+        return self.sitapren_set.filter(borrado=False)
+
+    @property
     def es_borrable(self):
         return CalAlumValor.objects.filter(ca__cie__ieval__asapren__sapren__sbas=self, ca__cp__tipo='PRO',
                                            ca__cp__borrado=False, ecpv__valor__gt=0).count() == 0
@@ -998,9 +1001,18 @@ class SitApren(models.Model):
         ordering = ['sbas__psec', 'sbas', 'id']
 
     @property
+    def get_asaprens(self):
+        return self.actsitapren_set.filter(borrado=False)
+    @property
     def es_borrable(self):
         return CalAlumValor.objects.filter(ca__cie__ieval__asapren__sapren=self, ca__cp__tipo='PRO',
                                            ca__cp__borrado=False, ecpv__valor__gt=0).count() == 0
+
+    def ceps_es_borrable(self, ceps):
+        cevps = ceps.cevprogsec_set.all()
+        return CalAlumValor.objects.filter(ca__cie__ieval__asapren__sapren=self, ca__cp__tipo='PRO',
+                                           ca__cp__borrado=False, ecpv__valor__gt=0,
+                                           ca__cie__cevps__in=cevps).count() == 0
 
     @property
     def num_asapren(self):
@@ -1029,6 +1041,9 @@ class ActSitApren(models.Model):
         verbose_name_plural = 'Actividades en situaciones de aprendizaje'
         ordering = ['sapren__sbas__psec', 'sapren__sbas', 'sapren', 'id']
 
+    @property
+    def get_instrevals(self):
+        return self.instreval_set.filter(asapren=self, borrado=False)
     @property
     def es_borrable(self):
         return CalAlumValor.objects.filter(ca__cie__ieval__asapren=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',
@@ -1407,9 +1422,9 @@ class CuadernoProf(models.Model):
     @property
     def estructura_cuaderno(self):
         sbs_array = []
-        for sb in self.psec.saberbas_set.all():
+        for sb in self.psec.saberbas_set.filter(borrado=False):
             sb_element = {'sb': sb, 'sb_columns': 0, 'saps': []}
-            saps = sb.sitapren_set.all()
+            saps = sb.sitapren_set.filter(borrado=False)
             if saps.count() == 0:
                 sb_element['sb_columns'] += 1
                 sap_dict = {'sap': False, 'sap_columns': 1, 'asaps': []}
@@ -1419,9 +1434,9 @@ class CuadernoProf(models.Model):
                 asap_dict['ievals'].append(ieval_dict)
                 sap_dict['asaps'].append(asap_dict)
                 sb_element['saps'].append(sap_dict)
-            for sap in sb.sitapren_set.all():
+            for sap in saps:
                 sap_element = {'sap': sap, 'sap_columns': 0, 'asaps': []}
-                asaps = sap.actsitapren_set.all()
+                asaps = sap.actsitapren_set.filter(borrado=False)
                 if asaps.count() == 0:
                     sb_element['sb_columns'] += 1
                     sap_element['sap_columns'] += 1
@@ -1432,7 +1447,7 @@ class CuadernoProf(models.Model):
                     sap_dict['asaps'].append(asap_dict)
                 for asap in asaps:
                     asap_element = {'asap': asap, 'asap_columns': 0, 'ievals': []}
-                    ievals = asap.instreval_set.all()
+                    ievals = asap.instreval_set.filter(borrado=False)
                     if ievals.count() == 0:
                         sb_element['sb_columns'] += 1
                         sap_element['sap_columns'] += 1
@@ -1440,63 +1455,6 @@ class CuadernoProf(models.Model):
                         ieval_dict = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
                         asap_element['ievals'].append(ieval_dict)
                         ieval_dict['cievals'].append(False)
-                    for ieval in ievals:
-                        ieval_element = {'ieval': ieval, 'ieval_columns': 0, 'cievals': []}
-                        cievals = ieval.get_criinstreval
-                        if cievals.count() == 0:
-                            sb_element['sb_columns'] += 1
-                            sap_element['sap_columns'] += 1
-                            asap_element['asap_columns'] += 1
-                            ieval_element['ieval_columns'] += 1
-                            ieval_element['cievals'].append(False)
-                        for cieval in cievals:
-                            sb_element['sb_columns'] += 1
-                            sap_element['sap_columns'] += 1
-                            asap_element['asap_columns'] += 1
-                            ieval_element['ieval_columns'] += 1
-                            ieval_element['cievals'].append(cieval)
-                        asap_element['ievals'].append(ieval_element)
-                    sap_element['asaps'].append(asap_element)
-                sb_element['saps'].append(sap_element)
-            sbs_array.append(sb_element)
-        return sbs_array
-
-    @property
-    def estructura_cuaderno_antiguo(self):
-        sbs_array = []
-        for sb in self.psec.saberbas_set.all():
-            sb_element = {'sb': sb, 'sb_columns': 0, 'saps': []}
-            saps = sb.sitapren_set.all()
-            if saps.count() == 0:
-                sb_element['sb_columns'] += 1
-                sap = {'sap': False, 'sap_columns': 1, 'asaps': []}
-                asap = {'asap': False, 'asap_columns': 1, 'ievals': []}
-                ieval = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
-                ieval['cievals'].append(False)
-                asap['ievals'].append(ieval)
-                sap['asaps'].append(asap)
-                sb_element['saps'].append(sap)
-            for sap in sb.sitapren_set.all():
-                sap_element = {'sap': sap, 'sap_columns': 0, 'asaps': []}
-                asaps = sap.actsitapren_set.all()
-                if asaps.count() == 0:
-                    sb_element['sb_columns'] += 1
-                    sap_element['sap_columns'] += 1
-                    asap = {'asap': False, 'asap_columns': 1, 'ievals': []}
-                    ieval = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
-                    ieval['cievals'].append(False)
-                    asap['ievals'].append(ieval)
-                    sap['asaps'].append(asap)
-                for asap in asaps:
-                    asap_element = {'asap': asap, 'asap_columns': 0, 'ievals': []}
-                    ievals = asap.instreval_set.all()
-                    if ievals.count() == 0:
-                        sb_element['sb_columns'] += 1
-                        sap_element['sap_columns'] += 1
-                        asap_element['asap_columns'] += 1
-                        ieval = {'ieval': False, 'ieval_columns': 1, 'cievals': []}
-                        asap['ievals'].append(ieval)
-                        ieval['cievals'].append(False)
                     for ieval in ievals:
                         ieval_element = {'ieval': ieval, 'ieval_columns': 0, 'cievals': []}
                         cievals = ieval.get_criinstreval

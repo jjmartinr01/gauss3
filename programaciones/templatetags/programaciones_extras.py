@@ -75,7 +75,7 @@ def get_posibles_psec(cuaderno):
     else:
         q = Q(gep__ge=cuaderno.ge)
     psec_ids = DocProgSec.objects.filter(q).values_list('psec__id', flat=True)
-    return ProgSec.objects.filter(id__in=psec_ids)
+    return ProgSec.objects.filter(id__in=psec_ids, borrado=False)
 
 
 #################################################

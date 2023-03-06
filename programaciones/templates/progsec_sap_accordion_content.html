@@ -54,16 +54,16 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-            <li><a class="button exportar_sap tiny" data-id="{{ sap.id }}"
-                   title="Exportar esta situación de aprendizaje al repositorio de SAP"><i
-                    class="fa fa-copy"></i> Exportar</a>
-            </li>
             <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
                    title="Borrar completamente esta situación de aprendizaje de la base de datos"><i
-                    class="fa fa-trash-o"></i> Borrar</a></li>
+                    class="fa fa-trash"></i> <b>Borrar</b></a></li>
+            <li><a class="button exportar_sap tiny" data-id="{{ sap.id }}"
+                   title="Exportar esta situación de aprendizaje al repositorio de SAP"><i
+                    class="fa fa-share"></i> <b>Exportar</b></a>
+            </li>
             <li><a class="button copiar_sap tiny" data-sap="{{ sap.id }}" data-sb="{{ sap.sbas.id }}"
                    title="Hacer una copia (un duplicado) de esta situación de aprendizaje"><i
-                    class="fa fa-copy"></i> Copiar</a>
+                    class="fa fa-copy"></i> <b>Copiar</b></a>
             </li>
         </ul>
     </div>
@@ -142,7 +142,7 @@
         </div>
     </div>
     <div id="list_sap_actividades{{ sap.id }}">
-        {% for actividad in sap.actsitapren_set.all %}
+        {% for actividad in sap.get_asaprens %}
             {% include 'progsec_sap_accordion_content_act.html' %}
         {% endfor %}
     </div>

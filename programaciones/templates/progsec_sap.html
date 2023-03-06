@@ -52,7 +52,7 @@
     <div id="contenido_sb">
         <br>
         <dl class="accordion" data-accordion id="list_sbs">
-            {% for sap in sb.sitapren_set.all %}
+            {% for sap in sb.get_sitaprens %}
                 {% include 'progsec_sap_accordion.html' %}
             {% endfor %}
         </dl>
@@ -97,18 +97,18 @@
         }
 
         function constructInlineEditorInstances() {
-            $("textarea").each(function(){
-    {#CKEDITOR.inline(this, config);#}
-    {#CKEDITOR.replace(this, config);#}
-    {#            Escribir el textarea readonly#}
-    {#            Contendrá el texto procesado html escape#}
-    {#            Al hacer click sobre ella quitar el readonly#}
-    {#            llamar al texto original#}
-    {#            crear el ckeditor:#}
-    {#            CKEDITOR.replace('input_objetivo8', config)#}
-    {#            Al hacer click sobre otro textarea destruir todas las instancias de ckeditor:#}
-    {#            CKEDITOR.instances['input_objetivo8'].destroy();#}
-});
+            $("textarea").each(function () {
+                {#CKEDITOR.inline(this, config);#}
+                {#CKEDITOR.replace(this, config);#}
+                {#            Escribir el textarea readonly#}
+                {#            Contendrá el texto procesado html escape#}
+                {#            Al hacer click sobre ella quitar el readonly#}
+                {#            llamar al texto original#}
+                {#            crear el ckeditor:#}
+                {#            CKEDITOR.replace('input_objetivo8', config)#}
+                {#            Al hacer click sobre otro textarea destruir todas las instancias de ckeditor:#}
+                {#            CKEDITOR.instances['input_objetivo8'].destroy();#}
+            });
 
             $(".ckeditor").each(function (index) {
                 var element = $(this);
@@ -118,8 +118,8 @@
                 {#var anchura = element.width() + 2;#}
                 {#setTimeout(function () {#}
                 {#    $('#cke_' + id).css('width', anchura + 'px');#}
-                     {#Este es el id del ckeditor creado#}
-                 {# }, 200);#}
+                {#Este es el id del ckeditor creado#}
+                {# }, 200);#}
             });
         }
 
@@ -223,9 +223,9 @@
             });
             $('body').on('click', '.exportar_sap', function () {
                 id = $(this).data('id');
-                input_nombre =  $('#input_nombre'+id).val();
-                input_contenidos_sbas =  $('#input_contenidos_sbas'+id).val();
-                input_objetivo =  $('#input_objetivo'+id).val();
+                input_nombre = $('#input_nombre' + id).val();
+                input_contenidos_sbas = $('#input_contenidos_sbas' + id).val();
+                input_objetivo = $('#input_objetivo' + id).val();
                 show_mensajes({
                     title: '<i class="fa fa-warning"></i> ¿Exportar esta situación de aprendizaje?',
                     texto: 'Si aceptas, la situación de aprendizaje se exportará a un repositorio general de situaciones de aprendizaje',
@@ -236,10 +236,11 @@
                         },
                         "Exportar": function () {
                             hide_mensajes();
-                            $.post(url_progsec_sap, {action: 'exportar_sap', id: id,
-                                input_nombre: input_nombre,
-                                input_contenidos_sbas: input_contenidos_sbas,
-                                input_objetivo: input_objetivo
+                            $.post(url_progsec_sap, {
+                                    action: 'exportar_sap', id: id,
+                                    input_nombre: input_nombre,
+                                    input_contenidos_sbas: input_contenidos_sbas,
+                                    input_objetivo: input_objetivo
                                 },
                                 function (data) {
                                     if (data.ok) {
@@ -347,10 +348,14 @@
                         },
                         function (data) {
                             if (data.ok) {
-                                if (campo === 'nombre') {
+                                if (campo === 'nombre' && clase === 'SitApren') {
                                     $('#nombre' + id).html(nuevo_texto);
+                                } else if (campo === 'nombre' && clase === 'ActSitApren') {
+                                    $('#actividad_nombre' + id).html(nuevo_texto);
+                                } else if (campo === 'nombre'  && clase === 'InstrEval'){
+                                    $('#nombre_procedimiento' + id).html(nuevo_texto.substring(0, 20));
                                 }
-                                $("#update_ok").show().delay(1500).fadeOut();
+                                    $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
                             }
@@ -375,6 +380,14 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        if (data.mensaje) {
+                            show_mensajes({
+                                title: '<i class="fa fa-warning"></i> No es posible deseleccionar esta CE',
+                                texto: data.msg,
+                                size: 'large',
+                            });
+                            element.prop('checked', true);
+                        }
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
@@ -393,6 +406,14 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        if (data.mensaje) {
+                            show_mensajes({
+                                title: '<i class="fa fa-warning"></i> No es posible asignar 0 a este criterio de evaluación',
+                                texto: data.msg,
+                                size: 'large',
+                            });
+                            element.val(1);
+                        }
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
@@ -525,256 +546,24 @@
             refresh_table_criteval(element);
         });
 
-
-
-
-
-
-
-        {% comment %}
-
-            $('body').on('change', '.select_variante', function () {
-                var va = $(this).val();
-                var progsec = $(this).data('progsec');
-                $.post("url_progsec_sap", {action: 'select_variante', va: va, progsec: progsec},
-                    function (data) {
-                        if (data.ok) {
-                            $("#contenido_informe" + data.progsec).html(data.html);
-                            $("#destinatario" + data.progsec).html(data.destinatario);
-                            $("#input_asunto" + data.progsec).val(data.asunto);
-                            destroyEditorInstances();
-                            {#constructEditorInstances(id);#}
-                            {#CKEDITOR.inlineAll();#}
-                            constructInlineEditorInstances(progsec);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
-            });
-
-            function get_texto_from_update_texto(element, id) {
-                var texto;
-                if (element.hasClass('asunto')) {
-                    texto = element.val();
-                    $('#asunto' + id).html(texto);
-                } else if (element.hasClass('variable')) {
-                    texto = element.val();
-                } else {
-                    texto = element.html();
-                }
-                return texto;
+        {# Código para editar texto de los nombres de las actividades #}
+        $('body').on('click', '.legend_texto_editable', function (e) {
+            var actividad = $(this).data('actividad');
+            {#$('#actividad_id').val(actividad);#}
+            var legend_texto = $('#legend_texto' + actividad);
+            var legend_form = $('#legend_form' + actividad);
+            var input_etiqueta = $('#actividad_input' + actividad);
+            if (legend_texto.is(":visible")) {
+                legend_texto.hide();
+                legend_form.show();
+                input_etiqueta.show().select();
             }
-
-            $('body').on('keyup', '.update_texto', function () {
-                var element = $(this);
-                var id = element.data('id');
-                var campo = element.data('campo');
-                var v = element.hasClass('variable') ? 1 : 0;
-                var antiguo_texto = get_texto_from_update_texto(element, id);
-                setTimeout(function () {
-                    var nuevo_texto = get_texto_from_update_texto(element, id);
-                    if (antiguo_texto === nuevo_texto) {
-                        $.post("url_progsec_sap", {
-                                action: 'update_texto',
-                                id: id,
-                                valor: nuevo_texto,
-                                campo: campo,
-                                v: v
-                            },
-                            function (data) {
-                                if (data.ok) {
-                                    $('#texto_informe' + data.progsec).html(data.html);
-                                    if (data.html_v) {
-                                        $('#variables' + data.progsec).html(data.html_v);
-                                    }
-                                    if (data.num_v > 0) {
-                                        $('.variables_texto2pdf' + data.progsec).show();
-                                    } else {
-                                        $('.variables_texto2pdf' + data.progsec).hide();
-                                    }
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }, 750);
-            });
-
-            $('body').on('click', '.copiar_progsec', function () {
-                var id = $(this).data('id');
-                $.post("url_progsec_sap", {action: 'copiar_progsec', id: id},
-                    function (data) {
-                        if (data.ok) {
-                            $('#list_progsec').prepend(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
-            });
-
-            $('body').on('click', '.borrar_progsec', function () {
-                id = $(this).data('id');
-                show_mensajes({
-                    title: '<i class="fa fa-warning"></i> ¿Borrar esta informe de informe de inspección?',
-                    texto: 'Si aceptas el informe se borrará por completo de la base de datos',
-                    size: 'large',
-                    buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Borrar": function () {
-                            hide_mensajes();
-                            $.post("url_progsec_sap", {action: 'borrar_progsec', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#accordion' + id).remove();
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $('#update_error').show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
-                    }
-                });
-
-            });
-
-
-            {######################################################## #}
-
-            $("body").on('click', '#busca_progsec_manual', function (e) {
-                var texto = $('#busca_progsec').val();
-                var id_fecha_inicio = $('#id_fecha_inicio').val();
-                var id_fecha_fin = $('#id_fecha_fin').val();
-                var tipo_busqueda = $('#tipo_busqueda').val();
-                $.post("url_progsec_sap", {
-                        action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                        id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                    },
-                    function (data) {
-                        $('#list_progsec').html(data['html']);
-                        $(document).foundation();
-                    });
-            });
-
-            $("body").on('keyup', '#busca_progsec', function (e) {
-                var texto = $('#busca_progsec').val();
-                var id_fecha_inicio = $('#id_fecha_inicio').val();
-                var id_fecha_fin = $('#id_fecha_fin').val();
-                var tipo_busqueda = $('#tipo_busqueda').val();
-                $.post("url_progsec_sap", {
-                        action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                        id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                    },
-                    function (data) {
-                        $('#list_progsec').html(data['html']);
-                        $(document).foundation();
-                    });
-            });
-
-            function genera_pdf_informe() {
-                $('#action').val('pdf_progsec');
-                document.getElementById('{{formname}}').submit();
-            }
-
-            $('#Contenido').on('click', '.pdf_progsec', function (e) {
-                e.preventDefault();
-                {#var id = $(this).data('id')#}
-                genera_pdf_informe();
-                {#var protocol = window.location.protocol;#}
-                {#var port = window.location.port;#}
-                {#var domain = window.location.hostname;#}
-                {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
-
-            });
-
-            {# ##################################################################### #}
-            {# #################### CARGA DE ARCHIVOS ############################## #}
-            {# ##################################################################### #}
-
-
-            function updateProgress(evt) {
-                if (evt.lengthComputable) {
-                    var percentComplete = (evt.loaded / evt.total) * 100;
-                    $('.span_porcentage').html(parseInt(percentComplete) + '%');
-                    console.log(percentComplete);
-                } else {
-                    console.log('No es posible calcular el porcentaje de carga en el servidor');
-                }
-            }
-
-            $('body').on('click', '.subir_gauss_file', function () {
-                var id = $(this).data('id');
-                var input_files = document.getElementById('input_gauss_file' + id).files;
-                $('#span_spin').show();
-                $('.span_porcentage').show();
-
-                for (var i = 0; i < input_files.length; i++) {
-                    console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-                }
-
-                var formData = new FormData();
-                for (var i = 0; i < input_files.length; i++) {
-                    formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
-                }
-                formData.append('n_files', input_files.length);
-                formData.append('action', 'upload_archivo_xhr');
-                formData.append('progsec', id);
-                formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-                var xhr = new XMLHttpRequest();
-                {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-                xhr.onload = function () {
-                    if (xhr.readyState === xhr.DONE) {
-                        if (xhr.status === 200) {
-                            console.log(xhr.responseText);
-                            {#var b = xhr.responseText;#}
-                            var data = JSON.parse(xhr.responseText);
-                            $('#tbody_gauss_file' + data.id).html(data.html);
-                            $('#span_spin').hide();
-                            $('#span_porcentage').hide();
-                        }
-                    }
-                };
-                xhr.open('POST', "url_progsec_sap", true);
-                xhr.send(formData);
-            });
-
-            $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
-                e.preventDefault();
-                $('#action').val('descarga_gauss_file');
-                $('#faii').val($(this).data('id'));
-                document.getElementById('{{formname}}').submit();
-            });
-
-            $('body').on('click', '.borra_gauss_file', function () {
-                id = $(this).data('id');
-                show_mensajes({
-                    title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
-                    texto: 'Si aceptas el archivo se borrará por completo de la base de datos',
-                    size: 'large',
-                    buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Borrar": function () {
-                            hide_mensajes();
-                            $.post("url_progsec_sap", {action: 'borrar_faii', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#gauss_file' + id).remove();
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $('#update_error').show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
-                    }
-                });
-            });
-        {% endcomment %}
+        });
+        $('body').on('blur', '.legend_texto_editado', function (e) {
+            var actividad = $(this).data('actividad');
+            $('#legend_texto' + actividad).show();
+            $('#legend_form' + actividad).hide();
+        });
     </script>
 
 {% endblock %}

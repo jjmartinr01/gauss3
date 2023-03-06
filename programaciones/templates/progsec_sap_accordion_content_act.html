@@ -1,9 +1,20 @@
-    <fieldset id="contenido_actividad{{ actividad.id }}" style="position:relative;">
-    <legend contenteditable="true" id="legend_nombre{{ actividad.id }}"
-            data-id="{{ actividad.id }}" data-clase="ActSitApren" class="update_texto"
-            data-campo="nombre">{{ actividad.nombre }}</legend>
-    <a class="borrar_sap_actividad" data-id="{{ actividad.id }}"
-       style="position: absolute; top:0; right: 10px;"><i class="fa fa-trash"></i> Borrar actividad</a>
+<fieldset id="contenido_actividad{{ actividad.id }}" style="position:relative;">
+    <legend id="legend_nombre{{ actividad.id }}">
+        <div class="legend_texto_editable" data-actividad="{{ actividad.id }}"
+             id="legend_texto{{ actividad.id }}">
+                <span id="actividad_nombre{{ actividad.id }}">{{ actividad.nombre }}</span>
+        </div>
+        <div class="legend_texto_editado" id="legend_form{{ actividad.id }}" style="display: none;"
+             data-actividad="{{ actividad.id }}">
+                <input type="text" value="{{ actividad.nombre }}" id="actividad_input{{ actividad.id }}"
+                       class="update_texto" data-campo="nombre" data-clase="ActSitApren"
+                       data-id="{{ actividad.id }}">
+        </div>
+    </legend>
+    <a class="borrar_sap_actividad button tiny alert" data-id="{{ actividad.id }}"
+       style="position: absolute; top:-30px; right: 10px;font-weight: bold;">
+        <i class="fa fa-trash"></i> Borrar actividad
+    </a>
     <div class="row">
         <div class="columns large-12">
             <label>Descripción de la actividad:
@@ -12,17 +23,17 @@
             </label>
         </div>
     </div>
-{#    <div class="row">#}
-{#        <div class="columns large-12">#}
-{#            <label>Producto solicitado a los alumnos en esta actividad:#}
-{#                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"#}
-{#                          class="update_texto" data-campo="producto">{{ actividad.producto }}</textarea>#}
-{#            </label>#}
-{#        </div>#}
-{#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <label>Producto solicitado a los alumnos en esta actividad:#}
+    {#                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"#}
+    {#                          class="update_texto" data-campo="producto">{{ actividad.producto }}</textarea>#}
+    {#            </label>#}
+    {#        </div>#}
+    {#    </div>#}
     <div id="list_instrumentos_actividad{{ actividad.id }}">
         <span style="font-weight: bold;">Procedimientos utilizados para evaluar la actividad:</span>
-        {% for instrumento in actividad.instreval_set.all %}
+        {% for instrumento in actividad.get_instrevals %}
             {% include 'progsec_sap_accordion_content_act_proc.html' %}
         {% endfor %}
     </div>
