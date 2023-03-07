@@ -2453,8 +2453,6 @@ def progsecundaria(request):
                 if 'E' in permiso or 'X' in permiso:
                     saber = SaberBas.objects.create(psec=progsec)
                     html = reordenar_saberes_comienzo(saber.psec)
-                    # html = render_to_string('progsec_accordion_content_saberes_tr.html', {'saber': saber})
-                    # html = render_to_string('progsec_accordion_content_saberes_row.html', {'saber': saber})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
@@ -2508,13 +2506,6 @@ def progsecundaria(request):
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['progsec'], borrado=False)
                 permiso = progsec.get_permiso(g_ep)
-                # if 'C' in permiso:
-                #     msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                #     cuadernos = []
-                #     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                #         cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                #     msg += ''.join(cuadernos)
-                #     return JsonResponse({'ok': False, 'msg': msg})
                 if 'E' in permiso or 'X' in permiso:
                     saber = progsec.saberbas_set.get(id=request.POST['saber'])
                     if saber.es_borrable:

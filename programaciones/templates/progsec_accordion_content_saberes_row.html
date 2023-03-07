@@ -3,15 +3,10 @@
         <input type="date" value="{{ saber.comienzo|date:'Y-m-d' }}" class="mod_saber" data-campo="comienzo"
                data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}">
     </div>
-{#    <div class="columns large-1">#}
-{#        <input type="number" value="{{ saber.orden }}" class="mod_saber" data-campo="orden"#}
-{#               data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}">#}
-{#    </div>#}
     <div class="columns large-7">
         <div class="row collapse">
         <div class="small-1 columns">
           <span class="prefix">{{ saber.orden }}</span>
-{#            <span class="prefix">{{ forloop.counter }}</span>#}
         </div>
         <div class="small-11 columns">
           <input type="text" value="{{ saber.nombre }}" class="mod_saber" data-campo="nombre"

@@ -674,6 +674,9 @@ class ProgSec(models.Model):
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
+    def get_saberes(self):
+        return self.saberbas_set.filter(borrado=False)
+    @property
     def es_borrable(self):
         return CalAlumCE.objects.filter(cp__psec=self, valor__gt=0, cp__borrado=False).count() == 0
 
