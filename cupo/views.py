@@ -2,6 +2,7 @@
 import logging
 import datetime
 import os
+import pdfkit
 import random
 
 import xlwt
@@ -31,7 +32,7 @@ from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, Especia
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
-    EspecialidadDocenteBasica, Cargo, MiembroEDB
+    EspecialidadDocenteBasica, Cargo, MiembroEDB, DocConfEntidad
 from entidades.models import Departamento as Depentidad
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar, Gauser_extra_estudios
@@ -425,7 +426,7 @@ def ajax_cupo(request):
                 orig = Cupo.objects.get(id=request.POST['cupo'])
                 if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
-                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre))
+                cupo = Cupo.objects.create(ronda=orig.ronda, nombre='(copia) %s' % (orig.nombre))
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # crea_departamentos(g_e.ronda)
                 for e in orig.especialidadcupo_set.all():
@@ -1264,21 +1265,50 @@ def edit_cupo(request, cupo_id):
 
     if not cupo.bloqueado:
         if request.method == 'POST':
+            doc_progsec = 'Configuración de informe de cupo'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_progsec
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
             if request.POST['action'] == 'genera_informe':
-                fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-                texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
-                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                # fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                # texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
+                # ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
+                # fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                # return response
+                c = render_to_string('cupo2pdf.html', {'cupo': cupo})
+                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                fich = open(dce.url_pdf, 'rb')
                 response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                nombre = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
                 return response
             elif request.POST['action'] == 'genera_informeRRHH':
-                fichero = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-                texto_html = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
-                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                # fichero = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                # texto_html = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
+                # ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
+                # fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                # return response
+                c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
+                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                fich = open(dce.url_pdf, 'rb')
                 response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
                 return response
 
         cursos = CursoCupo.objects.filter(cupo=cupo)
