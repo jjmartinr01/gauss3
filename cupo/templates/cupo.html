@@ -268,11 +268,11 @@
         {#        });#}
         {# });#}
 
-        $('body').on('keyup', '.espec_edit', function (e) {
+        $('body').on('keyup change', '.espec_edit', function (e) {
             e.preventDefault();
             var espec = $(this).data('espec');
             var cupo = $('#cupo').val();
-            var valor = $(this).text();
+            var valor = $(this).val();
             var campo = $(this).data('campo');
             $.post("/ajax_cupo/", {
                     action: 'change_campo_espec_edit', cupo: cupo, espec: espec, valor: valor, campo: campo
