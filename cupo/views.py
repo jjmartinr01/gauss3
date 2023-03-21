@@ -160,7 +160,7 @@ def cupo(request):
     # cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(id__in=cupos_id)).distinct()
     try:
-        cargo_inspector = Cargo.objects.get(g_e__ronda__entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
+        cargo_inspector = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
     except:
         cargo_inspector = Cargo.objects.none()
     if cargo_inspector:
@@ -168,7 +168,8 @@ def cupo(request):
         plantillas_o = []
         for e in entidades:
             try:
-                po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).order_by('creado').last()
+                # po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).order_by('creado').last()
+                po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).latest('creado')
                 if po:
                     plantillas_o.append(po)
             except:
