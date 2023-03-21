@@ -632,6 +632,10 @@
                                 return {
                                     text: format_g.format(item.subentidad, '', '', '', '', item.entidad),
                                     id: prefix + item.id}
+                            } else {
+                                return {
+                                    text: format_g.format(item.param0, item.param1, item.param2, item.param3),
+                                    id: prefix + item.id}
                             }
                         })
                     };
