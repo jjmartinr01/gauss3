@@ -6,7 +6,7 @@
     </a></td>
 </tr>
 <tr class="datos_libro{{ libro.id }}">
-    <td colspan="3" style="color: grey;">{{ libro.observaciones }}</td>
+    <td colspan="3" style="color: grey;">{% autoescape off %}{{ libro.observaciones }}{% endautoescape %}</td>
 </tr>
 {#<div id="datos_libro{{ libro.id }}">#}
 {#    <div class="row">#}
