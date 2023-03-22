@@ -94,26 +94,40 @@
             setTimeout(function () {
                 $('#nombre_docente_efpa').select2(
                     conf_select2({
-                        'url': '/selectgcs_organization/',
-                        'gcs': 'gcs',
-                        'format_g': '{0}, {1}',
-                        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                        'gcs': 'g',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
+                        'cars':['g_docente',],
+                        'placeholder': 'Escribe parte del nombre del docente para buscarlo',
+                        'url': '/selectgcs/'
                     })
                 );
                 $('#nombre_tutor_efpa').select2(
                     conf_select2({
-                        'url': '/selectgcs_organization/',
-                        'gcs': 'gcs',
-                        'format_g': '{0}, {1}',
-                        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                        {#'url': '/selectgcs_organization/',#}
+                        {#'gcs': 'gcs',#}
+                        {#'format_g': '{0}, {1}',#}
+                        {#'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
+                        'gcs': 'g',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
+                        'cars':['g_docente',],
+                        'placeholder': 'Escribe parte del nombre del tutor para buscarlo',
+                        'url': '/selectgcs/'
                     })
                 );
                 $('#nombre_director_efpa').select2(
                     conf_select2({
-                        'url': '/selectgcs_organization/',
-                        'gcs': 'gcs',
-                        'format_g': '{0}, {1}',
-                        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                        {#'url': '/selectgcs_organization/',#}
+                        {#'gcs': 'gcs',#}
+                        {#'format_g': '{0}, {1}',#}
+                        {#'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
+                        'gcs': 'g',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
+                        'cars':['g_docente',],
+                        'placeholder': 'Escribe parte del nombre del director/a para buscarlo',
+                        'url': '/selectgcs/'
                     })
                 );
                 $('#nombre_inspector_efpa').select2();

@@ -1,17 +1,45 @@
 <br>
-<table>
+<table style="width: 100%;">
     <thead>
     <tr>
         <th>Nombre</th>
-        <th>Código</th>
+        <th>Cód. Cuerpo</th>
+        <th>Cód. Especialidad</th>
         <th>Departamento</th>
     </tr>
     </thead>
     {% for e in cupo.especialidadcupo_set.all %}
         <tr>
-            <td contenteditable="true" class="espec_edit" data-campo="nombre" data-espec="{{ e.id }}">{{ e.nombre }}</td>
-            <td contenteditable="true" class="espec_edit" data-campo="cod_espec" data-espec="{{ e.id }}">{{ e.cod_espec }}</td>
-            <td contenteditable="true" class="espec_edit" data-campo="dep" data-espec="{{ e.id }}">{{ e.dep }}</td>
+            <td>
+                <input type="text" class="espec_edit" data-campo="nombre" data-espec="{{ e.id }}"
+                       value="{{ e.nombre }}">
+            </td>
+            <td>
+                <select data-espec="{{ e.id }}" class="espec_edit" data-campo="cod_cuerpo" data-espec="{{ e.id }}">
+                    {% if e.cod_cuerpo %}
+                        <option value="{{ e.cod_cuerpo }}">{{ e.cod_cuerpo }}</option>
+                    {% else %}
+                        <option value="">------</option>
+                    {% endif %}
+                    <option value="0590">0590</option>
+                    <option value="0591">0591</option>
+                    <option value="0592">0592</option>
+                    <option value="0593">0593</option>
+                    <option value="0594">0594</option>
+                    <option value="0595">0595</option>
+                    <option value="0596">0596</option>
+                    <option value="0597">0597</option>
+                    <option value="0598">0598</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" class="espec_edit" data-campo="cod_espec" data-espec="{{ e.id }}"
+                       value="{{ e.cod_espec }}">
+            </td>
+            <td>
+                <input type="text" class="espec_edit" data-campo="dep" data-espec="{{ e.id }}"
+                       value="{{ e.dep }}">
+            </td>
         </tr>
     {% endfor %}
 </table>

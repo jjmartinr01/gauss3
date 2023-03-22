@@ -159,7 +159,23 @@ def cupo(request):
     f = datetime.datetime(2021, 1, 1)
     # cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(id__in=cupos_id)).distinct()
-    plantillas_o = PlantillaOrganica.objects.filter(Q(g_e__gauser=g_e.gauser) | Q(ronda_centro=g_e.ronda))
+    try:
+        cargo_inspector = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
+    except:
+        cargo_inspector = Cargo.objects.none()
+    if cargo_inspector:
+        entidades = Entidad.objects.all()
+        plantillas_o = []
+        for e in entidades:
+            try:
+                # po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).order_by('creado').last()
+                po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).latest('creado')
+                if po:
+                    plantillas_o.append(po)
+            except:
+                pass
+    else:
+        plantillas_o = PlantillaOrganica.objects.filter(Q(g_e__gauser=g_e.gauser) | Q(ronda_centro=g_e.ronda))
     cursos_existentes = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                              clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
     return render(request, "cupo.html",
@@ -175,6 +191,23 @@ def cupo(request):
                    'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                    'especialidades_existentes': ESPECIALIDADES,
                    'cursos_existentes': cursos_existentes})
+
+def select_po(request):
+    g_e = request.session['gauser_extra']
+    if request.is_ajax():
+        if request.method == 'GET':
+            texto = request.GET['q']
+            entidades = Entidad.objects.filter(name__icontains=texto)
+            options = []
+            for e in entidades:
+                try:
+                    po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).order_by('creado').last()
+                    options.append({'id': po.id, 'param0': po.ronda_centro.entidad.name,
+                                    'param1': po.creado.strftime('%d/%m/%Y a las %H:%M'), 'param2': '', 'param3': ''})
+                except:
+                    pass
+            return JsonResponse(options, safe=False)
+
 
 
 def cupo_especialidad(cupo, especialidad):
