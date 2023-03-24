@@ -7,5 +7,5 @@
     </a></td>
 </tr>
 <tr class="datos_actex{{ actex.id }}">
-    <td colspan="4" style="color: grey;">{{ actex.observaciones }}</td>
+    <td colspan="4" style="color: grey;">{% autoescape off %}{{ actex.observaciones }}{% endautoescape %}</td>
 </tr>

@@ -229,7 +229,7 @@
                 <div class="panel callout"><h3>1º Listado de competencias específicas</h3></div>
                 <p>La superación de {{ progsec.areamateria.nombre }} implica la adquisición de una serie de competencias
                     específicas. Todas ellas contribuyen de igual forma a la calificación que finalmente obtendrán sus
-                    alumunos.</p>
+                    alumnos.</p>
                 <p>A través de los criterios de evaluación se valora el grado de adquisición de cada
                     competencia específica; la media de esas valoraciones será la calificación que el alumnado obtendrá
                     en {{ progsec.areamateria.nombre }}.</p>
@@ -462,10 +462,8 @@
         <label>En el siguiente cuadro puede describir el procedimiento. Recuerde que una programación didáctica que
             vaya a ser publicada no debe mostrar nombres de alumnos, profesores, ... Ni tampoco descripciones que
             afecten de manera particular a una persona. Tenga en cuenta esto en la redacción del texto.
-            <textarea
-                    placeholder="Introduce aquí el procedimiento para la adopción de medidas de atención a las diversidad"
-                    id="procdiversidad{{ progsec.id }}" class="update_texto" data-campo="procdiversidad"
-                    data-id="{{ progsec.id }}">{{ progsec.procdiversidad }}</textarea>
+            <!-- <textarea placeholder="Introduce aquí el procedimiento para la adopción de medidas de atención a las diversidad" id="procdiversidad{{ progsec.id }}" class="update_texto" data-campo="procdiversidad" data-id="{{ progsec.id }}">{{ progsec.procdiversidad }}</textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="procdiversidad{{ progsec.id }}">{% autoescape off %}{{ progsec.procdiversidad }}{% endautoescape %}</div>
         </label>
     </div>
 </div>
@@ -479,10 +477,11 @@
 <div class="row">
     <div class="columns large-12">
         <label>Describa aquí la organización y seguimiento de los PREs por parte de los docentes:
-            <textarea
-                    placeholder="Describe aquí la organización y seguimiento por parte de los docentes"
-                    id="planrecup{{ progsec.id }}" class="update_texto" data-campo="planrecup"
-                    data-id="{{ progsec.id }}">{{ progsec.planrecup }}</textarea>
+<!-- <textarea
+    placeholder="Describe aquí la organización y seguimiento por parte de los docentes"
+    id="planrecup{{ progsec.id }}" class="update_texto" data-campo="planrecup"
+    data-id="{{ progsec.id }}">{{ progsec.planrecup }}</textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="planrecup{{ progsec.id }}">{% autoescape off %}{{ progsec.planrecup }}{% endautoescape %}</div>
         </label>
     </div>
 </div>
@@ -527,8 +526,9 @@
 <div class="row">
     <div class="columns large-12">
         <label>Introduce observaciones acerca del libro/material:
-            <textarea id="observaciones_libro{{ progsec.id }}"
-                      placeholder="Texto opcional"></textarea>
+<!-- <textarea id="observaciones_libro{{ progsec.id }}" placeholder="Texto opcional"></textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="observaciones_libro{{ progsec.id }}">{% autoescape off %}{% endautoescape %}</div>
+            <div id="container_observaciones_libro" style="display: none"></div>
         </label>
     </div>
 </div>
@@ -597,8 +597,10 @@
 <div class="row">
     <div class="columns large-12">
         <label>Observaciones a la actividad extraescolar/complementaria:
-            <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
-                      placeholder="Texto opcional"></textarea>
+<!-- <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
+placeholder="Texto opcional"></textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="observaciones_actex{{ progsec.id }}">{% autoescape off %}{% endautoescape %}</div>
+            <div id="container_observaciones_actex" style="display: none"></div>
         </label>
     </div>
     {#    <div class="columns large-3">#}
@@ -718,4 +720,38 @@
         })
     );
     // Espe: Fin Enviar programación a otro docente
+    // Ckeditor
+    setTimeout(function () {
+        var procdiversidad{{ progsec.id }} = CKEDITOR.inline('procdiversidad{{ progsec.id }}');
+        var planrecup{{ progsec.id }} = CKEDITOR.inline('planrecup{{ progsec.id }}');
+        var observaciones_libro{{ progsec.id }} = CKEDITOR.inline('observaciones_libro{{ progsec.id }}');
+        var observaciones_actex{{ progsec.id }} = CKEDITOR.inline('observaciones_actex{{ progsec.id }}');
+
+        procdiversidad{{ progsec.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            texto_editor = texto;
+            var progsec = {{ progsec.id }};
+            setTimeout(function () {
+                comprueba_cambio_texto(texto, progsec, 'procdiversidad');
+            }, 1000);
+            re_adjust_check_time();
+        });
+        planrecup{{ progsec.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            texto_editor = texto;
+            var progsec = {{ progsec.id }};
+            setTimeout(function () {
+                comprueba_cambio_texto(texto, progsec, 'planrecup');
+            }, 1000);
+            re_adjust_check_time();
+        });
+        observaciones_libro{{ progsec.id }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                $('#container_observaciones_libro').html(texto);
+        });
+        observaciones_actex{{ progsec.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            $('#container_observaciones_actex').html(texto);
+        });
+}, 300);
 </script>

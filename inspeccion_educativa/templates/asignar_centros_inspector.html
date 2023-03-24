@@ -29,7 +29,7 @@
         <div id="formulario_add"></div>
         <div id="formulario_search">
             <div class="row">
-                <div class="columns large-12">
+                <div class="columns large-10">
                     <label><span style="color: #0078a0;font-weight: bold;">
                                 <i class="fa fa-search"></i> <b>Buscar</b>
                             </span>
@@ -37,6 +37,10 @@
                                placeholder="Escribe parte del nombre del centro, inspector, o texto a buscar">
                     </label>
 
+                </div>
+                <div class="columns large-2">
+                    <label>&nbsp;</label>
+                    <a class="button tiny right" id="busca_ci_button"><i class="fa fa-search"></i> <b>Buscar</b></a>
                 </div>
             </div>
         </div>
@@ -46,9 +50,12 @@
                     <thead>
                     <tr>
                         {% for i in inspectores %}
-                            <th title="{{ i.gauser.get_full_name }}"><b>{{ i.gauser.get_full_name|get_iniciales }}</b>
-                                <span
-                                        id="insp{{ i.id }}">{{ i|get_puntos }}</span></th>
+                            <th title="{{ i.gauser.get_full_name }}">
+                                <a class="get_centros_inspector" data-inspector="{{ i.id }}">
+                                    <b>{{ i.gauser.get_full_name|get_iniciales }}</b>
+                                </a>
+                                <span id="insp{{ i.id }}">{{ i|get_puntos }}</span>
+                            </th>
                         {% endfor %}
                     </tr>
                     </thead>
@@ -123,26 +130,27 @@
 
         {# ################################################################# #}
 
-        $('body').on('keyup', '#busca_ci', function () {
-            var element = $(this);
+        {#$('body').on('keyup', '#busca_ci', function () {#}
+        $('body').on('click', '#busca_ci_button', function () {
+            var element = $('#busca_ci');
             var antiguo_texto = element.val();
-            setTimeout(function () {
-                var nuevo_texto = element.val();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/asignar_centros_inspeccion/", {
-                            action: 'busca_ci',
-                            texto: nuevo_texto
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                $('#update_ok').show().delay(1500).fadeOut();
-                                $('#list_cis').html(data.html);
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
+            {#setTimeout(function () {#}
+            var nuevo_texto = element.val();
+            {#if (antiguo_texto === nuevo_texto) {#}
+            $.post("/asignar_centros_inspeccion/", {
+                    action: 'busca_ci',
+                    texto: nuevo_texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#update_ok').show().delay(1500).fadeOut();
+                        $('#list_cis').html(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+            {# }#}
+            {# }, 750);#}
         });
 
         {# ################################################################# #}
@@ -202,6 +210,21 @@
                     }
                 });
         });
+
+        $('body').on('click', '.get_centros_inspector', function (e) {
+            e.preventDefault();
+            var inspector = $(this).data('inspector');
+            $.post("/asignar_centros_inspeccion/", {action: 'get_centros_inspector', 'inspector': inspector},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_cis').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
 
     </script>
 

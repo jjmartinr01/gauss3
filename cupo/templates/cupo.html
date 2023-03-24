@@ -77,28 +77,61 @@
                 <h5>
                     <b>Puede crear un cupo basado en alguno de los siguientes estudios de plantilla orgánica:<br>
                         {% if plantillas_o|length == 1 %}
-                            <span style="font-size:small;"> (Basta con hacer click sobre el siguiente estudio)</span>
+                            <span style="font-size:small;"> (Basta con seleccionar el estudio disponible
+                                y pulsar en "<i class="fa fa-plus"></i> Crear cupo")</span>
                         {% else %}
-                            <span style="font-size:small;"> (Basta con hacer click sobre uno de los siguientes estudios)</span>
+                            <span style="font-size:small;"> (Basta con seleccionar uno de los estudios
+                                y pulsar en "<i class="fa fa-plus"></i> Crear cupo")</span>
                         {% endif %}
                     </b>
                 </h5>
-                <div class="row">
-                    {% for po in plantillas_o %}
-                        {% if po.ronda_centro == g_e.ronda or po.g_e.gauser == g_e.gauser %}
-                            <div class="columns large-3"
-                                 title="Análisis realizado por {{ po.g_e.gauser.get_full_name }}">
-                                <a class="crea_cupo_from_po" data-po="{{ po.id }}">
-                                    <div class="show_po">
-                                        <p class="text_show_po">{{ po.ronda_centro.entidad.name }}
-                                            <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y H:i' }}</span>
-                                        </p>
-                                    </div>
-                                </a>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+            <div class="row">
+                <div class="columns large-9">
+                    <label>Seleccione el centro sobre el que quiere realizar el cupo:
+                    <select id="selected_po">
+                    <option value="">---------</option>
+                        {% for po in plantillas_o %}
+                            <option value="{{ po.id }}"><b>{{ po.ronda_centro.entidad.name }}</b>
+                                (Datos cargados el {{ po.creado|date:'d-m-Y H:i' }})</option>
+                        {% endfor %}
+                    </select>
+                    </label>
                 </div>
+            <div class="columns large-3">
+                <label>&nbsp;</label>
+                <a class="button tiny crea_cupo_from_po"><i class="fa fa-plus"></i> <b>Crear cupo</b></a>
+            </div>
+            </div>
+
+
+{#            <div class="row">#}
+{#                <div class="columns large-9">#}
+{#                    <label>Seleccione el centro sobre el que quiere realizar el cupo:#}
+{#                    <select id="selected_po_inspector">#}
+{#                    </select>#}
+{#                    </label>#}
+{#                </div>#}
+{#            <div class="columns large-3">#}
+{#                <label>&nbsp;</label>#}
+{#                <a class="button tiny crea_cupo_from_po"><i class="fa fa-plus"></i> <b>Crear cupo</b></a>#}
+{#            </div>#}
+{#            </div>#}
+{#                <div class="row">#}
+{#                    {% for po in plantillas_o %}#}
+{#                        {% if po.ronda_centro == g_e.ronda or po.g_e.gauser == g_e.gauser %}#}
+{#                            <div class="columns large-3"#}
+{#                                 title="Análisis realizado por {{ po.g_e.gauser.get_full_name }}">#}
+{#                                <a class="crea_cupo_from_po" data-po="{{ po.id }}">#}
+{#                                    <div class="show_po">#}
+{#                                        <p class="text_show_po">{{ po.ronda_centro.entidad.name }}#}
+{#                                            <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y H:i' }}</span>#}
+{#                                        </p>#}
+{#                                    </div>#}
+{#                                </a>#}
+{#                            </div>#}
+{#                        {% endif %}#}
+{#                    {% endfor %}#}
+{#                </div>#}
             </div>
         {% else %}
             <script>
@@ -127,6 +160,17 @@
             event.preventDefault();
             $('#panel_info').toggle();
         });
+
+        $("#selected_po").select2();
+        {#$("#selected_po_inspector").select2(#}
+        {#            conf_select2({#}
+        {#                'gcs': 'otro',#}
+        {#                'format_g': '{0} (Datos cargados el {1})',#}
+        {#                'placeholder': 'Escribe parte del nombre del centro para buscarlo',#}
+        {#                'format_prefix': false,#}
+        {#                'url': '/select_po/'#}
+        {#            })#}
+        {#        );#}
 
         function inicializar_select2() {
             setTimeout(function () {
@@ -159,7 +203,7 @@
                         'gcs': 'g',
                         'format_g': '{0}, {1} ({5})',
                         'scope': 'rondas',
-                        'cars':['g_docente', 'g_inspector_educacion',],
+                        'cars':['g_docente', 'g_inspector_educacion', 'g_nodocente'],
                         'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
                         'url': '/selectgcs/'
                     })
@@ -268,11 +312,11 @@
         {#        });#}
         {# });#}
 
-        $('body').on('keyup', '.espec_edit', function (e) {
+        $('body').on('keyup change', '.espec_edit', function (e) {
             e.preventDefault();
             var espec = $(this).data('espec');
             var cupo = $('#cupo').val();
-            var valor = $(this).text();
+            var valor = $(this).val();
             var campo = $(this).data('campo');
             $.post("/ajax_cupo/", {
                     action: 'change_campo_espec_edit', cupo: cupo, espec: espec, valor: valor, campo: campo
@@ -515,7 +559,8 @@
             });
             $('body').on('click', '.crea_cupo_from_po', function (e) {
                 e.preventDefault();
-                var po = $(this).data('po');
+                {#var po = $(this).data('po');#}
+                var po = $('#selected_po').val();
                 $.post("/ajax_cupo/", {action: 'crea_cupo_from_po', po: po}, function (data) {
                     if (data.ok) {
                         $('#list_cupos').prepend(data.html);

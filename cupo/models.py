@@ -53,6 +53,7 @@ class EspecialidadCupo(models.Model):
     nombre = models.CharField("Nombre de la especialidad", max_length=150)
     # departamento = models.ForeignKey(Departamento, blank=True, null=True, on_delete=models.CASCADE)
     cod_espec = models.CharField("Código de especialidad", max_length=15, blank=True, null=True, default='')
+    cod_cuerpo = models.CharField("Código del cuerpo", max_length=15, blank=True, null=True, default='')
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
     dep = models.CharField('Departamento', max_length=310, blank=True, null=True, default='')
     x_dep = models.CharField('Departamento clave', max_length=9, blank=True, null=True, default='')
@@ -225,7 +226,9 @@ class Profesor_cupo(models.Model):
     bilingue = models.BooleanField('Es bilingüe?', default=False)
     itinerante = models.BooleanField('Es itinerante?', default=False)
     noafin = models.BooleanField('Es no afín?', default=False)
+    vacante = models.BooleanField('Es una vacante?', default=False)
     observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
+    observaciones_ocultas = models.TextField('Observaciones ocultas', blank=True, null=True, default='')
 
     class Meta:
         verbose_name_plural = 'Profesores del cupo'

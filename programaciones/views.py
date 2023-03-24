@@ -1924,36 +1924,35 @@ def proyecto_educativo_centro(request):
 ################# PROGRAMACIONES LOMLOE SECUNDARIA ##########################
 #############################################################################
 
-def reordenar_saberes(saber, valor):
-    borrar_saber = True if valor > 999 else False
-    progsec = saber.psec
-    orden_saber = saber.orden
-    saberes = progsec.saberbas_set.exclude(id=saber.id)
-    num_saberes = saberes.count() + 1
-    valor = num_saberes if valor > num_saberes else valor
-    if valor > orden_saber:
-        nuevo_orden = 0
-        for s in saberes.filter(orden__lte=valor):
-            nuevo_orden += 1
-            s.orden = nuevo_orden
-            s.save()
-    if valor < orden_saber:
-        nuevo_orden = valor
-        for s in saberes.filter(orden__gte=valor):
-            nuevo_orden += 1
-            s.orden = nuevo_orden
-            s.save()
-    saber.orden = valor
-    saber.save()
-    if borrar_saber:
-        saber.delete()
-    return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
+# def reordenar_saberes(saber, valor):
+#     borrar_saber = True if valor > 999 else False
+#     progsec = saber.psec
+#     orden_saber = saber.orden
+#     saberes = progsec.saberbas_set.exclude(id=saber.id)
+#     num_saberes = saberes.count() + 1
+#     valor = num_saberes if valor > num_saberes else valor
+#     if valor > orden_saber:
+#         nuevo_orden = 0
+#         for s in saberes.filter(orden__lte=valor):
+#             nuevo_orden += 1
+#             s.orden = nuevo_orden
+#             s.save()
+#     if valor < orden_saber:
+#         nuevo_orden = valor
+#         for s in saberes.filter(orden__gte=valor):
+#             nuevo_orden += 1
+#             s.orden = nuevo_orden
+#             s.save()
+#     saber.orden = valor
+#     saber.save()
+#     if borrar_saber:
+#         saber.borrado = True
+#         saber.save()
+    # return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
 
 
 def reordenar_saberes_comienzo(psec):
-    # if comienzo > datetime(3000, 1, 1):
-    #     saber.delete()
-    for i, s in enumerate(psec.saberbas_set.all()):
+    for i, s in enumerate(psec.saberbas_set.filter(borrado=False)):
         s.orden = i + 1
         s.save()
     return render_to_string('progsec_accordion_content_saberes.html', {'progsec': psec})
@@ -1997,10 +1996,10 @@ def progsecundaria(request):
         dps.save()
     # Fin de las líneas que aseguran que el propietario tiene permiso 'X'
     if g_e.has_permiso('ve_todas_programaciones'):
-        progsecs = ProgSec.objects.filter(pga=pga)
+        progsecs = ProgSec.objects.filter(pga=pga, borrado=False)
     else:
         progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
-        progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids)
+        progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
     if request.method == 'POST' and request.is_ajax() and not ies:
         action = request.POST['action']
         if action == 'get_areasmaterias':
@@ -2072,24 +2071,32 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_progsec':
-            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
-            return JsonResponse({'ok': False, 'msg': msg})
+            # progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+            #                               id=request.POST['id'])
+            # msg = 'Opción desabilita temporalmente. Disculpe las molestias. %s' % progsec.es_borrable
+            # return JsonResponse({'ok': False, 'msg': msg})
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
                 permiso = progsec.get_permiso(g_ep)
-                if 'C' in permiso:
-                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                    cuadernos = []
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    msg += ''.join(cuadernos)
-                    return JsonResponse({'ok': False, 'msg': msg})
-                elif permiso == 'X' or progsec.gep.ge == g_e:
-                    progsec.delete()
-                    return JsonResponse({'ok': True})
+                # if 'C' in permiso:
+                #     msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                #     cuadernos = []
+                #     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                #         cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                #     msg += ''.join(cuadernos)
+                #     return JsonResponse({'ok': False, 'msg': msg})
+                if (permiso == 'X' or progsec.gep.ge == g_e):
+                    if progsec.es_borrable:
+                        progsec.borrado = True
+                        progsec.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        msg = 'La programación está siendo usada en uno o varios cuadernos docentes que ya contienen calificaciones.'
+                        return JsonResponse({'ok': False, 'msg': msg})
                 else:
-                    return JsonResponse({'ok': False, 'msg': permiso})
+                    msg = 'No tienes permiso para borrar esta programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'copiar_progsec':
@@ -2441,8 +2448,6 @@ def progsecundaria(request):
                 if 'E' in permiso or 'X' in permiso:
                     saber = SaberBas.objects.create(psec=progsec)
                     html = reordenar_saberes_comienzo(saber.psec)
-                    # html = render_to_string('progsec_accordion_content_saberes_tr.html', {'saber': saber})
-                    # html = render_to_string('progsec_accordion_content_saberes_row.html', {'saber': saber})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
@@ -2492,30 +2497,24 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_saber':
-            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
-            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
-                                              id=request.POST['id'])
-
+                                              id=request.POST['progsec'], borrado=False)
                 permiso = progsec.get_permiso(g_ep)
-                if 'C' in permiso:
-                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                    cuadernos = []
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    msg += ''.join(cuadernos)
-                    return JsonResponse({'ok': False, 'msg': msg})
-                elif 'E' in permiso or 'X' in permiso:
+                if 'E' in permiso or 'X' in permiso:
                     saber = progsec.saberbas_set.get(id=request.POST['saber'])
-                    psec = saber.psec
-                    # saber_id = saber.id
-                    # html = reordenar_saberes(saber, 1000)  # Si orden es > que 999 el saber se borra
-                    saber.delete()
-                    html = reordenar_saberes_comienzo(psec)
-                    return JsonResponse({'ok': True, 'html': html})
+                    if saber.es_borrable:
+                        psec = saber.psec
+                        saber.borrado = True
+                        saber.save()
+                        html = reordenar_saberes_comienzo(psec)
+                        return JsonResponse({'ok': True, 'html': html})
+                    else:
+                        msg = 'Esta unidad de programación está siendo usada en uno o varios cuadernos docentes que ya contienen calificaciones.'
+                        return JsonResponse({'ok': False, 'msg': msg})
                 else:
-                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                    msg = 'No tienes permiso para borrar esta programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
     elif request.method == 'POST':
@@ -2728,43 +2727,18 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_sap':
-            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
-            return JsonResponse({'ok': False, 'msg': msg})
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 progsec = sapren.sbas.psec
                 permiso = progsec.get_permiso(g_ep)
-                if 'C' in permiso:
-                    msg = '<p>Hay cuadernos de docentes creados de tipo PRO con algún procedimiento calificado.</p>'
-                    cuadernos = []
-                    n_pro = 0
-                    procedimientos_calificados = False
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        if cuaderno.tipo == 'PRO':
-                            n_pro = n_pro + 1
-                            print('Verificando si hay procedimientos calificados....')
-                            # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
-                            # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
-                            escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
-                            for escalacp in escalacp_all:
-                                print(escalacp.id)
-                                necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
-                                print(necpv)
-                                if (necpv > 0):
-                                    procedimientos_calificados = True
-                                    cuadernos.append(
-                                        '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    # Existe al menos un cuaderno de tipo PRO con algún procedimiento calificado
-                    if procedimientos_calificados:
-                        msg += ''.join(cuadernos)
-                        return JsonResponse({'ok': False, 'msg': msg})
-                    # No existe ningún cuaderno de tipo PRO, luego puede borrarse la situación de aprendizaje
-                    else:
-                        sapren.delete()
+                if 'E' in permiso or 'X' in permiso:
+                    if sapren.es_borrable:
+                        sapren.borrado = True
+                        sapren.save()
                         return JsonResponse({'ok': True})
-                elif 'E' in permiso:
-                    sapren.delete()
-                    return JsonResponse({'ok': True})
+                    else:
+                        msg = 'Esta situación de aprendizaje ha sido evaluada en uno o varios cuadernos docentes que ya contienen calificaciones.'
+                        return JsonResponse({'ok': False, 'msg': msg})
                 else:
                     msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
                     return JsonResponse({'ok': False, 'msg': msg})
@@ -2877,11 +2851,20 @@ def progsecundaria_sb(request, id):
             try:
                 clase = eval(request.POST['clase'])
                 objeto = clase.objects.get(id=request.POST['id'])
-                setattr(objeto, request.POST['campo'], request.POST['valor'])
-                objeto.save()
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
+                if clase == CriInstrEval and request.POST['campo'] == 'peso' and int(request.POST['valor']) == 0:
+                    if objeto.es_borrable:
+                        setattr(objeto, request.POST['campo'], request.POST['valor'])
+                        objeto.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        msg = 'Este criterio de evaluación ha sido calificado en uno o más cuadernos docentes.'
+                        return JsonResponse({'ok': False, 'msg': msg, 'mensaje': True})
+                else:
+                    setattr(objeto, request.POST['campo'], request.POST['valor'])
+                    objeto.save()
+                    return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'update_many2many':
             try:
                 clase = eval(request.POST['clase'])
@@ -2891,11 +2874,17 @@ def progsecundaria_sb(request, id):
                 manytomany = getattr(objeto, request.POST['campo'])
                 if request.POST['checked'] == 'true':
                     manytomany.add(objetom2m)
+                    return JsonResponse({'ok': True})
                 else:
-                    manytomany.remove(objetom2m)
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
+                    if clase == SitApren and request.POST['campo'] == 'ceps':
+                        if objeto.ceps_es_borrable(objetom2m):
+                            manytomany.remove(objetom2m)
+                            return JsonResponse({'ok': True})
+                        else:
+                            msg = 'Esta competencia específica tiene criterios de evaluación calificados en uno o más cuadernos docentes.'
+                            return JsonResponse({'ok': False, 'msg': msg, 'mensaje': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_sap_actividad':
             try:
                 sap = sb.sitapren_set.get(id=request.POST['sap'])
@@ -2906,25 +2895,20 @@ def progsecundaria_sb(request, id):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'borrar_sap_actividad':
-            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
-            return JsonResponse({'ok': False, 'msg': msg})
             try:
-                act = ActSitApren.objects.get(id=request.POST['id'])
-                progsec = act.sapren.sbas.psec
+                asapren = ActSitApren.objects.get(id=request.POST['id'])
+                progsec = asapren.sapren.sbas.psec
                 permiso = progsec.get_permiso(g_ep)
-                if 'C' in permiso:
-                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                    cuadernos = []
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    msg += ''.join(cuadernos)
-                    return JsonResponse({'ok': False, 'msg': msg})
-                elif act.sapren.actsitapren_set.all().count() > 1:
-                    if act.sapren.sbas == sb:
-                        act.delete()
-                    return JsonResponse({'ok': True})
+                if 'E' in permiso or 'X' in permiso:
+                    if asapren.es_borrable:
+                        asapren.borrado = True
+                        asapren.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        msg = 'Esta actividad ha sido evaluada en uno o varios cuadernos docentes que ya contienen calificaciones.'
+                        return JsonResponse({'ok': False, 'msg': msg})
                 else:
-                    msg = 'No es posible borrar. Al menos, debe existir una actividad.'
+                    msg = 'No tienes permiso para borrar esta actividad.'
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -2932,7 +2916,7 @@ def progsecundaria_sb(request, id):
             try:
                 act = ActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.sbas == sb:
-                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento', tipo='TMONO')
+                    inst = InstrEval.objects.create(asapren=act, nombre='Procedimiento', tipo='TMONO')
                     html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
@@ -2940,62 +2924,23 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_act_instrumento':
-            msg = 'Opción desabilita temporalmente. Disculpe las molestias.'
-            return JsonResponse({'ok': False, 'msg': msg})
             try:
-                inst = InstrEval.objects.get(id=request.POST['id'])
-                progsec = inst.asapren.sapren.sbas.psec
+                ieval = InstrEval.objects.get(id=request.POST['id'])
+                progsec = ieval.asapren.sapren.sbas.psec
                 permiso = progsec.get_permiso(g_ep)
-                if 'C' in permiso:
-                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
-                    cuadernos = []
-                    procedimiento_calificado = False
-                    n_pro = 0
-                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
-                        # INICIO
-                        if cuaderno.tipo == 'PRO':
-                            n_pro = n_pro + 1
-                            print('Verificando si hay procedimientos calificados....')
-                            # Se comprueba si existe algún procedimiento que contiene al menos una calificación.
-                            # En caso de ser así no se puede borrar, pero si no existen calificaciones entonces sí se puede borrar
-                            escalacp_all = EscalaCP.objects.filter(cp=cuaderno.id)
-                            for escalacp in escalacp_all:
-                                print(escalacp.id)
-                                if escalacp.ieval.id == inst.id:
-                                    print('Sí es el procedimiento')
-                                    print(escalacp.ieval.id)
-                                    necpv = EscalaCPvalor.objects.filter(ecp=escalacp.id).count()
-                                    print('Nº de calificaciones realizadas en este procedimiento')
-                                    print(necpv)
-                                    if (necpv > 0):
-                                        print('Hay calificaciones y no se puede borrar')
-                                        procedimiento_calificado = True
-                                        cuadernos.append(
-                                            '<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                                    else:
-                                        print('No hay calificaciones y por tanto sí se puede borrar')
-                                else:
-                                    print('No es el procedimiento')
-                                    print(escalacp.ieval.id)
-                        # FIN
-                        # cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
-                    # Existe al menos un cuaderno de tipo PRO con ese procedimiento calificado
-                    if procedimiento_calificado:
-                        msg += ''.join(cuadernos)
-                        return JsonResponse({'ok': False, 'msg': msg})
-                    # No existe ningún cuaderno de tipo PRO que califique ese procedimiento, asi que puede borrarse la situación de aprendizaje
-                    else:
-                        inst.delete()
+                if 'E' in permiso or 'X' in permiso:
+                    if ieval.es_borrable:
+                        ieval.borrado = True
+                        ieval.save()
                         return JsonResponse({'ok': True})
-                elif inst.asapren.instreval_set.all().count() > 1:
-                    if inst.asapren.sapren.sbas == sb:
-                        inst.delete()
-                    return JsonResponse({'ok': True})
+                    else:
+                        msg = 'Este procedimiento de evaluación ya contiene calificaciones en uno o varios cuadernos docentes.'
+                        return JsonResponse({'ok': False, 'msg': msg})
                 else:
-                    msg = 'No es posible borrar. Al menos, debe existir un procedimiento de evaluación.'
+                    msg = 'No tienes permiso para borrar este procedimiento de evaluación.'
                     return JsonResponse({'ok': False, 'msg': msg})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'table_criteval':
             try:
                 inst = InstrEval.objects.get(id=request.POST['id'])
@@ -3242,7 +3187,7 @@ def repositorio_sap(request):
             try:
                 act = RepoActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.autor.gauser == g_e.gauser:
-                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Nombre del instrumento', tipo='TMONO')
+                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Procedimiento', tipo='TMONO')
                     html = render_to_string('repositorio_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
@@ -3366,7 +3311,7 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': False})
         elif action == 'select_psec':
             try:
-                psec = ProgSec.objects.get(id=request.POST['psec'])
+                psec = ProgSec.objects.get(id=request.POST['psec'], borrado=False)
                 try:
                     ies = g_e.ronda.entidad.entidadextra.depende_de
                     if ies:
@@ -3717,7 +3662,7 @@ def cuadernodocente(request):
                             'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
                            ),
                       'g_e': g_e,
-                      'cuadernos': CuadernoProf.objects.filter(ge=g_e, borrado=False),
+                      'cuadernos': CuadernoProf.objects.filter(ge=g_e, borrado=False, psec__borrado=False),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 

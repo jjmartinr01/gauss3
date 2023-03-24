@@ -118,12 +118,12 @@
                     <input type="text" id="num_alumnos_curso" value="">
                 </div>
                 <div class="columns large-1 medium-1 small-2"
-                     title="Filtrar por número de máximo de alumnos en un grupo">
-                    {#                <input type="text" id="filtro_max" value="">#}
+                     title="Establecer el número máximo de alumnos en un grupo">
+                                    <input type="text" id="max_num_alumnos_curso" value="">
                 </div>
                 <div class="columns large-1 medium-1 small-2"
-                     title="Filtrar por número de mínimo de alumnos en un grupo">
-                    {#                <input type="text" id="filtro_min" value="">#}
+                     title="Establecer el número mínimo de alumnos en un grupo">
+                    <input type="text" id="min_num_alumnos_curso" value="">
                 </div>
             </div>
         </div>
@@ -139,10 +139,15 @@
 {% block final %}
     <script>
         {#    $('.especialidad').select2();#}
-        habilita(['s_file-pdf-o', 's_arrow-left']);
+        habilita(['s_file-pdf-o', 's_arrow-left', 's_file-text-o']);
         $('#file-pdf-o_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('genera_informe');
+            document.getElementById("{{ formname }}").submit();
+        });
+        $('#file-text-o_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('genera_informeRRHH');
             document.getElementById("{{ formname }}").submit();
         });
         $('#arrow-left_sign').click(function (e) {
@@ -223,7 +228,7 @@
             $(this).val('');
         });
 
-        function execute_if_input_text_not_change(element, callback) {
+        function execute_if_input_text_not_change(element, callback, waiting_time=1500) {
             /*
             element: input element text i.e. <input type="text">
             callback: function must be executed when a keyup event is got and the text doesn't change in 1.5 secs
@@ -245,7 +250,7 @@
                     window[variable_id] = new_input_text;
                     window[variable_id_has_changed] = true;
                 }
-            }, 1500);
+            }, waiting_time);
         };
 
         function actualiza_num_alumnos_curso() {
@@ -276,6 +281,73 @@
         $('#num_alumnos_curso').keyup(function (e) {
             execute_if_input_text_not_change($(this), actualiza_num_alumnos_curso);
         });
+
+        {# ########################################### #}
+        {# ########################################### #}
+
+        function actualiza_max_num_alumnos_curso() {
+            var element = $('#max_num_alumnos_curso');
+            if (parseInt(element.val()) > 0) {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Modificar el número máximo de alumnos?',
+                    texto: 'Si aceptas a todas las materias/actividades se les asignará un máximo de ' + element.val() + ' alumnos.',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                            $('#max_num_alumnos_curso').val('');
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            var max_num_alumnos = $('#max_num_alumnos_curso').val();
+                            $('.max_num_alumnos').each(function (index) {
+                                $(this).html(max_num_alumnos);
+                                $(this).trigger('keyup');
+                            });
+                            $('#max_num_alumnos_curso').val('');
+                        }
+                    }
+                });
+            }
+        }
+
+        $('#max_num_alumnos_curso').keyup(function (e) {
+            execute_if_input_text_not_change($(this), actualiza_max_num_alumnos_curso);
+        });
+
+        {# ########################################### #}
+        {# ########################################### #}
+
+        function actualiza_min_num_alumnos_curso() {
+            var element = $('#min_num_alumnos_curso');
+            if (parseInt(element.val()) > 0) {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Modificar el número mínimo de alumnos?',
+                    texto: 'Si aceptas a todas las materias/actividades se les asignará un mínimo de ' + element.val() + ' alumnos.',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                            $('#min_num_alumnos_curso').val('');
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            var min_num_alumnos = $('#min_num_alumnos_curso').val();
+                            $('.min_num_alumnos').each(function (index) {
+                                $(this).html(min_num_alumnos);
+                                $(this).trigger('keyup');
+                            });
+                            $('#min_num_alumnos_curso').val('');
+                        }
+                    }
+                });
+            }
+        }
+
+        $('#min_num_alumnos_curso').keyup(function (e) {
+            execute_if_input_text_not_change($(this), actualiza_min_num_alumnos_curso);
+        });
+
+        {# ########################################### #}
+        {# ########################################### #}
 
         $('body').on('keyup', '.change_nombre', function (e) {
             var materia = $(this).data('materia');
@@ -498,7 +570,7 @@
             var id = $(this).data('id');
             var campo = $(this).data('campo');
             var valor = null;
-            if (campo == 'bilingue' || campo == 'itinerante' || campo == 'noafin') {
+            if (campo == 'bilingue' || campo == 'itinerante' || campo == 'noafin' || campo == 'vacante') {
                 valor = $(this).prop('checked');
             } else if (campo != 'borrar' && campo != 'duplicar') {
                 valor = $(this).val();

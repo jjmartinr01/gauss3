@@ -2,6 +2,7 @@
 import logging
 import datetime
 import os
+import pdfkit
 import random
 
 import xlwt
@@ -17,7 +18,7 @@ from autenticar.control_acceso import permiso_required
 from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento, get_apartados, get_columnas, \
     get_columnas_edb
 from entidades.templatetags.entidades_extras import puestos_especialidad
-from gauss.funciones import html_to_pdf, pass_generator
+from gauss.funciones import pass_generator
 from gauss.rutas import *
 from django.http import HttpResponse, FileResponse
 from django.db.models import Q
@@ -31,7 +32,7 @@ from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, Especia
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
-    EspecialidadDocenteBasica, Cargo, MiembroEDB
+    EspecialidadDocenteBasica, Cargo, MiembroEDB, DocConfEntidad
 from entidades.models import Departamento as Depentidad
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar, Gauser_extra_estudios
@@ -46,6 +47,23 @@ logger = logging.getLogger('django')
 # se toman únicamente los siguientes cuerpos:
 CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 
+def get_dce_cupo(g_e):
+    doc_progsec = 'Configuración de informe de cupo'
+    try:
+        dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec)
+    except:
+        try:
+            dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+        except:
+            dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+            dce.predeterminado = True
+            dce.save()
+        dce.pk = None
+        dce.nombre = doc_progsec
+        dce.predeterminado = False
+        dce.editable = False
+        dce.save()
+    return dce
 
 # @permiso_required('acceso_cupo_profesorado')
 def cupo(request):
@@ -61,13 +79,26 @@ def cupo(request):
         if request.POST['action'] == 'genera_informe':
             cupo = Cupo.objects.get(id=request.POST['cupo'])
             if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
-                fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-                texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
-                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                dce = get_dce_cupo(g_e)
+                c = render_to_string('cupo2pdf.html', {'cupo': cupo})
+                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                fich = open(dce.url_pdf, 'rb')
                 response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-                logger.info('%s, genera pdf del cupo %s' % (g_e, cupo.id))
+                nombre = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+                return response
+            else:
+                crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+        elif request.POST['action'] == 'genera_informeRRHH':
+            cupo = Cupo.objects.get(id=request.POST['cupo'])
+            if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
+                dce = get_dce_cupo(g_e)
+                c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
+                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                fich = open(dce.url_pdf, 'rb')
+                response = HttpResponse(fich, content_type='application/pdf')
+                nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
                 return response
             else:
                 crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
@@ -128,7 +159,23 @@ def cupo(request):
     f = datetime.datetime(2021, 1, 1)
     # cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(id__in=cupos_id)).distinct()
-    plantillas_o = PlantillaOrganica.objects.filter(Q(g_e__gauser=g_e.gauser) | Q(ronda_centro=g_e.ronda))
+    try:
+        cargo_inspector = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
+    except:
+        cargo_inspector = Cargo.objects.none()
+    if cargo_inspector:
+        entidades = Entidad.objects.all()
+        plantillas_o = []
+        for e in entidades:
+            try:
+                # po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).order_by('creado').last()
+                po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).latest('creado')
+                if po:
+                    plantillas_o.append(po)
+            except:
+                pass
+    else:
+        plantillas_o = PlantillaOrganica.objects.filter(Q(g_e__gauser=g_e.gauser) | Q(ronda_centro=g_e.ronda))
     cursos_existentes = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                              clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
     return render(request, "cupo.html",
@@ -144,6 +191,23 @@ def cupo(request):
                    'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                    'especialidades_existentes': ESPECIALIDADES,
                    'cursos_existentes': cursos_existentes})
+
+def select_po(request):
+    g_e = request.session['gauser_extra']
+    if request.is_ajax():
+        if request.method == 'GET':
+            texto = request.GET['q']
+            entidades = Entidad.objects.filter(name__icontains=texto)
+            options = []
+            for e in entidades:
+                try:
+                    po = PlantillaOrganica.objects.filter(ronda_centro__entidad=e).order_by('creado').last()
+                    options.append({'id': po.id, 'param0': po.ronda_centro.entidad.name,
+                                    'param1': po.creado.strftime('%d/%m/%Y a las %H:%M'), 'param2': '', 'param3': ''})
+                except:
+                    pass
+            return JsonResponse(options, safe=False)
+
 
 
 def cupo_especialidad(cupo, especialidad):
@@ -412,7 +476,7 @@ def ajax_cupo(request):
                 orig = Cupo.objects.get(id=request.POST['cupo'])
                 if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
-                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre))
+                cupo = Cupo.objects.create(ronda=orig.ronda, nombre='(copia) %s' % (orig.nombre))
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # crea_departamentos(g_e.ronda)
                 for e in orig.especialidadcupo_set.all():
@@ -1190,7 +1254,7 @@ def ajax_cupo(request):
                 campo = request.POST['campo']
                 valor = request.POST['valor']
                 p_c = Profesor_cupo.objects.get(id=request.POST['id'], profesorado__cupo__id=cupo)
-                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin':
+                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin' or campo == 'vacante':
                     valores = {'true': True, 'false': False}
                     valor = valores[valor]
                 elif campo == 'borrar':
@@ -1251,13 +1315,22 @@ def edit_cupo(request, cupo_id):
 
     if not cupo.bloqueado:
         if request.method == 'POST':
+            dce = get_dce_cupo(g_e)
             if request.POST['action'] == 'genera_informe':
-                fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-                texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
-                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                c = render_to_string('cupo2pdf.html', {'cupo': cupo})
+                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                fich = open(dce.url_pdf, 'rb')
                 response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                nombre = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+                return response
+            elif request.POST['action'] == 'genera_informeRRHH':
+                c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
+                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                fich = open(dce.url_pdf, 'rb')
+                response = HttpResponse(fich, content_type='application/pdf')
+                nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
                 return response
 
         cursos = CursoCupo.objects.filter(cupo=cupo)
@@ -1274,6 +1347,9 @@ def edit_cupo(request, cupo_id):
                                                       ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'Informe',
                                                         'title': 'Generar el documento con el cupo',
                                                         'permiso': 'pdf_cupo'},
+                                                       {'tipo': 'button', 'nombre': 'file-text-o',
+                                                        'title': 'Generar el documento con el cupo para RRHH',
+                                                        'texto': 'Informe RRHH', 'permiso': 'pdf_cupo'},
                                                        {'tipo': 'button', 'nombre': 'arrow-left',
                                                         'texto': 'Listado de cupos',
                                                         'title': 'Volver al listado de cupos disponibles',

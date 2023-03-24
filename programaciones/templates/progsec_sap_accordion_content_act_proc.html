@@ -1,23 +1,32 @@
-<div id="sap_act_intrumento{{ instrumento.id }}">
+<div id="sap_act_intrumento{{ instrumento.id }}" style="position: relative;">
     <hr style="margin: 0.1rem 0 1.2rem;">
     <div class="row">
-        <div class="columns large-7">
-            <label>Nombre del procedimiento utilizado para evaluar esta situación de aprendizaje:
+        <div class="columns large-5">
+            <label>Nombre del procedimiento de evaluación:
                 <input type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
+                       title="Nombre del procedimiento utilizado para evaluar esta situación de aprendizaje"
                        class="update_texto" data-campo="nombre" value="{{ instrumento.nombre }}">
             </label>
         </div>
-        <div class="columns large-5">
+        <div class="columns large-4">
             <label>Tipo de procedimiento:
                 <select type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
                         class="update_select" data-campo="tipo">
-{#                    <option value="">-----</option>#}
                     {% for tipo in instrumento.TIPOS %}
                         <option value="{{ tipo.0 }}"
                                 {% if instrumento.tipo == tipo.0 %}selected{% endif %}>{{ tipo.1 }}</option>
                     {% endfor %}
                 </select>
             </label>
+        </div>
+        <div class="columns large-3">
+            <label>&nbsp;</label>
+            <a data-id="{{ instrumento.id }}" class="right button tiny alert borrar_act_instrumento"
+               title="Borrar este procedimiento de evalución">
+                <b><i class="fa fa-trash"></i> Borrar <span id="nombre_procedimiento{{ instrumento.id }}">
+                    {{ instrumento.nombre|truncatechars:20 }}
+                </span></b>
+            </a>
         </div>
     </div>
 
@@ -35,11 +44,11 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="columns large-12 right">
-            <a data-id="{{ instrumento.id }}" class="right button tiny alert borrar_act_instrumento">
-                <i class="fa fa-trash"></i> Borrar procedimiento
-            </a>
-        </div>
-    </div>
+    {#    <div class="row">#}
+    {#        <div class="columns large-12 right">#}
+    {#            <a data-id="{{ instrumento.id }}" class="right button tiny alert borrar_act_instrumento">#}
+    {#                <i class="fa fa-trash"></i> Borrar procedimiento#}
+    {#            </a>#}
+    {#        </div>#}
+    {#    </div>#}
 </div>

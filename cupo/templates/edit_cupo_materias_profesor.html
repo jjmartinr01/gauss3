@@ -22,10 +22,18 @@
                                     {% if p.itinerante %}checked{% endif %}></label></td>
     <td><label>No afín<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="noafin"
                                  {% if p.noafin %}checked{% endif %}></label></td>
+    <td><label>Vacante<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="vacante"
+                                 {% if p.vacante %}checked{% endif %}></label></td>
 </tr>
 <tr class="">
-    <td colspan="4"><textarea data-id="{{ p.id }}" class="profesor_cupo" placeholder="Observaciones sobre este profesor"
-                              data-campo="observaciones">{{ p.observaciones }}</textarea></td>
+    <td colspan="5">
+        <label>Observaciones visibles (Se mostrarán al publicarse en la web)
+            <textarea data-id="{{ p.id }}" class="profesor_cupo" placeholder="Observaciones visibles para este/a docente"
+                              data-campo="observaciones">{{ p.observaciones }}</textarea></label>
+        <label>Observaciones ocultas (Solo las ve el personal de RRHH)
+            <textarea data-id="{{ p.id }}" class="profesor_cupo" placeholder="Observaciones ocultas para este/a docente"
+                              data-campo="observaciones_ocultas">{{ p.observaciones_ocultas }}</textarea></label>
+    </td>
     <td><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="borrar"><i
             class="fa fa-trash"></i> Borrar</a></td>
     <td><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="duplicar"><i

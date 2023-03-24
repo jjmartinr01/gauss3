@@ -98,6 +98,25 @@
 
 {% block final %}
     <script>
+    var texto_editor;
+    function comprueba_cambio_texto(texto, progsec, campo) {
+        if (texto == texto_editor) {
+            $.post("/progsecundaria/", {
+                    action: 'update_texto',
+                    id: progsec,
+                    texto: texto_editor,
+                    campo: campo
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+    }
+
         {% comment %}
             config = {
                 removePlugins: 'exportpdf',
@@ -344,7 +363,9 @@
                 var id = $(this).data('progsec');
                 var nombre = $('#nombre_libro' + id).val();
                 var isbn = $('#isbn_libro' + id).val();
-                var observaciones = $('#observaciones_libro' + id).val();
+                //var observaciones = $('#observaciones_libro' + id).val();
+                var observaciones = $('#container_observaciones_libro').html();
+
                 $.post("/progsecundaria/", {
                         action: 'cargar_libro', id: id, nombre: nombre,
                         isbn: isbn, observaciones: observaciones
@@ -389,7 +410,8 @@
                 var nombre = $('#nombre_actex' + id).val();
                 var inicio = $('#inicio_actex' + id).val();
                 var fin = $('#fin_actex' + id).val();
-                var observaciones = $('#observaciones_actex' + id).val();
+                //var observaciones = $('#observaciones_actex' + id).val();
+                var observaciones = $('#container_observaciones_actex').html();
                 $.post("/progsecundaria/", {
                         action: 'cargar_actex', id: id, nombre: nombre,
                         inicio: inicio, fin: fin, observaciones: observaciones
@@ -493,7 +515,7 @@
             });
 
             $('body').on('click', '.borrar_saber', function () {
-                id = $(this).data('progsec');
+                progsec = $(this).data('progsec');
                 saber = $(this).data('saber');
                 show_mensajes({
                     title: '<i class="fa fa-warning"></i> ¿Borrar esta unidad de programación?',
@@ -504,11 +526,10 @@
                         },
                         "Borrar": function () {
                             hide_mensajes();
-                            $.post("/progsecundaria/", {action: 'borrar_saber', id: id, saber: saber},
+                            $.post("/progsecundaria/", {action: 'borrar_saber', progsec: progsec, saber: saber},
                                 function (data) {
                                     if (data.ok) {
-                                        {#$('#tbody_saberes' + id).html(data.html);#}
-                                        $('#lista_saberes' + id).html(data.html);
+                                        $('#lista_saberes' + progsec).html(data.html);
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $('#update_error').show().delay(1500).fadeOut();

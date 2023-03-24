@@ -1,5 +1,4 @@
-{% for saber in progsec.saberbas_set.all %}
-    {#    {% include 'progsec_accordion_content_saberes_tr.html' %}#}
+{% for saber in progsec.get_saberes %}
     {% include 'progsec_accordion_content_saberes_row.html' %}
 {% endfor %}
 
