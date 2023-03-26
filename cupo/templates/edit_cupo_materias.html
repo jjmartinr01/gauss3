@@ -132,35 +132,45 @@
             </thead>
             <tbody>
             <tr>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="min_tercio"
                                                                   data-especialidad="{{ especialidad.id }}"
                                                                   value="{{ especialidad.min_tercio }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="max_tercio"
                                                                   data-especialidad="{{ especialidad.id }}"
                                                                   value="{{ especialidad.max_tercio }}"></label></td>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="min_media"
                                                                   data-especialidad="{{ especialidad.id }}"
                                                                   value="{{ especialidad.min_media }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-especialidad="{{ especialidad.id }}"
                                                                   data-jornada="max_media"
                                                                   value="{{ especialidad.max_media }}"></label></td>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="min_dostercios"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.min_dostercios }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  value="{{ especialidad.min_dostercios }}"></label>
+                </td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="max_dostercios"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.max_dostercios }}"></label></td>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  value="{{ especialidad.max_dostercios }}"></label>
+                </td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="min_completa"
                                                                   data-especialidad="{{ especialidad.id }}"
                                                                   value="{{ especialidad.min_completa }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  class="jornhoras"
                                                                   data-jornada="max_completa"
                                                                   data-especialidad="{{ especialidad.id }}"
                                                                   value="{{ especialidad.max_completa }}"></label></td>
@@ -169,14 +179,71 @@
         </table>
     </div>
 
+    <div class="row">
+        <table style="width: 100%;">
+            <thead>
+            <tr>
+                <th style="text-align: center;" colspan="3">Nombre de especialidad con códigos asociados</th>
+            </tr>
+            <tr>
+        <th style="width: 32%;">Nombre</th>
+        <th style="width: 34%;">Cód. Cuerpo</th>
+        <th style="width: 34%;">Cód. Especialidad</th>
+    </tr>
+    </thead>
+        <tr>
+            <td style="padding-top: 25px;width: 32%">
+                {{ especialidad.nombre }}
+            </td>
+            <td style="width: 34%;">
+                <select data-espec="{{ especialidad.id }}" class="espec_edit" data-campo="cod_cuerpo"
+                        data-espec="{{ especialidad.id }}">
+                    <option value="">-----------</option>
+                    {% for c in CUERPOS %}
+                        <option value="{{ c.codigo }}" {% if c.codigo == especialidad.cod_cuerpo %}selected{% endif %}>
+                            {{ c.codigo }} - {{ c.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td style="width: 34%;">
+                <select data-espec="{{ especialidad.id }}" class="espec_edit" data-campo="cod_espec"
+                        data-espec="{{ especialidad.id }}" id="select_especialidad{{ especialidad.id }}">
+                    {% include "cupo_accordion_content_especialidad_edit_options.html" with e=especialidad %}
+                </select>
+            </td>
+        </tr>
+</table>
+{#            <tr>#}
+{#                <th style="text-align: center;">Nombre</th>#}
+{#                <th style="text-align: center;">Código del cuerpo</th>#}
+{#                <th style="text-align: center;">Código de la especialidad</th>#}
+{#            </tr>#}
+{#            </thead>#}
+{#            <tbody>#}
+{#            <tr>#}
+{#                <td>{{ especialidad.nombre }}</td>#}
+{#                <td>#}
+{#                    <input type="text" value="{{ especialidad.cod_cuerpo }}"#}
+{#                           class="especialidad_cod_cuerpo" data-id="{{ especialidad.id }}">#}
+{#                </td>#}
+{#                <td>#}
+{#                    <input type="text" value="{{ especialidad.cod_espec }}"#}
+{#                           class="especialidad_cod_espec" data-id="{{ especialidad.id }}">#}
+{#                </td>#}
+{#            </tr>#}
+{#            </tbody>#}
+{#        </table>#}
+    </div>
 
     <div id="profesor_cupo{{ p.id }}">
         <div class="row">
             <table style="width: 100%;" id="tabla_lista_profesores{{ p.id }}">
                 <thead>
                 <tr>
-                <th style="text-align: center;" colspan="7">Docentes necesarios en función de las horas asignadas</th>
-            </tr>
+                    <th style="text-align: center;" colspan="7">Docentes necesarios en función de las horas asignadas
+                    </th>
+                </tr>
                 <tr>
                     <th style="text-align: center;">Nombre</th>
                     <th style="text-align: center;">Tipo docente</th>
@@ -191,3 +258,9 @@
         </div>
     </div>
 {% endif %}
+
+<script>
+    setTimeout(function () {
+        $('.espec_edit').select2();
+    }, 300);
+</script>

@@ -1,0 +1,11 @@
+{% load cupo_extras %}
+<option value="">-----------</option>
+{% if e.cod_cuerpo %}
+    {% with especialidades=e.cod_cuerpo|get_especialidades %}
+        {% for codigo, nombre in especialidades.items %}
+            <option value="{{ codigo }}" {% if codigo == e.cod_espec %}selected{% endif %}>
+                {{ codigo }} - {{ nombre }}
+            </option>
+        {% endfor %}
+    {% endwith %}
+{% endif %}
