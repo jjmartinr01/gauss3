@@ -3842,12 +3842,13 @@ def calificacc(request):
         if action == 'select_grupo':
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
-                am = CuadernoProf.objects.filter(grupo=grupo)[0].psec.areamateria
+                cuadernos = CuadernoProf.objects.filter(grupo=grupo)
+                am = cuadernos[0].psec.areamateria
                 ps = am.ps
                 ams = AreaMateria.objects.filter(curso=am.curso)
                 alumnos = Gauser_extra_estudios.objects.filter(grupo=grupo).order_by('ge__gauser__last_name')
                 html = render_to_string('calificacc_tabla.html', {'alumnos': alumnos, 'ps': ps, 'ams': ams,
-                                                                  'curso': am.curso})
+                                                                  'curso': am.curso, 'cuadernos': cuadernos})
                 return JsonResponse({'ok': True, 'html': html, 'ps': ps.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -3855,6 +3856,8 @@ def calificacc(request):
             try:
                 cal_dos = {}
                 alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
+                cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge])
+                html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
                 dos_claves = []
@@ -3877,7 +3880,7 @@ def calificacc(request):
                 #         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                 #         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                                     'nombre_alumno': alumno.ge.gauser.get_full_name()})
+                                     'nombre_alumno': alumno.ge.gauser.get_full_name(), 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':

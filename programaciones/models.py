@@ -676,6 +676,7 @@ class ProgSec(models.Model):
     @property
     def get_saberes(self):
         return self.saberbas_set.filter(borrado=False)
+
     @property
     def es_borrable(self):
         return CalAlumCE.objects.filter(cp__psec=self, valor__gt=0, cp__borrado=False).count() == 0
@@ -735,7 +736,10 @@ class ProgSec(models.Model):
     def cepsec_evaluadas(self):
         cepsecs = []
         for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self,
-                                                        borrado=False):
+                                                        borrado=False, ieval__borrado=False,
+                                                        ieval__asapren__borrado=False,
+                                                        ieval__asapren__sapren__borrado=False,
+                                                        ieval__asapren__sapren__sbas__borrado=False):
             if criinstreval.cevps.cepsec not in cepsecs:
                 cepsecs.append(criinstreval.cevps.cepsec)
         return cepsecs
@@ -743,7 +747,10 @@ class ProgSec(models.Model):
     def cevpsec_evaluadas(self, cepsec):
         cevpsecs = []
         for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self,
-                                                        cevps__cepsec=cepsec, borrado=False):
+                                                        cevps__cepsec=cepsec, borrado=False, ieval__borrado=False,
+                                                        ieval__asapren__borrado=False,
+                                                        ieval__asapren__sapren__borrado=False,
+                                                        ieval__asapren__sapren__sbas__borrado=False):
             if criinstreval.cevps not in cevpsecs:
                 cevpsecs.append(criinstreval.cevps)
         return cevpsecs
@@ -752,23 +759,25 @@ class ProgSec(models.Model):
     def procedimientos_utilizados(self):
         procedimientos = {nombre: 0 for tipo, nombre in InstrEval.TIPOS}
         pesos = {'ceps_total': 0}
-        # for cepsec in self.ceprogsec_set.all():
         for cepsec in self.cepsec_evaluadas():
             pesos['ceps_total'] += cepsec.valor
             pesos[cepsec.id] = {'cevs_total': 0}
-            # for cevpsec in cepsec.cevprogsec_set.all():
             for cevpsec in self.cevpsec_evaluadas(cepsec):
                 pesos[cepsec.id]['cevs_total'] += cevpsec.valor
                 pesos[cepsec.id][cevpsec.id] = {'crii_total': 0}
-                for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0):
+                for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0, borrado=False, ieval__borrado=False,
+                                                                    ieval__asapren__borrado=False,
+                                                                    ieval__asapren__sapren__borrado=False,
+                                                                    ieval__asapren__sapren__sbas__borrado=False):
                     pesos[cepsec.id][cevpsec.id]['crii_total'] += criinstreval.peso
-        # for cepsec in self.ceprogsec_set.all():
         for cepsec in self.cepsec_evaluadas():
             contrib_cepsec = cepsec.valor / pesos['ceps_total']
-            # for cevpsec in cepsec.cevprogsec_set.all():
             for cevpsec in self.cevpsec_evaluadas(cepsec):
                 contrib_cevpsec = cevpsec.valor / pesos[cepsec.id]['cevs_total']
-                for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0):
+                for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0, borrado=False, ieval__borrado=False,
+                                                                    ieval__asapren__borrado=False,
+                                                                    ieval__asapren__sapren__borrado=False,
+                                                                    ieval__asapren__sapren__sbas__borrado=False):
                     contrib_crii = criinstreval.peso / pesos[cepsec.id][cevpsec.id]['crii_total']
                     proc = criinstreval.ieval.get_tipo_display()
                     procedimientos[proc] += contrib_cepsec * contrib_cevpsec * contrib_crii * 100
@@ -874,7 +883,7 @@ class CEvProgSec(models.Model):
 
     @property
     def criinstreval_vinculados(self):
-        return self.criinstreval_set.filter(peso__gt=0)
+        return self.criinstreval_set.filter(peso__gt=0, borrado=False)
 
     class Meta:
         verbose_name_plural = 'Criterios de Evaluación asociados a una programación'
@@ -1007,6 +1016,7 @@ class SitApren(models.Model):
     @property
     def get_asaprens(self):
         return self.actsitapren_set.filter(borrado=False)
+
     @property
     def es_borrable(self):
         return CalAlumValor.objects.filter(ca__cie__ieval__asapren__sapren=self, ca__cp__tipo='PRO',
@@ -1048,6 +1058,7 @@ class ActSitApren(models.Model):
     @property
     def get_instrevals(self):
         return self.instreval_set.filter(asapren=self, borrado=False)
+
     @property
     def es_borrable(self):
         return CalAlumValor.objects.filter(ca__cie__ieval__asapren=self, ecpv__valor__gt=0, ca__cp__tipo='PRO',

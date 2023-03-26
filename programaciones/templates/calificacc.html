@@ -79,6 +79,7 @@
                     if (data.ok) {
                         var el = $('#nombre_alumno');
                         el.html(data.nombre_alumno);
+                        $('#info_cuadernos_alumno').html(data.html);
                         var left_fixed = el.width();
                         $('.fixed_column2').css('right', left_fixed);
                         $.each(data.cal_dos, function (id, value) {
