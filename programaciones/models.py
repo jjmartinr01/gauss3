@@ -734,7 +734,8 @@ class ProgSec(models.Model):
 
     def cepsec_evaluadas(self):
         cepsecs = []
-        for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self):
+        for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self,
+                                                        borrado=False):
             if criinstreval.cevps.cepsec not in cepsecs:
                 cepsecs.append(criinstreval.cevps.cepsec)
         return cepsecs
@@ -742,7 +743,7 @@ class ProgSec(models.Model):
     def cevpsec_evaluadas(self, cepsec):
         cevpsecs = []
         for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self,
-                                                        cevps__cepsec=cepsec):
+                                                        cevps__cepsec=cepsec, borrado=False):
             if criinstreval.cevps not in cevpsecs:
                 cevpsecs.append(criinstreval.cevps)
         return cevpsecs
@@ -977,7 +978,7 @@ class SaberBas(models.Model):
 
     @property
     def num_criinstreval(self):
-        num = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self, peso__gt=0).count()
+        num = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self, peso__gt=0, borrado=False).count()
         return num
         # return 1 if num == 0 else num
 
@@ -1023,11 +1024,11 @@ class SitApren(models.Model):
 
     @property
     def num_instreval(self):
-        return InstrEval.objects.filter(asapren__sapren=self).count()
+        return InstrEval.objects.filter(asapren__sapren=self, borrado=False).count()
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval__asapren__sapren=self, peso__gt=0).count()
+        return CriInstrEval.objects.filter(ieval__asapren__sapren=self, peso__gt=0, borrado=False).count()
 
     def __str__(self):
         return '%s - %s' % (self.sbas, self.nombre)
@@ -1054,7 +1055,7 @@ class ActSitApren(models.Model):
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval__asapren=self, peso__gt=0).count()
+        return CriInstrEval.objects.filter(ieval__asapren=self, peso__gt=0, borrado=False).count()
 
     def __str__(self):
         return '%s - %s' % (self.sapren, self.nombre)
@@ -1093,11 +1094,11 @@ class InstrEval(models.Model):
     @property
     def get_criinstreval(self):
         # Para evitar utilizar criinstreval_set.all que devolvería también aquellos que tienen peso 0
-        return CriInstrEval.objects.filter(ieval=self, peso__gt=0)
+        return CriInstrEval.objects.filter(ieval=self, peso__gt=0, borrado=False)
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval=self, peso__gt=0).count()
+        return CriInstrEval.objects.filter(ieval=self, peso__gt=0, borrado=False).count()
 
     def __str__(self):
         return '%s - %s' % (self.asapren, self.nombre)
@@ -1294,7 +1295,7 @@ class CuadernoProf(models.Model):
     @property
     def num_columns(self):
         # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
-        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
+        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec, borrado=False).count() + 1
 
     @property
     def nombre(self):
