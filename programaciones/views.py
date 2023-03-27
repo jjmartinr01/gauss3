@@ -3842,7 +3842,7 @@ def calificacc(request):
         if action == 'select_grupo':
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
-                cuadernos = CuadernoProf.objects.filter(grupo=grupo)
+                cuadernos = CuadernoProf.objects.filter(grupo=grupo, borrado=False)
                 am = cuadernos[0].psec.areamateria
                 ps = am.ps
                 ams = AreaMateria.objects.filter(curso=am.curso)
@@ -3856,7 +3856,7 @@ def calificacc(request):
             try:
                 cal_dos = {}
                 alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
-                cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge])
+                cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge], borrado=False)
                 html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
