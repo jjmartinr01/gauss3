@@ -959,6 +959,13 @@ def carga_masiva(request):
                 return JsonResponse({'ok': True, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                cm = CargaMasiva.objects.get(id=request.POST['id'])
+                html = render_to_string('carga_masiva_accordion_content.html', {'cm': cm})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
     elif request.method == 'POST':
         tipo_carga = request.POST['tipo_carga']
         file_masivo = request.FILES['file_masivo_' + tipo_carga]

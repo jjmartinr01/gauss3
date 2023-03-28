@@ -507,54 +507,6 @@
                         class="fa fa-user"></i> {{ cm.g_e.gauser.get_full_name }}</span> ({{ cm.creado|date:"d-m-Y" }})
                 </a>
                 <div id="panel{{ cm.id }}" class="content accordion-cm" data-id="{{ cm.id }}">
-                    <div class="row">
-                        <div class="columns large-5">
-                            <label><b>Fichero:</b>
-                                <br>{{ cm.fichero.url }}
-                            </label>
-                        </div>
-                        {#    <div class="columns large-4">#}
-                        {#        <label><b>Errores:</b>#}
-                        {#            {% if cm.error %}#}
-                        {#                <br>Sí#}
-                        {#            {% else %}#}
-                        {#                <br>No#}
-                        {#            {% endif %}#}
-                        {#        </label>#}
-                        {#    </div>#}
-                        <div class="columns large-5">
-                            <label style="text-align: center;"><b>¿Cargado?</b>
-                                {% if cm.cargado %}
-                                    <br>Sí
-                                {% else %}
-                                    <br>No
-                                {% endif %}
-                            </label>
-                        </div>
-                        {% if cm.cargado or cm.es_borrable %}
-                            <div class="columns large-2">
-                                <a class="button tiny radius alert del_carga_masiva" style="font-weight: bold;"
-                                   data-id="{{ cm.id }}">
-                                    <i class="fa fa-trash"></i> Borrar
-                                </a>
-                            </div>
-                        {% else %}
-                            <div class="columns large-2" title="Carga masiva {{ cm.id }}">
-                                <a class="button tiny radius secondary" style="font-weight: bold;">
-                                    <i class="fa fa-trash"></i> Borrar
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <br>
-                    <div class="row">
-                        <div class="large-12 columns">
-                            <label><b>Acciones e incidentes durante la carga:</b></label>
-                            {% autoescape off %}
-                            {{ cm.log }}
-                            {% endautoescape %}
-                        </div>
-                    </div>
                 </div>
             </dd>
             {% endfor %}
@@ -623,6 +575,33 @@
                     }
                 }
             });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-cm')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/carga_masiva/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
         });
 
     </script>
