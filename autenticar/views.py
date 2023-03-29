@@ -1009,6 +1009,8 @@ def carga_masiva(request):
                             'PERSONAL_CENTROS': 'carga_personal_centros_educativos',
                             'DATOS_CENTROS': 'carga_datos_centros_educativos',
                             'HORARIO_PERSONAL_CENTRO': 'carga_horario_personal_centro_educativo',
+                            'HORARIO_PERSONAL_CENTROS': 'carga_horario_personal_centros_educativos',
+                            'DATOS_CASIOPEA': 'carga_plantilla_organica_casiopea',
                             }
             if not g_e.has_permiso(tipo2permiso[request.POST['select_tipo_carga']]):
                 return render(request, "enlazar.html", {'page': '/', })
