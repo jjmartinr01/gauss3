@@ -329,6 +329,54 @@
                 </div>
             </div>
         </div>
+        {# Formulario de carga: HORARIO_PERSONAL_CENTROS #}
+        <div class="panel callout panel_carga_masiva_racima" id="panel_HORARIO_PERSONAL_CENTROS">
+            <span style="position: absolute; top:10px; right: 20px;">
+                <a class="hide_formulario_carga" title="Cerrar el formuario de carga">
+                    <i class="fa fa-2x fa-times"></i>
+                </a>
+            </span>
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_HORARIO_PERSONAL_CENTROS"
+                           id="file_masivo_HORARIO_PERSONAL_CENTROS"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p>Este formulario sirve para cargar los horarios del personal de cualquier centro educativo.</p>
+                    <p><b>El archivo para cargar los datos se obtiene de:</b></p>
+                    <ul>
+                        <li>
+                            Racima (Gestión)
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Horario del profesorado del centro con
+                            sus materias
+                        </li>
+                        <li>
+                            En "Año académico" escribir el año en el que comenzó este curso escolar
+                        </li>
+                        <li>
+                            En "Código de centro" escribir el código del centro educativo
+                        </li>
+                        <li>
+                            Exportar los datos a un archivo con formato "Hoja Microsoft Excel"
+                        </li>
+                        <li>
+                            Finalmente, cargar el archivo en este formulario y pulsar en
+                            <span class="label radius"><i class="fa fa-check"></i> <b>Aceptar</b></span> (en laparte
+                            superior de la pantalla)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
         {# Formulario de carga: DATOS_CASIOPEA #}
         <div class="panel callout panel_carga_masiva_racima" id="panel_DATOS_CASIOPEA">
             <span style="position: absolute; top:10px; right: 20px;">
@@ -529,7 +577,7 @@
                 show_mensajes({
                     title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
                         'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
-                })
+                });
             }
         });
 
