@@ -1518,6 +1518,10 @@ def carga_masiva_from_excel(carga_id=None):
             carga.log += 'Carga de tipo: HORARIO_PERSONAL_CENTRO<br>'
             carga.save()
             carga_masiva_horario_personal_centro(carga=carga)
+        elif carga.tipo == 'HORARIO_PERSONAL_CENTROS':
+            carga.log += 'Carga de tipo: HORARIO_PERSONAL_CENTROS<br>'
+            carga.save()
+            carga_masiva_horario_personal_centro(carga=carga)
         elif carga.tipo == 'DATOS_CASIOPEA':
             carga_masiva_datos_casiopea(carga=carga)
         fin_carga = datetime.now()

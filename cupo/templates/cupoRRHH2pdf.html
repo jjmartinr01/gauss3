@@ -45,8 +45,9 @@
     {% for p in cupo|interinos %}
     {% ifchanged p.profesorado.especialidad %}
     <tr>
-        <td style="border-top: solid 1px darkgray;font-weight: 800;"
-            colspan="5">{{ p.profesorado.especialidad.nombre }}</td>
+        <td style="border-top: solid 1px darkgray;"
+            colspan="5"><b>{{ p.profesorado.especialidad.nombre }}</b> &horbar;&horbar; {{ p.profesorado.especialidad.cod_cuerpo }} -
+            {{ p.profesorado.especialidad.cod_espec }}</td>
     </tr>
     {% else %}
     <tr>
