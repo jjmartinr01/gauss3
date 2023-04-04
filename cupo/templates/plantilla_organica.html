@@ -73,6 +73,7 @@
         <input type="hidden" name="accordion_id" id="accordion_id" value="">
         <input type="hidden" name="po" id="po" value="">
         <div class="panel callout" id="panel_carga_archivo" style="display:none;">
+        {% comment %}
             <div class="row">
                 <div class="large-12 columns">
                     <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas de los IES, CRAs y
@@ -102,6 +103,7 @@
                 </div>
             </div>
             <hr>
+        {% endcomment %}
             <div class="row">
                 <div class="large-12 columns">
                     <p style="font-weight: bold;color: #008CBA">La carga de datos en conservatorios, ESDIR y EOIs es
@@ -244,7 +246,7 @@
 
 {% block final %}
     <script>
-        {#habilita(['s_cloud-upload']);#}
+        habilita(['s_cloud-upload']);
         habilita(['s_info-circle']);
         $('#info-circle_sign').click(function (event) {
             event.preventDefault();
