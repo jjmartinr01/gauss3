@@ -1769,6 +1769,63 @@ def plantilla_organica(request):
                       'docente': g_e,
                   })
 
+# @permiso_required('acceso_carga_masiva_horarios')
+def rrhh_cupos(request):
+    g_e = request.session["gauser_extra"]
+    inicio_rrhh_cupos = datetime.date(2022, 9, 1)
+    hoy = datetime.date.today()
+    cursos_escolares = {}
+    for y in range(inicio_rrhh_cupos.year, hoy.year):
+        curso = '%s-%s' % (y+1, y+2) # El cupo se calcula para el curso que viene
+        cursos_escolares[curso] = {'inicio': datetime.date(y, 9, 1), 'fin': datetime.date(y + 1, 8, 31), 'id': y}
+    # Por ejemplo si hoy fuera 1 de febrero de 2025 -- datetime.date(2025, 2, 1), cursos_escolares sería:
+    # {'2023-2024': {'inicio': datetime.date(2022, 9, 1), 'fin': datetime.date(2023, 8, 31), 'id': 2022},
+    #  '2024-2025': {'inicio': datetime.date(2023, 9, 1), 'fin': datetime.date(2024, 8, 31), 'id': 2023},
+    #  '2025-2026': {'inicio': datetime.date(2024, 9, 1), 'fin': datetime.date(2025, 8, 31), 'id': 2024}}
+
+
+    if request.method == 'POST':
+        if request.POST['action'] == 'carga_masiva_plantilla':
+            if not g_e.has_permiso('carga_plantillas_organicas'):
+                pass
+        elif request.POST['action'] == 'open_accordion' and request.is_ajax():
+            try:
+                y = int(request.POST['id'])
+                curso = cursos_escolares['%s-%s' % (y+1, y+2)]
+                cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True)
+                html = render_to_string('rrhh_cupos_accordion_content.html', {'cupos': cupos, 'g_e': g_e, 'y': y})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'desplegar_solicitud' and request.is_ajax():
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                html = render_to_string('rrhh_cupos_accordion_content_solicitud.html', {'cupo': cupo})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'genera_csvRRHH':
+            y = int(request.POST['curso_actual'])
+            curso = cursos_escolares['%s-%s' % (y + 1, y + 2)]
+            cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True)
+            csv_file = render_to_string('rrhh_cupos_accordion_content_solicitud_csv.csv', {'cupos': cupos})
+            response = HttpResponse(csv_file, content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=Solicitud_cupo_%s-%s.csv' % (y + 1, y + 2)
+            return response
+            # else:
+            #     crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+    return render(request, "rrhh_cupos.html",
+                  {
+                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Racima',
+                                  'permiso': 'carga_plantillas_organicas'},
+                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
+                                  'permiso': 'carga_datos_casiopea'}, {}),
+                      'formname': 'rrhh_cupos',
+                      'cursos_escolares': cursos_escolares,
+                      'g_e': g_e,
+                  })
 
 def comprueba_dnis(request):
     g_e = request.session["gauser_extra"]
