@@ -1,0 +1,11 @@
+<span id="label_etiqueta{{ e.id }}">
+    <input type="hidden" name="etiquetas_selected" class="etiquetas_selected" value="{{ e.id }}">
+    <div class="label secondary">
+        <div style="display: inline-block;font-weight: bold;"
+             id="texto_nombre_etiqueta{{ e.id }}" data-etiqueta="{{ e.id }}">{{ e.nombre }}</div>
+        <div style="display: inline-block; font-weight: bold;">
+            <a class="select_del_etiqueta" data-normativa="{{ normativa.id }}" data-etiqueta="{{ e.id }}"><i
+                    class="fa fa-times"></i></a>
+        </div>
+    </div>
+</span>

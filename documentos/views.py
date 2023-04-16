@@ -675,14 +675,49 @@ def normativa(request):
     #     if p:
     #         print(i, p.strip())
     if request.method == 'POST' and request.is_ajax():
-        if request.POST['action'] == 'crear_etiqueta_normativa':
+        if request.POST['action'] == 'get_etiqueta_normativa':
+            try:
+                id = request.POST['etiqueta_id']
+                etiqueta = NormativaEtiqueta.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=id)
+                html = render_to_string('normativa_cargar_normativa_apartados.html', {'e': etiqueta})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'crear_etiqueta_normativa':
             if g_e.has_permiso('crea_apartados_normativos'):
-                etiqueta = NormativaEtiqueta.objects.create(creador=g_e, nombre='Nuevo apartado normativo')
+                if 'nombre' in request.POST:
+                    nombre = request.POST['nombre']
+                else:
+                    nombre = 'Nuevo apartado normativo'
+                try:
+                    organization = g_e.ronda.entidad.organization
+                    etiqueta = NormativaEtiqueta.objects.get(creador__ronda__entidad__organization=organization,
+                                                             nombre=nombre)
+                    html_etiqueta = ''
+                except:
+                    etiqueta = NormativaEtiqueta.objects.create(creador=g_e, nombre=nombre)
+                    html_etiqueta = render_to_string('normativa_etiqueta.html', {'etiqueta': etiqueta, 'creada': True})
                 html = render_to_string('normativa_fieldset.html', {'etiqueta': etiqueta, 'g_e': g_e})
-                html_etiqueta = render_to_string('normativa_etiqueta.html', {'etiqueta': etiqueta, 'creada': True})
-                return JsonResponse({'ok': True, 'html': html, 'html_etiqueta': html_etiqueta})
+                html_etiqueta_selected = render_to_string('normativa_cargar_normativa_apartados.html', {'e': etiqueta})
+                return JsonResponse({'ok': True, 'html': html, 'html_etiqueta': html_etiqueta,
+                                     'html_etiqueta_selected': html_etiqueta_selected, 'etiqueta_id': etiqueta.id})
             else:
-                JsonResponse({'ok': False})
+                JsonResponse({'ok': False, 'msg': 'No tiene permisos para crear apartados normativos'})
+        elif request.POST['action'] == 'select_del_etiqueta':
+            organization = g_e.ronda.entidad.organization
+            try:
+                etiqueta = NormativaEtiqueta.objects.get(creador__ronda__entidad__organization=organization,
+                                                         id=request.POST['etiqueta_id'])
+            except:
+                return JsonResponse({'ok': False, 'msg': 'No existe la etiqueta indicada'})
+            try:
+                normativa = Normativa.objects.get(creador__ronda__entidad__organization=organization,
+                                                         id=request.POST['normativa_id'])
+                normativa.etiquetas.remove(etiqueta)
+                msg = 'Se ha eliminado la vinculación de la etiqueta con la normativa indicada'
+            except:
+                msg = 'No se ha podido vincular la etiqueta a la normativa'
+            return JsonResponse({'ok': True, 'msg': msg})
         elif request.POST['action'] == 'buscar_etiqueta_normativa':
             try:
                 organization = g_e.ronda.entidad.organization
@@ -720,13 +755,15 @@ def normativa(request):
                     etiquetas = NormativaEtiqueta.objects.filter(creador__ronda__entidad__organization=organization)
                     if request.POST['normativa']:
                         normativa = Normativa.objects.get(id=request.POST['normativa'])
-                        id_normativa = normativa.id
+                        # id_normativa = normativa.id
                     else:
-                        normativa = {'texto': '', 'nombre': '', 'fecha_pub': '', 'url': ''}
-                        id_normativa = ''
+                        hoy = datetime.now().date()
+                        normativa, c = Normativa.objects.get_or_create(texto='', nombre='', fecha_pub=hoy, url='')
+                        # normativa = {'texto': '', 'nombre': '', 'fecha_pub': '', 'url': ''}
+                        # id_normativa = ''
                     html = render_to_string('normativa_cargar_normativa.html',
                                             {'etiquetas': etiquetas, 'normativa': normativa})
-                    return JsonResponse({'ok': True, 'html': html, 'normativa': id_normativa})
+                    return JsonResponse({'ok': True, 'html': html, 'normativa': normativa.id})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
             except Exception as msg:
@@ -766,7 +803,7 @@ def normativa(request):
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_texto':
+        elif request.POST['action'] == 'update_texto' and request.POST['texto']:
             if g_e.has_permiso('edita_normativa'):
                 objeto = eval(request.POST['clase']).objects.get(id=request.POST['id'])
                 setattr(objeto, request.POST['campo'], request.POST['texto'])
@@ -814,7 +851,7 @@ def normativa(request):
                     n = Normativa.objects.create(nombre=nombre, creador=g_e, fecha_pub=fecha_pub, texto=texto, url=url,
                                                  fichero=fichero, content_type=content_type, fich_name=fich_name)
                 try:
-                    etiquetas = NormativaEtiqueta.objects.filter(id__in=request.POST['etiquetas'].split(','))
+                    etiquetas = NormativaEtiqueta.objects.filter(id__in=request.POST.getlist('etiquetas'))
                     n.etiquetas.add(*etiquetas)
                 except:
                     etiquetas = NormativaEtiqueta.objects.none()
