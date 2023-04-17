@@ -81,9 +81,9 @@
     <div class="columns large-12">
         <label><b>Descripción y saberes básicos en esta situación de aprendizaje, así como las
             metodologías utilizadas: </b>
-            <textarea type="text" class="update_texto" data-campo="contenidos_sbas" data-clase="SitApren"
-                      placeholder="Introduce aquí una descripción, saberes básicos y metodologías"
-                      data-id="{{ sap.id }}" id="input_contenidos_sbas{{ sap.id }}">{{ sap.contenidos_sbas }}</textarea>
+            <!-- <textarea type="text" class="update_texto" data-campo="contenidos_sbas" data-clase="SitApren" placeholder="Introduce aquí una descripción, saberes básicos y metodologías" data-id="{{ sap.id }}" id="input_contenidos_sbas{{ sap.id }}">{{ sap.contenidos_sbas }}</textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" class="update_texto" data-id="{{ sap.id }}" data-campo="contenidos_sbas" data-clase="SitApren" contenteditable="true" id="input_contenidos_sbas{{ sap.id }}">{% autoescape off %}{{ sap.contenidos_sbas }}{% endautoescape %}</div>
+            <div id="container_descripcion_sap" style="display: none"></div>
         </label>
     </div>
 </div>
@@ -91,9 +91,10 @@
 <div class="row">
     <div class="columns large-12">
         <label><b>Producto solicitado a los alumnos en esta situación de aprendizaje: </b>
-            <textarea type="text" class="update_texto ckeditor" data-campo="objetivo" data-clase="SitApren"
-                      placeholder="Introduce aquí el producto que deben entregar los alumnos" data-id="{{ sap.id }}"
-                      id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea></label>
+            <!-- <textarea type="text" class="update_texto ckeditor" data-campo="objetivo" data-clase="SitApren" placeholder="Introduce aquí el producto que deben entregar los alumnos" data-id="{{ sap.id }}" id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" class="update_texto ckeditor" data-id="{{ sap.id }}" data-campo="objetivo" data-clase="SitApren" contenteditable="true" id="input_objetivo{{ sap.id }}">{% autoescape off %}{{ sap.objetivo }}{% endautoescape %}</div>
+            <div id="container_producto_sap" style="display: none"></div>
+        </label>
     </div>
 </div>
 
@@ -155,4 +156,18 @@
 </div>
 <script>
     $('select').select2();
+    //Espe:Ckeditor
+    setTimeout(function () {
+        var input_contenidos_sbas{{ sap.id }} = CKEDITOR.inline('input_contenidos_sbas{{ sap.id }}');
+        var input_objetivo{{ sap.id }} = CKEDITOR.inline('input_objetivo{{ sap.id }}');
+
+        input_contenidos_sbas{{ sap.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+                $('#container_descripcion_sap').html(texto);
+        });
+        input_objetivo{{ sap.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+                $('#container_producto_sap').html(texto);
+        });
+}, 300);
 </script>

@@ -18,8 +18,9 @@
     <div class="row">
         <div class="columns large-12">
             <label>Descripción de la actividad:
-                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"
-                          class="update_texto" data-campo="description">{{ actividad.description }}</textarea>
+                {# <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren" class="update_texto" data-campo="description">{{ actividad.description }}</textarea>#}
+                <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" class="update_texto" data-id="{{ actividad.id }}" data-campo="description" data-clase="ActSitApren" contenteditable="true" id="sap_act_desc{{ actividad.id }}">{% autoescape off %}{{ actividad.description }}{% endautoescape %}</div>
+                <div id="container_sap_act_desc" style="display: none"></div>
             </label>
         </div>
     </div>
@@ -44,3 +45,16 @@
         </div>
     </div>
 </fieldset>
+
+<script>
+    $('select').select2();
+    //Espe:Ckeditor
+    setTimeout(function () {
+        var sap_act_desc{{ actividad.id }} = CKEDITOR.inline('sap_act_desc{{ actividad.id }}');
+
+        sap_act_desc{{ actividad.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+                $('#container_sap_act_desc').html(texto);
+        });
+}, 300);
+</script>
