@@ -333,7 +333,7 @@
             }
         }
 
-        $('body').on('keyup', '.update_texto', function () {
+        $('body').on('keyup DOMSubtreeModified', '.update_texto', function () {
             var element = $(this);
             var id = element.data('id');
             var campo = element.data('campo');
