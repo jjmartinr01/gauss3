@@ -2,7 +2,8 @@
 from difflib import get_close_matches
 from django.template import Library
 from django.db.models import Q, Sum
-from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente
+from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente, \
+    ESPECS
 from entidades.models import Cargo, Gauser_extra
 from horarios.models import SesionExtra, Sesion
 from programaciones.models import Departamento
@@ -12,9 +13,16 @@ register = Library()
 
 
 @register.filter
+def get_especialidades(cod_cuerpo):
+    return ESPECS[cod_cuerpo]
+    try:
+        return {'codigo': cod_cuerpo, 'cod_especialidad': cod_especialidad + ' - ' + ESPECS[cod_cuerpo][cod_especialidad]}
+    except:
+        return ''
+
+@register.filter
 def departamentos(cupo):
     return Departamento.objects.filter(ronda=cupo.ronda)
-
 
 ##########################################
 @register.filter
@@ -35,7 +43,6 @@ def get_horas_minutos(minutos):
     else:
         return '%s horas y %s minutos' % (horas, minutos)
 
-
 @register.filter
 def get_sesiones_tiempo(sesiones):
     minutos_apoyos = 0
@@ -49,9 +56,6 @@ def get_sextras_tiempo(sextras):
     for sextra in sextras:
         minutos_apoyos += sextra.sesion.minutos
     return minutos_apoyos
-
-
-
 
 @register.filter
 def has_infantil_primaria(po):
@@ -83,7 +87,8 @@ def get_actividades_cursos(po, x_actividades):
 
     cursos_id = Grupo.objects.filter(ronda=po.ronda_centro).values_list('cursos', flat=True).distinct()
     cursos = Curso.objects.filter(id__in=cursos_id)
-    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex__in=x_actividades)
+    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario,
+                                                   actividad__clave_ex__in=x_actividades)
     for curso in cursos:
         dic = {'curso': curso}
         minutos_actividades = 0
@@ -119,7 +124,8 @@ def get_actividades_grupos(po, x_actividades):
              'VSC': [168660, 170321, 168640, 170340, 168659, 170359]}
 
     grupos = Grupo.objects.filter(ronda=po.ronda_centro)
-    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex__in=x_actividades)
+    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario,
+                                                   actividad__clave_ex__in=x_actividades)
     for grupo in grupos:
         dic = {'grupo': grupo}
         minutos_actividades = 0
@@ -151,7 +157,8 @@ def get_actividades_infantil(po, x_actividades):
              'AE': [48060, 48074, 48088],
              'RC': [48061, 48075, 48089]}
     grupos = Grupo.objects.filter(ronda=po.ronda_centro)
-    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex__in=x_actividades)
+    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario,
+                                                   actividad__clave_ex__in=x_actividades)
     for grupo in grupos:
         dic = {'grupo': grupo}
         minutos_actividads = 0
@@ -171,22 +178,28 @@ def get_docentes_actividad(po, x_actividades):
     # etapas = {'INF': 3, 'PRI': 12}
     cursos = {'INF': [100304, 100305, 100306], 'PRI': [101317, 101318, 101319, 101320, 101321, 101322]}
     # grupos = Grupo.objects.filter(ronda=po.ronda_centro)
-    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex__in=x_actividades)
+    sextras_actividad = SesionExtra.objects.filter(sesion__horario=po.horario,
+                                                   actividad__clave_ex__in=x_actividades)
     docentes = Gauser_extra.objects.filter(id__in=sextras_actividad.values_list('sesion__g_e', flat=True))
     for docente in docentes:
         minutos_actividad_infantil = 0
-        sextras_actividad_infantil = sextras_actividad.filter(sesion__g_e=docente, grupo__cursos__clave_ex__in=cursos['INF'])
-        ses_infantil = Sesion.objects.filter(id__in=sextras_actividad_infantil.values_list('sesion', flat=True)).distinct()
+        sextras_actividad_infantil = sextras_actividad.filter(sesion__g_e=docente,
+                                                              grupo__cursos__clave_ex__in=cursos['INF'])
+        ses_infantil = Sesion.objects.filter(
+            id__in=sextras_actividad_infantil.values_list('sesion', flat=True)).distinct()
         for si in ses_infantil:
             minutos_actividad_infantil += si.minutos
         minutos_actividad_primaria = 0
-        sextras_actividad_primaria = sextras_actividad.filter(sesion__g_e=docente, grupo__cursos__clave_ex__in=cursos['PRI'])
-        ses_primaria = Sesion.objects.filter(id__in=sextras_actividad_primaria.values_list('sesion', flat=True)).distinct()
+        sextras_actividad_primaria = sextras_actividad.filter(sesion__g_e=docente,
+                                                              grupo__cursos__clave_ex__in=cursos['PRI'])
+        ses_primaria = Sesion.objects.filter(
+            id__in=sextras_actividad_primaria.values_list('sesion', flat=True)).distinct()
         for sp in ses_primaria:
             minutos_actividad_primaria += sp.minutos
-        actividads.append({'docente':docente, 'infantil': minutos_actividad_infantil, 'primaria': minutos_actividad_primaria,
-                       'total': minutos_actividad_infantil + minutos_actividad_primaria, 'ses_primaria': ses_primaria,
-                       'ses_infantil': ses_infantil})
+        actividads.append(
+            {'docente': docente, 'infantil': minutos_actividad_infantil, 'primaria': minutos_actividad_primaria,
+             'total': minutos_actividad_infantil + minutos_actividad_primaria, 'ses_primaria': ses_primaria,
+             'ses_infantil': ses_infantil})
     return actividads
 
 ###########################################################################
@@ -200,7 +213,6 @@ def get_actividades_con_grupos(po):
             x_actividades.append(a.x_actividad)
             actividades.append((a.x_actividad, a.actividad))
     return actividades
-
 
 # @register.filter
 # def docentes_desdoble(po):
@@ -249,7 +261,6 @@ def get_actividades_con_grupos(po):
 #                        'total': minutos_apoyo_infantil + minutos_apoyo_primaria, 'ses_primaria': ses_primaria,
 #                        'ses_infantil': ses_infantil})
 #     return apoyos
-
 
 # @register.filter
 # def get_apoyos(po):
@@ -357,7 +368,6 @@ def get_actividades_con_grupos(po):
 #             apoyos.append(dic)
 #     return apoyos
 
-
 # @register.filter
 # def get_apoyos_infantil(po):
 #     apoyos = []
@@ -383,7 +393,6 @@ def get_actividades_con_grupos(po):
 #             apoyos.append(dic)
 #     return apoyos
 
-
 ##########################################
 @register.filter
 def get_plazas_puesto_incompletas(objeto, puesto):
@@ -396,7 +405,6 @@ def get_plazas_puesto_incompletas(objeto, puesto):
     ges_completas = ges_totales.filter(jornada_contratada__in=completas)
     return ges_totales.count() - ges_completas.count()
 
-
 @register.filter
 def get_plazas_puesto_completas(objeto, puesto):
     completas = ['18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00']
@@ -407,7 +415,6 @@ def get_plazas_puesto_completas(objeto, puesto):
     ges_totales = Gauser_extra.objects.filter(ronda=centro.ronda, puesto=puesto)
     ges_completas = ges_totales.filter(jornada_contratada__in=completas)
     return ges_completas.count()
-
 
 @register.filter
 def get_plazas_puesto(objeto, puesto):
@@ -420,7 +427,6 @@ def get_plazas_puesto(objeto, puesto):
     nombres = eps.values_list('nombre', flat=True)
     # return get_close_matches(puesto.upper(), nombres, 1)
     return eps.filter(nombre__in=get_close_matches(puesto.upper(), nombres, 1))
-
 
 @register.filter
 def get_plazas(objeto):
@@ -435,14 +441,12 @@ def get_plazas(objeto):
     except:
         EspecialidadPlantilla.objects.none()
 
-
 @register.filter
 def get_fecha_plazas(po):
     try:
         return CargaPlantillaOrganicaCentros.objects.all().last().creado
     except:
         return 'No hay un CargaPlantillaOrganicaCentros'
-
 
 @register.filter
 def get_apartados(po):
@@ -456,7 +460,6 @@ def get_apartados(po):
                           'width': int(po.anchura_cols[1] * colspan / num_cols)})
     return apartados
 
-
 @register.filter
 def get_columnas(po):
     columnas = []
@@ -464,7 +467,6 @@ def get_columnas(po):
         for nombre_columna in po.estructura_po[apartado]:
             columnas.append(nombre_columna)
     return columnas
-
 
 def calcula_plantilla_organica_edb(edb, horas_basicas):
     def num_profesores_calculados(min_num_horas, intervalo_horas, horas):
@@ -477,7 +479,6 @@ def calcula_plantilla_organica_edb(edb, horas_basicas):
         return num_profesores_calculados(10, 15, horas_basicas)
     else:
         return num_profesores_calculados(12, 16, horas_basicas)
-
 
 def calcula_plantilla_organica(departamento, horas_basicas):
     def num_profesores_calculados(min_num_horas, intervalo_horas, horas):
@@ -503,7 +504,6 @@ def calcula_plantilla_organica(departamento, horas_basicas):
     #         plantilla_organica = plantilla[2]
     # return plantilla_organica
 
-
 @register.filter
 def get_columnas_edb(po, edb):
     horas_totales, horas_basicas, columnas = 0, 0, []
@@ -511,7 +511,8 @@ def get_columnas_edb(po, edb):
     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e__id__in=miembros_edb)
     for apartado in po.estructura_po:
         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
-            periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))['periodos__sum']
+            periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))[
+                'periodos__sum']
             if not periodos:
                 periodos = 0
             horas_totales += periodos
@@ -523,7 +524,6 @@ def get_columnas_edb(po, edb):
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
             'horas_plantilla': hp, 'departamento': edb.id}
 
-
 @register.filter
 def get_columnas_departamento(po, departamento):
     horas_totales, horas_basicas, columnas = 0, 0, []
@@ -531,7 +531,8 @@ def get_columnas_departamento(po, departamento):
     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e__id__in=miembros_departamento)
     for apartado in po.estructura_po:
         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
-            periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))['periodos__sum']
+            periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))[
+                'periodos__sum']
             if not periodos:
                 periodos = 0
             horas_totales += periodos
@@ -543,14 +544,14 @@ def get_columnas_departamento(po, departamento):
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
             'horas_plantilla': hp, 'departamento': departamento.id}
 
-
 @register.filter
 def get_columnas_docente2(po, docente):
     horas_totales, horas_basicas, columnas = 0, 0, []
     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
     for apartado in po.estructura_po:
         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
-            periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))['periodos__sum']
+            periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))[
+                'periodos__sum']
             horas_totales += periodos
             if contenido_columna['horas_base']:
                 horas_basicas += periodos
@@ -558,18 +559,15 @@ def get_columnas_docente2(po, docente):
                              'periodos': periodos})
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales}
 
-
 @register.filter
 def get_pdocente(po, docente):
     return PDocente.objects.get(po=po, g_e=docente)
-
 
 # def get_pdcol(docente, po):
 #     return PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
 @register.filter
 def pdocentecolset(pdocente, localidad):
     return pdocente.pdocentecol_set.filter(localidad=localidad)
-
 
 @register.filter
 def get_columnas_docente(po, docente):
@@ -590,13 +588,12 @@ def get_columnas_docente(po, docente):
             columnas.append({'codecol': contenido_columna['codecol'],
                              'periodos': periodos, 'minutos': minutos})
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
-            'minutos_totales': minutos_totales, 'horas': minutos_totales / mins_periodo, 'mins_periodo': mins_periodo}
-
+            'minutos_totales': minutos_totales, 'horas': minutos_totales / mins_periodo,
+            'mins_periodo': mins_periodo}
 
 @register.filter
 def get_grupos(po):
     return Grupo.objects.filter(ronda=po.ronda_centro)
-
 
 ############################################
 
@@ -614,7 +611,6 @@ def get_horas_media(cc):
 #           (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13), (205, 219, 14))
 # RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7), (124, 139, 8),
 #          (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13), (220, 235, 14))
-
 
 # @register.filter
 # def horas_departamento(departamento, g_e):
@@ -647,7 +643,6 @@ def get_horas_media(cc):
 # @register.filter
 # def docentes_departamento(po, x_departamento):
 #     return po.plantilladocente_set.filter(x_departamento=x_departamento)
-
 
 # @register.filter
 # def plantilla_departamento(po, departamento):
@@ -700,3 +695,5 @@ def get_horas_media(cc):
 #         return sumas
 #     except Exception as msg:
 #         return str(msg)
+
+

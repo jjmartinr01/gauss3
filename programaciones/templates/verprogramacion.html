@@ -43,7 +43,7 @@
         #row_sb{{ sb.id }}:hover {
             border-top: 1px solid #ebccd1;
         }
-        {% for sap in sb.sitapren_set.all %}
+{#        {% for sap in sb.sitapren_set.all %}#}
             #row_sap_botones{{ sb.id }} {
                 display: none;
                 position: absolute;
@@ -59,7 +59,8 @@
             #row_sap{{ sb.id }}:hover {
                 border-top: 1px solid #ebccd1;
             }
-        {% endfor %}
+{#        {% endfor %}#}
+    {% endfor %}
         h1 {
             font-variant: small-caps;
             text-align: center;
@@ -87,7 +88,6 @@
             font-size: 12pt;
             color: #0078a0;
         }
-    {% endfor %}
 
 
 </style>
@@ -124,10 +124,18 @@
 
 <h4 class="pagebreak">Procedimiento para la adopción de medidas de atención a la diversidad</h4>
 {% if progsec.procdiversidad %}
-<p>{% autoescape off %}{{ progsec.procdiversidad|cbarra2br }}{% endautoescape %}</p>
+{% autoescape off %}{{ progsec.procdiversidad|cbarra2br }}{% endautoescape %}
 {% else %}
 <p style="color: gray;">Todavía no se ha definido el procedimiento para la adopción de
     medidas de atención a la diversidad.</p>
+{% endif %}
+<h4>Organización y seguimiento de los planes de recuperación del alumnado
+    con materias pendientes de cursos anteriores</h4>
+{% if progsec.planrecup %}
+{% autoescape off %}{{ progsec.planrecup|cbarra2br }}{% endautoescape %}
+{% else %}
+<p style="color: gray;">Todavía no se ha definido la organización y seguimiento de los planes de recuperación del alumnado
+    con materias pendientes de cursos anteriores.</p>
 {% endif %}
 <h4>Libros o materiales van a ser utilizados para el desarrollo de la materia</h4>
 
@@ -145,7 +153,7 @@
             <td>{{ libro.isbn }}</td>
         </tr>
         <tr class="datos_libro{{ libro.id }}">
-            <td colspan="2" style="color: grey;">{{ libro.observaciones }}</td>
+            <td colspan="2" style="color: grey;">{% autoescape off %}{{ libro.observaciones }}{% endautoescape %}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -169,7 +177,7 @@
             <td>{{ actex.fin|date:'d/m/Y' }}</td>
         </tr>
         <tr class="datos_actex{{ actex.id }}">
-            <td colspan="4" style="color: grey;">{{ actex.observaciones }}</td>
+            <td colspan="4" style="color: grey;">{% autoescape off %}{{ actex.observaciones }}{% endautoescape %}</td>
         </tr>
     {% endfor %}
     </tbody>

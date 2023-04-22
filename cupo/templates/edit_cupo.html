@@ -119,7 +119,7 @@
                 </div>
                 <div class="columns large-1 medium-1 small-2"
                      title="Establecer el número máximo de alumnos en un grupo">
-                                    <input type="text" id="max_num_alumnos_curso" value="">
+                    <input type="text" id="max_num_alumnos_curso" value="">
                 </div>
                 <div class="columns large-1 medium-1 small-2"
                      title="Establecer el número mínimo de alumnos en un grupo">
@@ -152,7 +152,7 @@
         });
         $('#arrow-left_sign').click(function (e) {
             e.preventDefault();
-            window.location.href = '/cupo/';
+            window.location.href = '/cupo/?c={{ cupo.id }}';
         });
         setTimeout(function () {
             $(document).foundation();
@@ -228,7 +228,7 @@
             $(this).val('');
         });
 
-        function execute_if_input_text_not_change(element, callback, waiting_time=1500) {
+        function execute_if_input_text_not_change(element, callback, waiting_time = 1500) {
             /*
             element: input element text i.e. <input type="text">
             callback: function must be executed when a keyup event is got and the text doesn't change in 1.5 secs
@@ -647,49 +647,69 @@
                 });
         });
 
+        $('body').on('change', '.espec_edit', function (e) {
+            e.preventDefault();
+            var espec = $(this).data('espec');
+            var cupo = $('#cupo').val();
+            var valor = $(this).val();
+            var campo = $(this).data('campo');
+            $.post("/ajax_cupo/", {
+                    action: 'change_campo_espec_edit', cupo: cupo, espec: espec, valor: valor, campo: campo
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (data.html) {
+                            $('#select_especialidad' + espec).html(data.html);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
 
         {% comment %}
-        function isScrolledIntoView(elem)
-{
-    var docViewTop = $(window).scrollTop();
-    var docViewBottom = docViewTop + $(window).height();
+            function isScrolledIntoView(elem) {
+                var docViewTop = $(window).scrollTop();
+                var docViewBottom = docViewTop + $(window).height();
 
-    var elemTop = $(elem).offset().top;
-    var elemBottom = elemTop + $(elem).height();
+                var elemTop = $(elem).offset().top;
+                var elemBottom = elemTop + $(elem).height();
 
-    return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
-}
+                return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+            }
 
-var original_w = 0;
-var primera_vez = true;
-        const resize_ob = new ResizeObserver(function(entries) {
+            var original_w = 0;
+            var primera_vez = true;
+            const resize_ob = new ResizeObserver(function (entries) {
 
-	// since we are observing only a single element, so we access the first element in entries array
-	let rect = entries[0].contentRect;
+                // since we are observing only a single element, so we access the first element in entries array
+                let rect = entries[0].contentRect;
 
-	// current width & height
-	let width = rect.width;
-	let height = rect.height;
-    if (primera_vez){
-        original_w = width;
-        primera_vez = false;
-    }
-    if (width > original_w){
-        $('#menu_lateral_for_large').addClass('hide-for-large');
-    $('#Principal').removeClass('large-10').addClass('large-12');
-    }else{
-        $('#menu_lateral_for_large').addClass('show-for-large');
-    $('#Principal').removeClass('large-12').addClass('large-10');
-    }
+                // current width & height
+                let width = rect.width;
+                let height = rect.height;
+                if (primera_vez) {
+                    original_w = width;
+                    primera_vez = false;
+                }
+                if (width > original_w) {
+                    $('#menu_lateral_for_large').addClass('hide-for-large');
+                    $('#Principal').removeClass('large-10').addClass('large-12');
+                } else {
+                    $('#menu_lateral_for_large').addClass('show-for-large');
+                    $('#Principal').removeClass('large-12').addClass('large-10');
+                }
 
-    v = isScrolledIntoView(document.getElementById('cabecera_gauss2'));
-    console.log('original width : ' + original_w);
-	console.log('Current Width : ' + width);
-	console.log('Current Height : ' + height);
-    console.log('Cabecera2 visible : ' + v);
-});
+                v = isScrolledIntoView(document.getElementById('cabecera_gauss2'));
+                console.log('original width : ' + original_w);
+                console.log('Current Width : ' + width);
+                console.log('Current Height : ' + height);
+                console.log('Cabecera2 visible : ' + v);
+            });
 
-// start observing for resize
+            // start observing for resize
 
             resize_ob.observe(document.querySelector("#div_sticky_info"));
 

@@ -2673,7 +2673,7 @@ def progsecundaria_sb(request, id):
                 ## Se obtiene el objeto SitAprend
                 sapren = SitApren.objects.get(id=request.POST['id'])
                 ## Se obtienen las actividades de aprendizaje asociadas
-                actsapren_all = ActSitApren.objects.filter(sapren=sapren)
+                actsapren_all = ActSitApren.objects.filter(sapren=sapren, borrado=False)
                 ## Se obtiene el objeto SaberBas
                 saberbas = SaberBas.objects.get(id=sapren.sbas.id)
                 ## Se obtiene el objeto ProgSec
@@ -2690,11 +2690,11 @@ def progsecundaria_sb(request, id):
                 for asa in actsapren_all:  # Se recorren las actividades de aprendizaje
                     act = RepoActSitApren.objects.create(sapren=sap, nombre=asa.nombre, description=asa.description)
                     ## Se obtienen los intrumentos de evaluación, que son objetos InstrEval, de una actividad de aprendizaje
-                    instreval_all = InstrEval.objects.filter(asapren=asa)
+                    instreval_all = InstrEval.objects.filter(asapren=asa, borrado=False)
                     for ie in instreval_all:  # se recorren los instrumentos de evaluacion
                         repoIEval = RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
                         criinstreval_all = CriInstrEval.objects.filter(
-                            ieval=ie)  # se obtienen los criterios de evaluacion
+                            ieval=ie, borrado=False)  # se obtienen los criterios de evaluacion
                         for criinstreval in criinstreval_all:
                             # Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
                             # por que si no el refrescon en la vista de la interfaz da un error
@@ -3612,7 +3612,8 @@ def cuadernodocente(request):
                 alumno = Gauser_extra.objects.get(id=int(request.POST['alumno'][1:]), ronda=g_e.ronda)
                 if alumno not in cuaderno.alumnos.all():
                     if cuaderno.tipo == 'PRO':
-                        cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                        cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec,
+                                                              borrado=False)
                         for cieval in cievals:
                             try:
                                 ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
@@ -3841,12 +3842,13 @@ def calificacc(request):
         if action == 'select_grupo':
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
-                am = CuadernoProf.objects.filter(grupo=grupo)[0].psec.areamateria
+                cuadernos = CuadernoProf.objects.filter(grupo=grupo, borrado=False)
+                am = cuadernos[0].psec.areamateria
                 ps = am.ps
                 ams = AreaMateria.objects.filter(curso=am.curso)
                 alumnos = Gauser_extra_estudios.objects.filter(grupo=grupo).order_by('ge__gauser__last_name')
                 html = render_to_string('calificacc_tabla.html', {'alumnos': alumnos, 'ps': ps, 'ams': ams,
-                                                                  'curso': am.curso})
+                                                                  'curso': am.curso, 'cuadernos': cuadernos})
                 return JsonResponse({'ok': True, 'html': html, 'ps': ps.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -3854,6 +3856,8 @@ def calificacc(request):
             try:
                 cal_dos = {}
                 alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
+                cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge], borrado=False)
+                html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
                 dos_claves = []
@@ -3876,7 +3880,7 @@ def calificacc(request):
                 #         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                 #         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                                     'nombre_alumno': alumno.ge.gauser.get_full_name()})
+                                     'nombre_alumno': alumno.ge.gauser.get_full_name(), 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':
@@ -3989,11 +3993,11 @@ def copiaSeguridadCuaderno(cuaderno):
     CEvProgSecs = CEvProgSec.objects.filter(cepsec__psec=cuaderno.psec)
     LibroRecursos = LibroRecurso.objects.filter(psec=cuaderno.psec)
     ActExComs = ActExCom.objects.filter(psec=cuaderno.psec)
-    SaberBass = SaberBas.objects.filter(psec=cuaderno.psec)
-    SitAprens = SitApren.objects.filter(sbas__psec=cuaderno.psec)
-    ActSitAprens = ActSitApren.objects.filter(sapren__sbas__psec=cuaderno.psec)
-    InstrEvals = InstrEval.objects.filter(asapren__sapren__sbas__psec=cuaderno.psec)
-    CriInstrEvals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+    SaberBass = SaberBas.objects.filter(psec=cuaderno.psec, borrado=False)
+    SitAprens = SitApren.objects.filter(sbas__psec=cuaderno.psec, borrado=False)
+    ActSitAprens = ActSitApren.objects.filter(sapren__sbas__psec=cuaderno.psec, borrado=False)
+    InstrEvals = InstrEval.objects.filter(asapren__sapren__sbas__psec=cuaderno.psec, borrado=False)
+    CriInstrEvals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec, borrado=False)
     CuadernoProfs = [cuaderno]
     # CalAlumCEs = cuaderno.calalumce_set.all()
     CalAlumCEs = CalAlumCE.objects.filter(cp=cuaderno)

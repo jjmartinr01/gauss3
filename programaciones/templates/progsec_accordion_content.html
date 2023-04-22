@@ -690,12 +690,13 @@ placeholder="Texto opcional"></textarea> -->
 
 
 <div class="row">
-    <div class="columns large-2"><b>Comienzo</b></div>
+    <div class="columns large-2" title="Fecha de comienzo aproximada"><b>Comienzo aprox.</b></div>
     {#        <div class="columns large-1"><b>Orden</b></div>#}
     <div class="columns large-7"><b>Nombre de la unidad de programación (UP)</b></div>
     <div class="columns large-1"><b>Periodos</b></div>
     <div class="columns large-1"><b>¿Borrar?</b></div>
-    <div class="columns large-1"><b>SAP</b></div>
+    <div class="columns large-1"
+         title="Enlace a las situaciones de aprendizaje asociadas con esta unidad de programación"><b>SAP</b></div>
 </div>
 <div id="lista_saberes{{ progsec.id }}">
     {% include "progsec_accordion_content_saberes.html" %}

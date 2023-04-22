@@ -1,0 +1,115 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load cupo_extras %}
+
+{% block contenido %}
+    <style>
+        .fa-lock {
+            color: red;
+        }
+
+        .fa-unlock {
+            color: green;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value=""/>
+        <input type="hidden" id="curso_actual" name="curso_actual" value=""/>
+        {#        <input type="hidden" id="especialidad" name="especialidad" value=""/>#}
+        {#        <input type="hidden" id="curso" name="curso" value=""/>#}
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Peticiones de cupo Recursos Humanos</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cupos">
+            {% for nombre, curso_escolar in cursos_escolares.items %}
+                <dd class="accordion-navigation" id="accordion{{ curso_escolar.id }}">
+                    <a href="#panel{{ curso_escolar.id }}">
+                        <i id="circle{{ curso_escolar.id }}" class="fa fa-plus-circle circle_icon"></i>
+                        <b>Propuesta solicitud interinos de cupo para el curso {{ nombre }}</b>
+                    </a>
+                    <div id="panel{{ curso_escolar.id }}" data-id="{{ curso_escolar.id }}"
+                         class="content accordion-cupo">
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['s_info-circle']);
+        $('#info-circle_sign').click(function (event) {
+            event.preventDefault();
+            $('#panel_info').toggle();
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-cupo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/rrhh_cupos/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        {#$('#cupo').val(id);#}
+                                        {#setTimeout(function () {#}
+                                        {#    $(document).foundation();#}
+                                        {# }, 1000);#}
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.desplegar_solicitud', function (e) {
+            e.preventDefault();
+            var cupo = $(this).data('cupo');
+            var abierto = $(this).data('abierto');
+            if (abierto == "0") {
+                $(this).data('abierto', '1');
+                $('#desplegada' + cupo + '_0').hide();
+                $('#desplegada' + cupo + '_1').show();
+                $.post("/rrhh_cupos/", {
+                        action: 'desplegar_solicitud', cupo: cupo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#solicitud_interinos' + cupo).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            } else {
+                $(this).data('abierto', '0');
+                $('#desplegada' + cupo + '_0').show();
+                $('#desplegada' + cupo + '_1').hide();
+                $('#solicitud_interinos' + cupo).html('');
+            }
+        });
+
+        $('body').on('click', '.csv_cupo', function (e) {
+            e.preventDefault();
+            $('#curso_actual').val($(this).data('curso_actual'));
+            $('#action').val('genera_csvRRHH');
+            document.getElementById("{{ formname }}").submit();
+        });
+    </script>
+{% endblock %}

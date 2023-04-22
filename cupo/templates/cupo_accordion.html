@@ -8,6 +8,12 @@
             <i id="bloqueado{{ cupo.id }}" class="fa fa-unlock"></i>
         {% endif %}
     </a>
-    <div id="panel{{ cupo.id }}" class="content accordion-cupo" data-id="{{ cupo.id }}">
+    {# Para comparar de manera segura cupo.id con cupo_selected convertimos el intero a cadena. Puede ser #}
+    {# con stringformat:'d' o stringformat:'d' o con slugify #}
+    {#    <div id="panel{{ cupo.id }}" data-id="{{ cupo.id }}"#}
+    {#         class="content accordion-cupo {% if cupo.id|stringformat:'d' == cupo_selected %}active{% endif %}">#}
+    {#    </div>#}
+    <div id="panel{{ cupo.id }}" data-id="{{ cupo.id }}"
+         class="content accordion-cupo {% if cupo.id|slugify == cupo_selected %}active{% endif %}">
     </div>
 </dd>

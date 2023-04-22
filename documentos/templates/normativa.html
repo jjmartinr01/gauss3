@@ -35,10 +35,9 @@
         <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="id_normativa" name="id_normativa" value="">
         <input type="hidden" id="etiqueta_id" name="etiqueta_id" value="">
+        {#    <input type="hidden" id="etiqueta_nombre" name="etiqueta_nombre" value="">#}
         <input type="hidden" id="buscar" name="buscar" value="0">
         <input type="hidden" name="page" id="page" value="1">
-        <input type="hidden" name="id_etiqueta_creada" id="id_etiqueta_creada" value="">
-        <input type="hidden" name="texto_etiqueta_creada" id="texto_etiqueta_creada" value="">
 
 
         <h4 style="text-align: center;color: #008CBA;" id="title_h4">
@@ -51,7 +50,7 @@
                     {% include 'normativa_etiqueta.html' %}
                 {% endfor %}
             </div>
-            <br><br><label style="font-weight: bold;">... o busca normativa a que incluya el siguiente texto:</label>
+            <br><br><label style="font-weight: bold;">... o busca normativa que incluya el siguiente texto:</label>
             <div class="row collapse">
                 <div class="columns large-9"><input type="text" id="input_buscar_texto" value=""></div>
                 <div class="columns large-3">
@@ -64,7 +63,7 @@
             </div>
 
         </div>
-        <div id="cargarNormativa" class="panel hide" style="position: relative;">
+        <div id="cargarNormativa" class="panel hide callout" style="position: relative;">
         </div>
         <div id="div_normativas_buscadas">
             <dl class="accordion" data-accordion id="accordion_normativas_buscadas">
@@ -130,19 +129,31 @@
                 });
         });
         {# Código para crear nuevas etiquetas #}
+
+        function crear_etiqueta_normativa(nombre) {
+            $.post("/normativa/", {action: 'crear_etiqueta_normativa', nombre: nombre},
+                function (data) {
+                    if (data.ok) {
+                        if (data.html && $('#fieldset_etiqueta' + data.etiqueta_id).length == 0) {
+                            $('#div_normativas').prepend(data.html);
+                        }
+                        if (data.html_etiqueta) {
+                            $('#div_etiquetas_normativas_list').prepend(data.html_etiqueta);
+                        }
+                        if($('#label_etiqueta' + data.etiqueta_id).length == 0){
+                         $('#list_apartados_normativos').prepend(data.html_etiqueta_selected);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
         $('#plus_sign').click(function (e) {
             e.preventDefault();
             if (!($(this).hasClass('disabled'))) {
-                $.post("/normativa/", {action: 'crear_etiqueta_normativa'},
-                    function (data) {
-                        if (data.ok) {
-                            $('#div_normativas').prepend(data.html);
-                            $('#div_etiquetas_normativas_list').prepend(data.html_etiqueta);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
+                crear_etiqueta_normativa('Nuevo apartado normativo');
             }
         });
 
@@ -254,7 +265,13 @@
             formData.append('texto', $('#texto_cargar_normativa').val());
             formData.append('fecha_pub', $('#fecha_pub_cargar_normativa').val());
             formData.append('id_normativa', $('#id_normativa').val());
-            formData.append('etiquetas', $('#etiquetas_cargar_normativa').val());
+            var etiquetas_selected = document.getElementsByClassName('etiquetas_selected');
+            for (var i = 0; i < etiquetas_selected.length; i++) {
+                formData.append('etiquetas', etiquetas_selected.item(i).value);
+            }
+            {#for (var i = 0; i < es.length; i++) {console.log($(es.item(i)).prop('id'))}#}
+            {#for (var i = 0; i < es.length; i++) {console.log(es.item(i).id)}#}
+            {#formData.append('etiquetas', $('#etiquetas_cargar_normativa').val());#}
             formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
             var xhr = new XMLHttpRequest();
             xhr.onload = function () {
@@ -383,5 +400,60 @@
                 });
         });
 
+        {# Select2 etiquetas normativas: #}
+
+        function select_add_etiqueta(nombre = '', etiqueta = '') {
+            $.post("/normativa/", {
+                    action: 'select_add_etiqueta',
+                    etiqueta: etiqueta,
+                    nombre: nombre
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_apartados_normativos").append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
+
+        $('body').on('click', '#select_add_new_etiqueta', function (e) {
+            e.preventDefault();
+            var nombre_etiqueta = $('.select2-search__field').val();
+            crear_etiqueta_normativa(nombre_etiqueta);
+            $('#etiquetas_cargar_normativa').select2('close');
+        });
+
+        $('body').on('change', '#etiquetas_cargar_normativa', function (e) {
+            {#var normativa = $(this).data('normativa');#}
+            var etiqueta_id = $(this).val();
+            $.post("/normativa/", {action: 'get_etiqueta_normativa', etiqueta_id: etiqueta_id},
+                function (data) {
+                    if (data.ok) {
+                        if($('#label_etiqueta' + etiqueta_id).length == 0){
+                         $('#list_apartados_normativos').prepend(data.html);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.select_del_etiqueta', function (e) {
+            var normativa_id = $(this).data('normativa');
+            var etiqueta_id = $(this).data('etiqueta');
+            $.post("/normativa/", {action: 'select_del_etiqueta', etiqueta_id: etiqueta_id, normativa_id: normativa_id},
+                function (data) {
+                    if (data.ok) {
+                        $('#label_etiqueta' + etiqueta_id).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
     </script>
 {% endblock %}

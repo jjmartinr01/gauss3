@@ -11,4 +11,5 @@ urlpatterns = [
     path('comprueba_dnis/', views.comprueba_dnis),
     path('arregla_duplicados/', views.arregla_duplicados),
     # path('select_po/', views.select_po),
+    path('rrhh_cupos/', views.rrhh_cupos),
 ]
