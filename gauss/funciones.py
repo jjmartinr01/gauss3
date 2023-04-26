@@ -258,7 +258,7 @@ def pass_generator(size=9, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
 # Obtención de los usuarios de la entidad que no están de baja:
-def usuarios_organization(ronda, subentidades=False, cargos=False, edad_min=-1, edad_max=120):
+def usuarios_organization(ronda, subentidades=False, cargos=False, edad_min=-1, edad_max=220):
     bajas = Alta_Baja.objects.filter(entidad__organization=ronda.entidad.organization,
                                      fecha_baja__isnull=False).values_list('gauser__id', flat=True)
     nacimiento_early = date(date.today().year - edad_max, 1, 1)
@@ -300,7 +300,7 @@ def usuarios_ronda(ronda, subentidades=False, cargos=False, edad_min=-1, edad_ma
     return Gauser_extra.objects.filter(filtro & Q(activo=True)).order_by('gauser__last_name', 'gauser__first_name')
 
 
-def usuarios_de_gauss(entidad, subentidades=False, cargos=False, edad_min=-1, edad_max=120, ronda=False):
+def usuarios_de_gauss(entidad, subentidades=False, cargos=False, edad_min=-1, edad_max=220, ronda=False):
     bajas = Alta_Baja.objects.filter(entidad=entidad, fecha_baja__isnull=False).values_list('gauser__id', flat=True)
     nacimiento_early = date(date.today().year - edad_max, 1, 1)
     nacimiento_last = date(date.today().year - edad_min, 12, 31)

@@ -37,6 +37,10 @@ class Cupo(models.Model):
     @property
     def solicitud_interinos(self):
         return Profesor_cupo.objects.filter(profesorado__cupo=self, tipo='INT')
+    @property
+    def curso_escolar_cupo(self):
+        y = self.ronda.fin.year
+        return "%s/%s" % (y, y + 1)
 
     def __str__(self):
         return '%s %s (%s)' % (self.ronda.entidad.name, self.nombre, self.modificado)
