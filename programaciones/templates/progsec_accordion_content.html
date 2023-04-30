@@ -203,20 +203,27 @@
                 </label>
             </div>
         </div>
-        <div id="adaptacion_curricular">
-            {% if progsec.alumno %}
-                <div class="row">
-                    <div class="columns large-12">
-                        <label><b>Alumno/a al que va destinada la adaptación: </b>
-                            <br><span
-                                    style="font-variant: small-caps;font-weight: bold;">{{ progsec.alumno.gauser.get_full_name }}</span>
-                        </label>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
+{#        <div id="adaptacion_curricular">#}
+{#            {% if progsec.alumno %}#}
+{#                <div class="row">#}
+{#                    <div class="columns large-12">#}
+{#                        <label><b>Alumno/a al que va destinada la adaptación: </b>#}
+{#                            <br><span#}
+{#                                    style="font-variant: small-caps;font-weight: bold;">{{ progsec.alumno.gauser.get_full_name }}</span>#}
+{#                        </label>#}
+{#                    </div>#}
+{#                </div>#}
+{#            {% endif %}#}
+{#        </div>#}
     </div>
 {% endif %}
+<div class="ajuste_competencial row">
+    <div class="columns large-12">
+        <label><b>Alumno/a objeto de este ajuste competencial:</b>
+            <select data-progsec="{{ progsec.id }}" class="alumno_destinatario" id="alumno_destinatario">{% if progsec.alumno %}<option value="{{ progsec.alumno.id }}">{{ progsec.alumno.gauser.get_full_name }}</option>{% endif %}</select>
+        </label>
+    </div>
+</div>
 <br>
 
 <div id="contenido_progsec{{ progsec.id }}">
@@ -250,7 +257,22 @@
                                 {% endif %}
                             {% endifchanged %}
                             <tr>
-                                <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
+                                <td>
+                                    {{ cep.ce.orden }}.- {{ cep.ce.nombre }}
+                                    <div class="ajuste_competencial"
+                                         {% if progsec.tipo != 'AC' and progsec.tipo != 'ACS' %}style="display: none;"{% endif %}>
+                                        <span style="color: #8b0000">
+                                            Porcentaje máximo de esta competencia que el alumno podrá adquirir:
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="minus" data-progsec="{{ progsec.id }}">
+                                                <i class="fa fa-minus-square"></i>
+                                            </a>&nbsp;
+                                            <span id="cep_grado{{ cep.id }}" data-cep="{{ cep.id }}" class="grado_cep"
+                                                  style="font-weight: bold;">{{ cep.grado }}</span>%&nbsp;
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="plus" data-progsec="{{ progsec.id }}">
+                                                <i class="fa fa-plus-square"></i></a>
+                                        </span>
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -331,6 +353,19 @@
                                           id="cep_porcentaje{{ cep.id }}">
                                         {{ progsec.ceprogsec_porcentajes|keyvalue:cep.id|floatformat:2 }}</span>%
                                         </span>
+                                    <div class="ajuste_competencial"
+                                         {% if progsec.tipo != 'AC' and progsec.tipo != 'ACS' %}style="display: none;"{% endif %}>
+                                        <span style="color: #8b0000">
+                                            Porcentaje máximo de esta competencia que el alumno podrá adquirir:
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="minus" data-progsec="{{ progsec.id }}">
+                                                <i class="fa fa-minus-square"></i>
+                                            </a>&nbsp;
+                                            <span id="cep_grado{{ cep.id }}" data-cep="{{ cep.id }}" class="grado_cep"
+                                                  style="font-weight: bold;">{{ cep.grado }}</span>%&nbsp;
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="plus" data-progsec="{{ progsec.id }}">
+                                                <i class="fa fa-plus-square"></i></a>
+                                        </span>
+                                    </div>
                                 </td>
                                 <td><input type="number" min="1" max="5" class="pesocep" data-cep="{{ cep.id }}"
                                            data-progsec="{{ progsec.id }}" value="{{ cep.valor|floatformat }}"></td>
@@ -717,6 +752,18 @@ placeholder="Texto opcional"></textarea> -->
             'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
         })
     );
+    $('#alumno_destinatario').select2(
+        conf_select2({
+            'url': '/selectgcs/',
+            'gcs': 'g',
+            'cars': ['g_alumno',],
+            'format_g': '{0}, {1} ({2})',
+            'format_prefix': 'None',
+            'scope': 'ronda',
+            'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
+        })
+    );
+
     // Espe: Fin Enviar programación a otro docente
     // Ckeditor
     setTimeout(function () {

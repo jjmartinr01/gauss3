@@ -90,24 +90,25 @@
 
 {% block final %}
     <script>
-    var texto_editor;
-    function comprueba_cambio_texto(texto, progsec, campo) {
-        if (texto == texto_editor) {
-            $.post("/progsecundaria/", {
-                    action: 'update_texto',
-                    id: progsec,
-                    texto: texto_editor,
-                    campo: campo
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
+        var texto_editor;
+
+        function comprueba_cambio_texto(texto, progsec, campo) {
+            if (texto == texto_editor) {
+                $.post("/progsecundaria/", {
+                        action: 'update_texto',
+                        id: progsec,
+                        texto: texto_editor,
+                        campo: campo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
         }
-    }
 
         {% comment %}
             config = {
@@ -541,7 +542,15 @@
             $('body').on('change', '.select_tipo', function () {
                 var id = $(this).data('progsec');
                 var tipo = $(this).val();
-                $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo},
+                if (tipo == 'ACS' || tipo == 'AC'){
+                    $('.ajuste_competencial').show();
+                    var grados_100 = 'N';
+                }else{
+                    $('.ajuste_competencial').hide();
+                    var grados_100 = 'Y';
+                    $('.grado_cep').text(100);
+                }
+                $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo, grados_100: grados_100},
                     function (data) {
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
@@ -552,6 +561,32 @@
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });
+            });
+
+            var funcion_tiempo_espera_update_texto;
+            $('body').on('click', '.mod_grado_cep', function () {
+                clearTimeout(funcion_tiempo_espera_update_texto);
+                var progsec = $(this).data('progsec');
+                var tipo = $(this).data('tipo');
+                var cep = $(this).data('cep');
+                var el_valor = $('#cep_grado' + cep);
+                var valor = parseInt(el_valor.text());
+                if (tipo === 'minus') {
+                    valor = (valor - 5 < 0) ? 0 : valor - 5;
+                } else {
+                    valor = (valor + 5 > 100) ? 100 : valor + 5;
+                }
+                el_valor.text(valor);
+                funcion_tiempo_espera_update_texto = setTimeout(function () {
+                    $.post("/progsecundaria/", {action: 'mod_grado_cep', progsec: progsec, cep: cep, valor: valor},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 800);
             });
 
             $('body').on('change', '.select_departamento', function () {
@@ -590,6 +625,37 @@
                         }
                     });
             });
+
+            $('body').on('change', '.miembros_departamento', function () {
+                var id = $(this).data('progsec');
+                var ges = $(this).val();
+                $.post("/progsecundaria/", {action: 'add_docprogsec', id: id, ges: ges},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            {#$('body').on('change', '.alumno_destinatario', function (e) {#}
+                $('body').on('change.select2', '.alumno_destinatario', function (e) {
+            var progsec = $(this).data('progsec');
+            var alumno = $(this).val();
+            $.post("/progsecundaria/", {
+                    action: 'alumno_destinatario',
+                    progsec: progsec,
+                    alumno: alumno
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
             $('body').on('change', '.pesocep', function () {
                 var id = $(this).data('progsec');

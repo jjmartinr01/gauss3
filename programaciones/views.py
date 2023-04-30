@@ -1953,7 +1953,7 @@ def proyecto_educativo_centro(request):
 #     if borrar_saber:
 #         saber.borrado = True
 #         saber.save()
-    # return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
+# return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
 
 
 def reordenar_saberes_comienzo(psec):
@@ -2251,19 +2251,27 @@ def progsecundaria(request):
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
+                if progsec.tipo == request.POST['tipo']:
+                    return JsonResponse({'ok': True, 'msg': 'No se cambia el tipo'})
                 permiso = progsec.get_permiso(g_ep)
                 if 'E' in permiso or 'X' in permiso:
                     if request.POST['tipo'] == 'DEF':
                         definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
-                        if definitivas.count() > 0:
-                            msg = '<p>Ya existe una programación "Definitiva" asociada a esta materia en su centro.</p>'
-                            msg += '<p>Antes de hacer este cambio, debe marcarse como "Borrador" dicha programación.</p>'
-                            return JsonResponse({'ok': False, 'progsec': progsec.id, 'msg': msg, 'tipo': progsec.tipo})
-                        # for d in definitivas:
-                        #     d.tipo = 'BOR'
-                        #     d.save()
+                        for d in definitivas:
+                            if d.borrado:
+                                d.tipo = 'BOR'
+                                d.save()
+                            else:
+                                msg = '<p>Ya existe una programación "Definitiva" asociada a esta materia en su centro.</p>'
+                                msg += '<p>Dicha programación es propiedad de %s.</p>' % d.gep.ge.gauser.get_full_name()
+                                msg += '<p>Antes de hacer este cambio, esa programación debe marcarse como "Borrador" '
+                                msg += 'o proceder a su borrado.</p>'
+                                return JsonResponse(
+                                    {'ok': False, 'msg': msg, 'tipo': progsec.tipo, 'progsec': progsec.id})
                     progsec.tipo = request.POST['tipo']
                     progsec.save()
+                    if request.POST['grados_100'] == 'Y':
+                        progsec.ceprogsec_set.filter(grado__lt=100).update(grado=100)
                     return JsonResponse({'ok': True, 'progsec': progsec.id})
                 else:
                     msg = '<p>No tiene permiso para hacer el cambio solicitado.</p>'
@@ -2343,6 +2351,19 @@ def progsecundaria(request):
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'alumno_destinatario':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['progsec'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    progsec.alumno = Gauser_extra.objects.get(id=request.POST['alumno'])
+                    progsec.save()
+                    return JsonResponse({'ok': True, 'progsec': progsec.id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'update_pesocep':
             try:
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
@@ -2358,6 +2379,24 @@ def progsecundaria(request):
                                              'ceprogsec_porcentajes': progsec.ceprogsec_porcentajes})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 5'})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'mod_grado_cep':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['progsec'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    cep = CEProgSec.objects.get(psec=progsec, id=request.POST['cep'])
+                    valor = int(request.POST['valor'])
+                    if valor in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]:
+                        cep.grado = valor
+                        cep.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'Valor de grado de adquisición no permitido'})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
             except Exception as msg:
@@ -3975,17 +4014,17 @@ def arregla_instrevals(request):
         return HttpResponse(str(msg))
 
 
-
 from programaciones.models import *
 from django.core import serializers
 from django.core.signing import Signer
 
+
 # t='''Texto para
-    # ser separado
-    # en sus diferentes líneas'''
-    # for i, p in enumerate(t.splitlines()):
-    #     if p:
-    #         print(i, p.strip())
+# ser separado
+# en sus diferentes líneas'''
+# for i, p in enumerate(t.splitlines()):
+#     if p:
+#         print(i, p.strip())
 
 def copiaSeguridadCuaderno(cuaderno):
     ProgSecs = ProgSec.objects.filter(id=cuaderno.psec.id)
@@ -4007,13 +4046,14 @@ def copiaSeguridadCuaderno(cuaderno):
     CalAlums = CalAlum.objects.filter(cp=cuaderno)
     CalAlumValors = CalAlumValor.objects.filter(ca__cp=cuaderno)
     objetos = [*ProgSecs, *CEProgSecs, *CEvProgSecs, *LibroRecursos, *ActExComs, *SaberBass, *SitAprens, *ActSitAprens,
-                *InstrEvals, *CriInstrEvals, *CuadernoProfs, *CalAlumCEs, *CalAlumCEvs, *EscalaCPs, *EscalaCPvalors,
-                *CalAlums, *CalAlumValors]
+               *InstrEvals, *CriInstrEvals, *CuadernoProfs, *CalAlumCEs, *CalAlumCEvs, *EscalaCPs, *EscalaCPvalors,
+               *CalAlums, *CalAlumValors]
     data = serializers.serialize('jsonl', objetos)
     signer = Signer()
     data_signed = signer.sign(data)
     with open("Output.cua", "w") as text_file:
         text_file.write(data_signed)
+
 
 def restaurarCopiaSeguridadCuaderno(ruta_archivo):
     # with open('Output.cua', 'r') as file:
@@ -4034,5 +4074,3 @@ def restaurarCopiaSeguridadCuaderno(ruta_archivo):
                 dict_relaciones[deserialized_object.object.__class__.__name__][pk_antiguo] = pk_nuevo
 
             # Guardaremos en un diccionario la relación entre los antiguos objetos y los nuevos:
-
-
