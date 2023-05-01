@@ -1001,14 +1001,13 @@ def asignar_centros_inspeccion(request):
                     zonai = 'RB' if p.lower() in 'baja' else zonai
                     zonai = 'RM' if p.lower() in 'media' else zonai
                     zonai = 'RA' if p.lower() in 'alta' else zonai
-                q = Q(centro__name__icontains=palabras[0]) | Q(zonai__icontains=zonai) | Q(
-                    puntos__icontains=palabras[0]) | Q(clasificado__icontains=palabras[0]) | Q(
-                    centro__entidadextra__director__icontains=palabras[0])
+                q = Q(centro__name__icontains=palabras[0]) | Q(puntos__icontains=palabras[0]) | Q(
+                    clasificado__icontains=palabras[0]) | Q(centro__entidadextra__director__icontains=palabras[0])
                 for palabra in palabras[1:]:
                     qnueva = Q(centro__name__icontains=palabra) | Q(puntos__icontains=palabra) | Q(
                         clasificado__icontains=palabra) | Q(centro__entidadextra__director__icontains=palabra)
                     q = q & qnueva
-                cis = cis_ronda.filter(q).distinct()
+                cis = cis_ronda.filter(q & Q(zonai__icontains=zonai)).distinct()
                 # logica = ''  # Puede ser OR o AND
                 # if logica == 'OR':
                 #     cis_ronda = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
