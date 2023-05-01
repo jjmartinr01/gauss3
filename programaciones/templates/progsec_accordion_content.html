@@ -44,7 +44,11 @@
         {% endfor %}
     {% endfor %}
 
-
+    {% if progsec.tipo != 'AC' and progsec.tipo != 'ACS' %}
+        .ajuste_competencial {
+            display: none;
+        }
+    {% endif %}
 </style>
 <div class="row">
     <div class="columns large-12">
@@ -203,24 +207,27 @@
                 </label>
             </div>
         </div>
-{#        <div id="adaptacion_curricular">#}
-{#            {% if progsec.alumno %}#}
-{#                <div class="row">#}
-{#                    <div class="columns large-12">#}
-{#                        <label><b>Alumno/a al que va destinada la adaptación: </b>#}
-{#                            <br><span#}
-{#                                    style="font-variant: small-caps;font-weight: bold;">{{ progsec.alumno.gauser.get_full_name }}</span>#}
-{#                        </label>#}
-{#                    </div>#}
-{#                </div>#}
-{#            {% endif %}#}
-{#        </div>#}
+        {#        <div id="adaptacion_curricular">#}
+        {#            {% if progsec.alumno %}#}
+        {#                <div class="row">#}
+        {#                    <div class="columns large-12">#}
+        {#                        <label><b>Alumno/a al que va destinada la adaptación: </b>#}
+        {#                            <br><span#}
+        {#                                    style="font-variant: small-caps;font-weight: bold;">{{ progsec.alumno.gauser.get_full_name }}</span>#}
+        {#                        </label>#}
+        {#                    </div>#}
+        {#                </div>#}
+        {#            {% endif %}#}
+        {#        </div>#}
     </div>
 {% endif %}
 <div class="ajuste_competencial row">
     <div class="columns large-12">
         <label><b>Alumno/a objeto de este ajuste competencial:</b>
-            <select data-progsec="{{ progsec.id }}" class="alumno_destinatario" id="alumno_destinatario">{% if progsec.alumno %}<option value="{{ progsec.alumno.id }}">{{ progsec.alumno.gauser.get_full_name }}</option>{% endif %}</select>
+            <select data-progsec="{{ progsec.id }}" class="alumno_destinatario" id="alumno_destinatario">
+                {% if progsec.alumno %}
+                    <option value="{{ progsec.alumno.id }}">{{ progsec.alumno.gauser.get_full_name }}</option>{% endif %}
+            </select>
         </label>
     </div>
 </div>
@@ -259,16 +266,17 @@
                             <tr>
                                 <td>
                                     {{ cep.ce.orden }}.- {{ cep.ce.nombre }}
-                                    <div class="ajuste_competencial"
-                                         {% if progsec.tipo != 'AC' and progsec.tipo != 'ACS' %}style="display: none;"{% endif %}>
+                                    <div class="ajuste_competencial">
                                         <span style="color: #8b0000">
                                             Porcentaje máximo de esta competencia que el alumno podrá adquirir:
-                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="minus" data-progsec="{{ progsec.id }}">
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="minus"
+                                               data-progsec="{{ progsec.id }}">
                                                 <i class="fa fa-minus-square"></i>
                                             </a>&nbsp;
                                             <span id="cep_grado{{ cep.id }}" data-cep="{{ cep.id }}" class="grado_cep"
                                                   style="font-weight: bold;">{{ cep.grado }}</span>%&nbsp;
-                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="plus" data-progsec="{{ progsec.id }}">
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="plus"
+                                               data-progsec="{{ progsec.id }}">
                                                 <i class="fa fa-plus-square"></i></a>
                                         </span>
                                     </div>
@@ -357,12 +365,14 @@
                                          {% if progsec.tipo != 'AC' and progsec.tipo != 'ACS' %}style="display: none;"{% endif %}>
                                         <span style="color: #8b0000">
                                             Porcentaje máximo de esta competencia que el alumno podrá adquirir:
-                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="minus" data-progsec="{{ progsec.id }}">
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="minus"
+                                               data-progsec="{{ progsec.id }}">
                                                 <i class="fa fa-minus-square"></i>
                                             </a>&nbsp;
                                             <span id="cep_grado{{ cep.id }}" data-cep="{{ cep.id }}" class="grado_cep"
                                                   style="font-weight: bold;">{{ cep.grado }}</span>%&nbsp;
-                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="plus" data-progsec="{{ progsec.id }}">
+                                            <a class="mod_grado_cep" data-cep="{{ cep.id }}" data-tipo="plus"
+                                               data-progsec="{{ progsec.id }}">
                                                 <i class="fa fa-plus-square"></i></a>
                                         </span>
                                     </div>
@@ -495,7 +505,9 @@
             vaya a ser publicada no debe mostrar nombres de alumnos, profesores, ... Ni tampoco descripciones que
             afecten de manera particular a una persona. Tenga en cuenta esto en la redacción del texto.
             <!-- <textarea placeholder="Introduce aquí el procedimiento para la adopción de medidas de atención a las diversidad" id="procdiversidad{{ progsec.id }}" class="update_texto" data-campo="procdiversidad" data-id="{{ progsec.id }}">{{ progsec.procdiversidad }}</textarea> -->
-            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="procdiversidad{{ progsec.id }}">{% autoescape off %}{{ progsec.procdiversidad }}{% endautoescape %}</div>
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}"
+                 contenteditable="true" id="procdiversidad{{ progsec.id }}">
+                {% autoescape off %}{{ progsec.procdiversidad }}{% endautoescape %}</div>
         </label>
     </div>
 </div>
@@ -509,11 +521,13 @@
 <div class="row">
     <div class="columns large-12">
         <label>Describa aquí la organización y seguimiento de los PREs por parte de los docentes:
-<!-- <textarea
+            <!-- <textarea
     placeholder="Describe aquí la organización y seguimiento por parte de los docentes"
     id="planrecup{{ progsec.id }}" class="update_texto" data-campo="planrecup"
     data-id="{{ progsec.id }}">{{ progsec.planrecup }}</textarea> -->
-            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="planrecup{{ progsec.id }}">{% autoescape off %}{{ progsec.planrecup }}{% endautoescape %}</div>
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}"
+                 contenteditable="true" id="planrecup{{ progsec.id }}">
+                {% autoescape off %}{{ progsec.planrecup }}{% endautoescape %}</div>
         </label>
     </div>
 </div>
@@ -558,8 +572,10 @@
 <div class="row">
     <div class="columns large-12">
         <label>Introduce observaciones acerca del libro/material:
-<!-- <textarea id="observaciones_libro{{ progsec.id }}" placeholder="Texto opcional"></textarea> -->
-            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="observaciones_libro{{ progsec.id }}">{% autoescape off %}{% endautoescape %}</div>
+            <!-- <textarea id="observaciones_libro{{ progsec.id }}" placeholder="Texto opcional"></textarea> -->
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}"
+                 contenteditable="true" id="observaciones_libro{{ progsec.id }}">
+                {% autoescape off %}{% endautoescape %}</div>
             <div id="container_observaciones_libro" style="display: none"></div>
         </label>
     </div>
@@ -629,9 +645,11 @@
 <div class="row">
     <div class="columns large-12">
         <label>Observaciones a la actividad extraescolar/complementaria:
-<!-- <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
+            <!-- <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
 placeholder="Texto opcional"></textarea> -->
-            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}" contenteditable="true" id="observaciones_actex{{ progsec.id }}">{% autoescape off %}{% endautoescape %}</div>
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}"
+                 contenteditable="true" id="observaciones_actex{{ progsec.id }}">
+                {% autoescape off %}{% endautoescape %}</div>
             <div id="container_observaciones_actex" style="display: none"></div>
         </label>
     </div>
@@ -791,12 +809,12 @@ placeholder="Texto opcional"></textarea> -->
             re_adjust_check_time();
         });
         observaciones_libro{{ progsec.id }}.on('change', function (e) {
-                var texto = e.editor.getData();
-                $('#container_observaciones_libro').html(texto);
+            var texto = e.editor.getData();
+            $('#container_observaciones_libro').html(texto);
         });
         observaciones_actex{{ progsec.id }}.on('change', function (e) {
             var texto = e.editor.getData();
             $('#container_observaciones_actex').html(texto);
         });
-}, 300);
+    }, 300);
 </script>
