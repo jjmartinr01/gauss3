@@ -668,37 +668,39 @@ def update_calendarios_vut(viviendas):
                                     else:
                                         u += 1
                             elif calviv.portal == 'BOO':
-                                if 'vailable' not in summary:
-                                    nombre = summary.replace('CLOSED -', '')
-                                    entrada = c.get('dtstart').dt
-                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada,
-                                                                                    estado='ACE', portal=calviv.portal)
-                                    reserva.nombre = nombre
-                                    reserva.noches = int((c.get('dtend').dt - c.get('dtstart').dt).days)
-                                    if creada:
-                                        reserva.code = pass_generator(size=10)
-                                        n += 1
-                                    else:
-                                        u += 1
-                                    reserva.save()
+                                # if 'vailable' not in summary:
+                                nombre = summary.replace('CLOSED -', '')
+                                if 'vailable' in nombre:
+                                    nombre = 'Reserva Booking'
+                                entrada = c.get('dtstart').dt
+                                reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada,
+                                                                                estado='ACE', portal=calviv.portal)
+                                reserva.nombre = nombre
+                                reserva.noches = int((c.get('dtend').dt - c.get('dtstart').dt).days)
+                                if creada:
+                                    reserva.code = pass_generator(size=10)
+                                    n += 1
                                 else:
-                                    try:
-                                        entrada = c.get('dtstart').dt
-                                        reserva = Reserva.objects.get(vivienda=v, entrada=entrada, estado='ACE',
-                                                                      portal=calviv.portal)
-                                        reserva.estado = 'CAN'
-                                        reserva.save()
-                                    except:
-                                        # Si llega a este punto es porque seguramente hay un VEVENT del tipo:
-                                        # BEGIN: VEVENT
-                                        # DTSTART;DTEND;
-                                        # VALUE = DATE:20190824
-                                        # UID: 6e5f3f2c0b862c4b8821b890d549d4d7 @ booking.com
-                                        # SUMMARY: CLOSED - Not Available
-                                        # END: VEVENT
-                                        # Por tanto no hay que hacer nada:
-                                        pass
-                                        # mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
+                                    u += 1
+                                reserva.save()
+                                # else:
+                                #     try:
+                                #         entrada = c.get('dtstart').dt
+                                #         reserva = Reserva.objects.get(vivienda=v, entrada=entrada, estado='ACE',
+                                #                                       portal=calviv.portal)
+                                #         reserva.estado = 'CAN'
+                                #         reserva.save()
+                                #     except:
+                                #         # Si llega a este punto es porque seguramente hay un VEVENT del tipo:
+                                #         # BEGIN: VEVENT
+                                #         # DTSTART;DTEND;
+                                #         # VALUE = DATE:20190824
+                                #         # UID: 6e5f3f2c0b862c4b8821b890d549d4d7 @ booking.com
+                                #         # SUMMARY: CLOSED - Not Available
+                                #         # END: VEVENT
+                                #         # Por tanto no hay que hacer nada:
+                                #         pass
+                                #         # mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
 
                             elif calviv.portal == 'HOM':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
