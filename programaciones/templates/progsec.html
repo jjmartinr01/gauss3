@@ -90,6 +90,8 @@
 
 {% block final %}
     <script>
+    habilita(['s_times-rectangle',]);
+
         var texto_editor;
 
         function comprueba_cambio_texto(texto, progsec, campo) {
@@ -236,6 +238,37 @@
                                         setTimeout(function () {
                                             show_mensajes({
                                                 title: '<i class="fa fa-warning"></i> No es posible el borrado',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.recuperar_progsec', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Recuperar esta programación didáctica?',
+                    texto: 'Si aceptas, la programación se recuperará y podrá ser editada de nuevo', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Recuperar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", {action: 'recuperar_progsec', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#list_progsec').html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible la recuperación',
                                                 texto: data.msg
                                             });
                                         }, 500);
@@ -863,6 +896,26 @@
                 texto: 'No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.'
             })
         {% endif %}
+
+    {# Recuperar programaciones borradas #}
+    $('#times-rectangle_sign').click(function (event) {
+                    event.preventDefault();
+                    $.post("/progsecundaria/", {action: 'programaciones_borradas'},
+                                    function (data) {
+                                        if (data.ok) {
+                                            $('#list_progsec').html(data.html);
+                                            $("#update_ok").show().delay(1500).fadeOut();
+                                        } else {
+                                            $('#update_error').show().delay(1500).fadeOut();
+                                        }
+                                    });
+                    {#$('#formulario_crear').toggle();#}
+                    {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+                    {#setTimeout(function () {#}
+                    {#    $('#curso_progsec').select2();#}
+                    {#    $('#areamateria_progsec').select2();#}
+                    {# }, 100); #}
+                });
     </script>
 
 {% endblock %}

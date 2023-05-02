@@ -2104,6 +2104,23 @@ def progsecundaria(request):
                     return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'recuperar_progsec':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if (permiso == 'X' or progsec.gep.ge == g_e):
+                    progsec.borrado = False
+                    progsec.save()
+                    progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
+                    progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
+                    html = render_to_string('progsec_accordion.html', {'progsecs': progsecs})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    msg = 'No tienes permiso para recuperar esta programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'copiar_progsec':
             try:
                 crea_departamentos(g_e.ronda)
@@ -2115,6 +2132,7 @@ def progsecundaria(request):
                 ps_nueva.nombre = ps.nombre + ' (Copia)'
                 ps_nueva.departamento = None
                 ps_nueva.tipo = 'BOR'
+                ps_nueva.borrado = False
                 ps_nueva.save()
                 DocProgSec.objects.create(psec=ps_nueva, gep=g_ep, permiso='X')
                 for ceps in ps.ceprogsec_set.all():
@@ -2561,6 +2579,14 @@ def progsecundaria(request):
                     return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'programaciones_borradas':
+            try:
+                progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
+                progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=True)
+                html = render_to_string('progsec_accordion.html', {'progsecs': progsecs})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
     elif request.method == 'POST':
         if request.POST['action'] == 'pdf_progsec':
             doc_progsec = 'Configuración de programaciones didácticas'
@@ -2612,6 +2638,9 @@ def progsecundaria(request):
                             'permiso': 'libre'},
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
                             'title': 'Buscar programación a través del nombre de la materia de secundaria',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'times-rectangle', 'texto': 'Programaciones borradas',
+                            'title': 'Mostrar programaciones borradas y restaurar alguna de ellas',
                             'permiso': 'libre'},
                            # {'tipo': 'button', 'nombre': 'file-text', 'texto': 'Programaciones otros cursos',
                            #  'title': 'Mostrar programaciones de otros curso',

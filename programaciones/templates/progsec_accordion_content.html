@@ -54,9 +54,15 @@
     <div class="columns large-12">
         <ul class="button-group right">
             {#            {% if gep.ge.gauser.username == 'gauss' or progsec|puede_borrar:gep.ge %}#}
-            <li><a class="button alert borrar_progsec tiny" data-id="{{ progsec.id }}"
-                   title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
+            {% if progsec.borrado %}
+            <li><a class="button alert recuperar_progsec tiny" data-id="{{ progsec.id }}"
+                   title="Recuperar esta programación que estaba borrada"><i class="fa fa-upload"></i>
+                Recuperar</a></li>
+            {% else %}
+                <li><a class="button alert borrar_progsec tiny" data-id="{{ progsec.id }}"
+                   title="Borrar completamente esta programación de la base de datos"><i class="fa fa-trash-o"></i>
                 Borrar</a></li>
+            {% endif %}
             {#            {% endif %}#}
 
             <!-- Modificación Espe: Enviar copiar programación a otro docente -->
