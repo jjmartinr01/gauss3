@@ -9,6 +9,10 @@
             color: #008CBA;
         }
 
+        {#.show_inline {#}
+        {#    display: table-cell;#}
+        {# }#}
+
         .ckeditor {
             border: lightgrey 1px solid;
             min-height: 100px;
@@ -25,12 +29,6 @@
 
         <div>
             <h4 id="title_page"><strong>Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
-        </div>
-        <div id="info_web_link" style="display: none;">
-            <fieldset>
-                <legend>Información para hacer visibles las programaciones en la web del centro</legend>
-                fdasfa
-            </fieldset>
         </div>
         <div id="formulario_search" style="display: block;">
             <div class="row">
@@ -53,6 +51,17 @@
                     <a id="busca_progsec_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
                 </div>
             </div>
+        </div>
+        <div id="info_web_link" style="display: block;">
+            <fieldset>
+                <legend>Información para hacer visibles las programaciones en la web del centro</legend>
+                <p>Copia en la web el siguiente código:</p>
+                <pre>
+                    <span class="show_inline"><</span><span class="show_inline">iframe</span><span class="show_inline">&nbsp;</span><span
+                        class="show_inline">src="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"><</span><span
+                        class="show_inline">/iframe></span>
+                </pre>
+            </fieldset>
         </div>
         <div id="formulario_crear" style="display: none;">
             <div class="row">
@@ -90,7 +99,7 @@
 
 {% block final %}
     <script>
-    habilita(['s_times-rectangle',]);
+        habilita(['s_times-rectangle',]);
 
         var texto_editor;
 
@@ -575,10 +584,10 @@
             $('body').on('change', '.select_tipo', function () {
                 var id = $(this).data('progsec');
                 var tipo = $(this).val();
-                if (tipo == 'ACS' || tipo == 'AC'){
+                if (tipo == 'ACS' || tipo == 'AC') {
                     $('.ajuste_competencial').show();
                     var grados_100 = 'N';
-                }else{
+                } else {
                     $('.ajuste_competencial').hide();
                     var grados_100 = 'Y';
                     $('.grado_cep').text(100);
@@ -673,22 +682,22 @@
             });
 
             {#$('body').on('change', '.alumno_destinatario', function (e) {#}
-                $('body').on('change.select2', '.alumno_destinatario', function (e) {
-            var progsec = $(this).data('progsec');
-            var alumno = $(this).val();
-            $.post("/progsecundaria/", {
-                    action: 'alumno_destinatario',
-                    progsec: progsec,
-                    alumno: alumno
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('change.select2', '.alumno_destinatario', function (e) {
+                var progsec = $(this).data('progsec');
+                var alumno = $(this).val();
+                $.post("/progsecundaria/", {
+                        action: 'alumno_destinatario',
+                        progsec: progsec,
+                        alumno: alumno
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
             $('body').on('change', '.pesocep', function () {
                 var id = $(this).data('progsec');
@@ -897,25 +906,25 @@
             })
         {% endif %}
 
-    {# Recuperar programaciones borradas #}
-    $('#times-rectangle_sign').click(function (event) {
-                    event.preventDefault();
-                    $.post("/progsecundaria/", {action: 'programaciones_borradas'},
-                                    function (data) {
-                                        if (data.ok) {
-                                            $('#list_progsec').html(data.html);
-                                            $("#update_ok").show().delay(1500).fadeOut();
-                                        } else {
-                                            $('#update_error').show().delay(1500).fadeOut();
-                                        }
-                                    });
-                    {#$('#formulario_crear').toggle();#}
-                    {#$(document).scrollTop($('#title_page').offset().top - 150);#}
-                    {#setTimeout(function () {#}
-                    {#    $('#curso_progsec').select2();#}
-                    {#    $('#areamateria_progsec').select2();#}
-                    {# }, 100); #}
+        {# Recuperar programaciones borradas #}
+        $('#times-rectangle_sign').click(function (event) {
+            event.preventDefault();
+            $.post("/progsecundaria/", {action: 'programaciones_borradas'},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_progsec').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
                 });
+            {#$('#formulario_crear').toggle();#}
+            {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+            {#setTimeout(function () {#}
+            {#    $('#curso_progsec').select2();#}
+            {#    $('#areamateria_progsec').select2();#}
+            {# }, 100); #}
+        });
     </script>
 
 {% endblock %}
