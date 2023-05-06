@@ -5,7 +5,7 @@ import string
 import random
 import os
 import pdfkit
-from weasyprint import HTML, CSS
+# from weasyprint import HTML, CSS
 import re
 from django.db.models import Q
 from django.template import Context, Template
