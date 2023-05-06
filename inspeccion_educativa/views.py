@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import xlwt
-from weasyprint import HTML, CSS
+import pdfkit
+# from weasyprint import HTML, CSS
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
@@ -713,11 +714,10 @@ def informes_ie(request):
             ie.instarea.tarea.fecha = ie.modificado
             ie.instarea.tarea.save()
             c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True, 'dce': dce})
-            css = CSS(string=render_to_string('weasyprint_styles.css', {'dce': dce}))
-            # pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            # HTML(string=c).write_pdf(dce.url_pdf)
-            doc = HTML(string=c)
-            doc.write_pdf(dce.url_pdf, stylesheets=[css])
+            # css = CSS(string=render_to_string('weasyprint_styles.css', {'dce': dce}))
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # doc = HTML(string=c)
+            # doc.write_pdf(dce.url_pdf, stylesheets=[css])
             fich = open(dce.url_pdf, 'rb')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
