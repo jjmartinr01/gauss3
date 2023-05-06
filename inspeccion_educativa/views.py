@@ -2,6 +2,7 @@
 import logging
 import xlwt
 import pdfkit
+from weasyprint import HTML, CSS
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
@@ -565,6 +566,7 @@ def tareas_ie(request):
 # carga.save()
 # return HttpResponse(errores)
 
+
 @permiso_required('acceso_informes_ie')
 def get_informe_ie(request, id):
     ie = InformeInspeccion.objects.get(id=id)
@@ -711,8 +713,11 @@ def informes_ie(request):
             ie.instarea.tarea.asunto = ie.asunto
             ie.instarea.tarea.fecha = ie.modificado
             ie.instarea.tarea.save()
-            c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True})
-            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True, 'dce': dce})
+            # pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # HTML(string=c).write_pdf(dce.url_pdf)
+            doc = HTML(string=c).render()
+            doc.write_pdf(dce.url_pdf)
             fich = open(dce.url_pdf, 'rb')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)

@@ -1,47 +1,86 @@
 {% load inspeccion_educativa_extras %}
 {% if pdf %}
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Informe de Inspección: {{ ie.asunto }}</title>
-        <style type="text/css">
-            html {
-                font-family: Arial, Helvetica, sans-serif;
-            }
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Informe de Inspección: {{ ie.asunto }}</title>
 
-            table {
-                margin-left: auto;
-                margin-right: auto;
-                width: 100%;
-            }
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-            .pagebreak {
-                page-break-before: always;
-            }
+        table {
+            border-collapse: collapse;
+        }
 
-            {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
-            {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
-            {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
-            thead {
-                display: table-header-group
-            }
+        td {
+            border: 1px solid black;
+        }
 
-            tfoot {
-                display: table-row-group
-            }
+        td.sin_borde {
+            border: none;
+        }
 
-            tr {
-                page-break-inside: avoid
+        table.informe_no_editable {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        @media print {
+            @page {
+                @top-center {
+                    content: element(heading);
+                    width: 100%;
+                }
+                margin-right: {{ dce.marginright }}mm;
+                margin-left: {{ dce.marginleft }}mm;
+                margin-top: {{ dce.margintop }}mm;
+                margin-bottom: {{ dce.marginbotton }}mm;
+                size: {{ dce.pagesize }} {{ dce.orientation }};
             }
-        </style>
-    </head>
-    <body>
+        }
+
+        p.rh {
+            position: running(heading);
+        }
+
+        {#p.rh::before {#}
+        {#    content: counter(page) ' / ';#}
+        {# }#}
+    </style>
+
+</head>
+<body>
+<p class="rh">{% autoescape off %}{{ dce.header }}{% endautoescape %}</p>
+<div class="informe_no_editable">
+    <table class="informe_no_editable">
+        <tr>
+            <td class="sin_borde" style="width: 109mm;">&nbsp;</td>
+            <td class="sin_borde" style="width: 101mm;" title="Destinatario del informe">
+                {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
+        </tr>
+    </table>
+
+    <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
+    <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
+</div>
+</body>
+</html>
+{% else %}
+<label><b>Texto del informe (no editable):</b></label>
+<div style="min-height: 100px;">
     <div class="informe_no_editable">
         <table class="informe_no_editable">
             <tr>
-                <td style="width: 109mm;">&nbsp;</td>
-                <td style="width: 101mm;" title="Destinatario del informe">
+                <td class="sin_borde" style="width: 109mm;">&nbsp;</td>
+                <td class="sin_borde" style="width: 101mm;" title="Destinatario del informe">
                     {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
             </tr>
         </table>
@@ -49,22 +88,5 @@
         <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
         <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
     </div>
-    </body>
-    </html>
-{% else %}
-    <label><b>Texto del informe (no editable):</b></label>
-    <div style="min-height: 100px;" >
-        <div class="informe_no_editable">
-            <table class="informe_no_editable">
-                <tr>
-                    <td style="width: 109mm;">&nbsp;</td>
-                    <td style="width: 101mm;" title="Destinatario del informe">
-                        {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
-                </tr>
-            </table>
-
-            <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
-            <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
-        </div>
-    </div>
+</div>
 {% endif %}

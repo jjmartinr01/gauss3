@@ -5,6 +5,7 @@ import string
 import random
 import os
 import pdfkit
+from weasyprint import HTML, CSS
 import re
 from django.db.models import Q
 from django.template import Context, Template
@@ -79,6 +80,108 @@ def padres_madres(subentidad):
 
 
 def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title='Documento generado por GAUSS',
+                attach=False, tipo='inf', pagecount=False):
+    """
+    :param request: datos de session necesarios para identificar usuario
+    :param datos: Diccionario con los datos de configuaran el pdf
+    :param fichero: string con el nombre del fichero
+    :param tipo: string -> 'doc' documento con TOC, 'inf' informe sin TOC
+    :param attach: string con lista de archivos separados por espacios
+    :return: El fichero pdf creado
+    """
+    logger.info('html_to_pdf')
+    fichero_html = media + fichero + '.html'
+    fichero_pdf = media + fichero + '.pdf'
+    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad, predeterminado=True)
+
+    if not os.path.exists(os.path.dirname(fichero_pdf)):
+        os.makedirs(os.path.dirname(fichero_pdf))
+        logger.info('Se crea ruta: %s' % (fichero_pdf))
+
+    if not os.path.exists(os.path.dirname(media)):
+        os.makedirs(os.path.dirname(media))
+        logger.info('Se crea ruta: %s' % (media))
+
+    html_template = 'genera_documento2pdf.html'
+    c = render_to_string(html_template, {'texto': texto, 'title': title}, request=request)
+    logger.info('Escritura en %s' % (fichero_html))
+    logger.info('go to open %s' % (fichero_html))
+    try:
+        logger.info(os.path.isfile(fichero_html) + 'go to open %s' % (fichero_html))
+        with open(fichero_html, "w") as html_file:
+            logger.info('Writing file: %s' % (fichero_html))
+            html_file.write("{0}".format(c.encode('utf-8')))
+    except Exception as e:
+        logger.info(str(e))
+
+    logger.info('Written file: %s' % (fichero_html))
+    cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
+    if not os.path.isfile(cabecera):
+        cabecera = ''
+    pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].ronda.entidad.code
+    if not os.path.isfile(pie):
+        pie = ''
+    logger.info('cabecera y pie definidas. Tipo: %s' % tipo)
+    if tipo == 'doc':
+        estilo = media + 'estilo.xsl'
+        comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s toc --xsl-style-sheet %s %s %s' % (
+            cabecera, pie, estilo, fichero_html, fichero_pdf)
+        logger.info('Ejecuta: %s' % (comando))
+        os.system(comando)
+    elif tipo == 'inf':
+        # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s %s %s' % (
+        #     cabecera, pie, fichero_html, fichero_pdf)
+        # logger.info('Ejecuta: %s' % (comando))
+        # os.system(comando)
+        options = {
+            'page-size': docconf.pagesize,
+            'margin-top': docconf.margintop,
+            'margin-right': docconf.marginright,
+            'margin-bottom': docconf.marginbottom,
+            'margin-left': docconf.marginleft,
+            'encoding': docconf.encoding,
+            'no-outline': None,
+            # '--header-html': 'file://%s' % cabecera,
+            # '--footer-html': 'file://%s' % pie,
+            '--header-spacing': docconf.headerspacing,
+            '--load-error-handling': 'ignore',
+        }
+        if cabecera:
+            options['--header-html'] = 'file://%s' % cabecera
+        if pie:
+            options['--footer-html'] = 'file://%s' % pie
+        logger.info('Preparado para generar pdf')
+        a=b
+        pdfkit.from_string(c, fichero_pdf, options)
+        logger.info('Pdf generado')
+    elif tipo == 'sin_cabecera':
+        options = {'page-size': 'A4', 'margin-top': '20', 'margin-right': '20', 'margin-bottom': '20',
+                   'margin-left': '20', 'encoding': "UTF-8", 'no-outline': None, '--header-spacing': '5',
+                   '--load-error-handling': 'ignore'}
+        logger.info('Preparado para generar pdf sin cabecera')
+        try:
+            pdfkit.from_string(c, fichero_pdf, options)
+        except Exception as e:
+            logger.info(str(e))
+        #
+        # logger.info('Generado el pdf sin cabecera')
+        # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
+        # logger.info('Ejecuta: %s' % (comando))
+        # os.system(comando)
+    if attach:
+        fichero_pdf2 = media + fichero + '_adjuntos.pdf'
+        comando = 'pdftk %s attach_files %s output %s' % (fichero_pdf, attach, fichero_pdf2)
+        os.system(comando)
+        fichero_pdf = fichero_pdf2
+    if pagecount:
+        comando = 'pdftk %s dump_data | grep "NumberOfPages" | cut -d":" -f2' % fichero_pdf
+        pagecount = int(os.system(comando))
+        return pagecount, open(fichero_pdf)
+    else:
+        logger.info('return fichero %s' % fichero_pdf)
+        return open(fichero_pdf, 'rb')
+
+def html_to_pdf_antiguo(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title='Documento generado por GAUSS',
                 attach=False, tipo='inf', pagecount=False):
     """
     :param request: datos de session necesarios para identificar usuario
