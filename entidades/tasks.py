@@ -794,7 +794,7 @@ def carga_masiva_horario_personal_centro(carga):
         book = xlrd.open_workbook(file_contents=f)
         sheet = book.sheet_by_index(0)
         po = PlantillaOrganica.objects.create(g_e=carga.g_e)
-        carga.log += 'Se crea Plantilla Orgánica por %s<br>' % po.g_e
+        carga.log += 'Se crea Plantilla Orgánica por %s - %s<br>' % (po.g_e.gauser.get_full_name(), po.g_e.ronda)
         carga.save()
     except Exception as msg:
         carga.log += 'Error y parada de carga: %s' % str(msg)
@@ -843,6 +843,8 @@ def carga_masiva_horario_personal_centro(carga):
             nombre_centro, dash, code_centro = pxls.centro.rpartition('-')
             entidad, c = Entidad.objects.get_or_create(code=int(code_centro))
             entidad.name = nombre_centro
+            carga.log += 'Centro: %s<br>' % pxls.centro
+            carga.save()
             try:
                 entidad.organization = Organization.objects.get(organization__icontains='Gobierno')
             except:
@@ -850,9 +852,9 @@ def carga_masiva_horario_personal_centro(carga):
                 carga.save()
             entidad.save()
             con1 = entidad == carga.g_e.ronda.entidad
-            con2 = carga.g_e.has_permiso('carga_horario_personal_centros_educativos')
-            con3 = carga.g_e.has_permiso('carga_horario_personal_centro_educativo')
-            if not (con2 or (con1 and con3)):
+            con2 = carga.g_e.has_permiso('carga_horario_personal_centro_educativo')
+            con3 = carga.g_e.has_permiso('carga_horario_personal_centros_educativos')
+            if not (con3 or (con1 and con2)):
                 carga.log += 'Error. Carga para %s - g_e de %s' % (entidad.name, carga.g_e.ronda.entidad.name)
                 carga.cargado = True
                 carga.save()
@@ -1514,6 +1516,10 @@ def carga_masiva_from_excel(carga_id=None):
             carga_masiva_datos_centros(carga=carga)
         elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':
             carga.log += 'Carga de tipo: HORARIO_PERSONAL_CENTRO<br>'
+            carga.save()
+            carga_masiva_horario_personal_centro(carga=carga)
+        elif carga.tipo == 'HORARIO_PERSONAL_CENTROS':
+            carga.log += 'Carga de tipo: HORARIO_PERSONAL_CENTROS<br>'
             carga.save()
             carga_masiva_horario_personal_centro(carga=carga)
         elif carga.tipo == 'DATOS_CASIOPEA':

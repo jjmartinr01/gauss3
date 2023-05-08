@@ -2705,10 +2705,16 @@ def selectgcs(request):
             for ge in ges.distinct():
                 try:
                     grupo = ge.gauser_extra_estudios.grupo.nombre
+                except:
+                    grupo = ''
+                try:
                     tutor = ge.gauser_extra_estudios.tutor.gauser.get_full_name()
+                except:
+                    tutor = ''
+                try:
                     cotutor = ge.gauser_extra_estudios.cotutor.gauser.get_full_name()
                 except:
-                    grupo, tutor, cotutor = '', '', ''
+                    cotutor = ''
                 cargos_ge = [c.cargo for c in ge.cargos.all()]
                 options.append(
                     {'id': ge.id, 'first_name': ge.gauser.first_name, 'last_name': ge.gauser.last_name,

@@ -2,6 +2,7 @@
 import logging
 import xlwt
 import pdfkit
+# from weasyprint import HTML, CSS
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
@@ -565,6 +566,7 @@ def tareas_ie(request):
 # carga.save()
 # return HttpResponse(errores)
 
+
 @permiso_required('acceso_informes_ie')
 def get_informe_ie(request, id):
     ie = InformeInspeccion.objects.get(id=id)
@@ -711,8 +713,11 @@ def informes_ie(request):
             ie.instarea.tarea.asunto = ie.asunto
             ie.instarea.tarea.fecha = ie.modificado
             ie.instarea.tarea.save()
-            c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True})
+            c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True, 'dce': dce})
+            # css = CSS(string=render_to_string('weasyprint_styles.css', {'dce': dce}))
             pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # doc = HTML(string=c)
+            # doc.write_pdf(dce.url_pdf, stylesheets=[css])
             fich = open(dce.url_pdf, 'rb')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
@@ -1001,14 +1006,13 @@ def asignar_centros_inspeccion(request):
                     zonai = 'RB' if p.lower() in 'baja' else zonai
                     zonai = 'RM' if p.lower() in 'media' else zonai
                     zonai = 'RA' if p.lower() in 'alta' else zonai
-                q = Q(centro__name__icontains=palabras[0]) | Q(zonai__icontains=zonai) | Q(
-                    puntos__icontains=palabras[0]) | Q(clasificado__icontains=palabras[0]) | Q(
-                    centro__entidadextra__director__icontains=palabras[0])
+                q = Q(centro__name__icontains=palabras[0]) | Q(puntos__icontains=palabras[0]) | Q(
+                    clasificado__icontains=palabras[0]) | Q(centro__entidadextra__director__icontains=palabras[0])
                 for palabra in palabras[1:]:
                     qnueva = Q(centro__name__icontains=palabra) | Q(puntos__icontains=palabra) | Q(
                         clasificado__icontains=palabra) | Q(centro__entidadextra__director__icontains=palabra)
                     q = q & qnueva
-                cis = cis_ronda.filter(q).distinct()
+                cis = cis_ronda.filter(q & Q(zonai__icontains=zonai)).distinct()
                 # logica = ''  # Puede ser OR o AND
                 # if logica == 'OR':
                 #     cis_ronda = CentroInspeccionado.objects.filter(ronda=g_e.ronda)

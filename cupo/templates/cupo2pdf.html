@@ -29,9 +29,12 @@
         font-weight: bold;
         background: #B4B5B0;
     }
+
     .pagebreak {
         page-break-before: always;
     }
+
+
 </style>
 <h1>&nbsp;</h1><h1>&nbsp;</h1><h1>&nbsp;</h1>
 <h1>INFORME CUPO</h1>
@@ -40,7 +43,7 @@
 
 {% for filtro in cupo.filtrocupo_set.all %}
     <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center">{{ filtro.nombre }}</h1>
-    <table>
+    <table style="width:100%;">
         <tr>
             <td colspan="10" class="pri">Materia - Curso</td>
             <td class="pri"></td>
@@ -69,7 +72,7 @@
 
 
 <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Resumen de horas por especialidades</h1>
-<table style="width:100%;" border="1">
+<table id="tabla_resumen" style="width:100%;" border="1">
     <tr>
         <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong>
         </td>
@@ -111,8 +114,10 @@
     {% for p in cupo|interinos %}
     {% ifchanged p.profesorado.especialidad %}
     <tr>
-        <td style="border-top: solid 1px darkgray;font-weight: 800;"
-            colspan="5">{{ p.profesorado.especialidad.nombre }}</td>
+        <td style="border-top: solid 1px darkgray;"
+            colspan="5"><b>{{ p.profesorado.especialidad.nombre }}</b>
+            &horbar;&horbar; {{ p.profesorado.especialidad.cod_cuerpo }} -
+            {{ p.profesorado.especialidad.cod_espec }}</td>
     </tr>
     {% else %}
     <tr>
@@ -133,7 +138,7 @@
         <td style="text-align:center;padding-top:2px;font-weight: 700;">
             Bilingüe {% if p.bilingue %} &#9746;{% else %}&#9744;{% endif %}</td>
         <td style="text-align:center;padding-top:2px;font-weight: 700;">
-            Vacante {% if p.noafin %}&#9746;{% else %}&#9744;{% endif %}</td>
+            Vacante {% if p.vacante %}&#9746;{% else %}&#9744;{% endif %}</td>
     </tr>
     {% if p.observaciones %}
         <tr>

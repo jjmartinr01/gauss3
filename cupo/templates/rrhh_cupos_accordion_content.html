@@ -1,0 +1,41 @@
+{% load entidades_extras %}
+{% load cupo_extras %}
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            {#            <li><a class="button alert borrar_po tiny" data-id="{{ y }}"#}
+            {#                   title="Borrar completamente este estudio de plantilla orgánica"><i class="fa fa-trash-o"></i>#}
+            {#                Borrar</a></li>#}
+            {#            <li><a class="button copiar_po tiny" data-id="{{ y }}"#}
+            {#                   title="Hacer una copia (un duplicado) de este estudio"><i class="fa fa-copy"></i> Copiar</a>#}
+            {#            </li>#}
+            {#            <li><a class="button excel_po tiny" data-id="{{ y }}"#}
+            {#                   title="Crear un EXCEL de este estudio de plantilla"><i class="fa fa-file-excel-o"></i> EXCEL</a>#}
+            {#            </li>#}
+            <li>
+                <a class="button csv_cupo small radius" data-curso_actual="{{ y }}"
+                   title="Crear un archivo csv con la solicitud de cupo">
+                    <b><i class="fa fa-file-text-o"></i> Exportar CSV</b>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<table style="width: 100%;position: relative;">
+    {% for cupo in cupos %}
+        <thead>
+        <tr>
+            <td colspan="9" title="Haz click sobre el nombre del centro para deplegar la solicitud">
+                <a class="desplegar_solicitud" data-cupo="{{ cupo.id }}" data-abierto="0">
+                    {{ cupo.ronda.entidad.name }} &horbar;&horbar; {{ cupo.solicitud_interinos|length }} solicitudes
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span id="desplegada{{ cupo.id }}_0"><i class="fa fa-folder"></i></span>
+                    <span style="display: none;" id="desplegada{{ cupo.id }}_1"><i class="fa fa-folder-open"></i></span>
+                </a>
+            </td>
+        </tr>
+        </thead>
+        <tbody id="solicitud_interinos{{ cupo.id }}"></tbody>
+    {% endfor %}
+</table>

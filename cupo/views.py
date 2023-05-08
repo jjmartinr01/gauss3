@@ -28,7 +28,7 @@ from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
-    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente
+    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente, CUERPOS
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
@@ -46,6 +46,7 @@ logger = logging.getLogger('django')
 # Para el cupo únicamente importa la especialidad así que para evitar duplicidades en las especialidades
 # se toman únicamente los siguientes cuerpos:
 CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
+
 
 def get_dce_cupo(g_e):
     doc_progsec = 'Configuración de informe de cupo'
@@ -65,9 +66,14 @@ def get_dce_cupo(g_e):
         dce.save()
     return dce
 
+
 # @permiso_required('acceso_cupo_profesorado')
 def cupo(request):
     g_e = request.session['gauser_extra']
+    if 'c' in request.GET:
+        cupo_selected = request.GET['c']
+    else:
+        cupo_selected = None
     # ##########################################
     for ec in EspecialidadCupo.objects.filter(max_media=9, min_media=10):
         ec.max_media = 10
@@ -186,11 +192,13 @@ def cupo(request):
                         ),
                    'formname': 'cupo_profesorado',
                    'cupos': cupos,
+                   'cupo_selected': cupo_selected,
                    'g_e': g_e,
                    'plantillas_o': plantillas_o,
                    'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                    'especialidades_existentes': ESPECIALIDADES,
                    'cursos_existentes': cursos_existentes})
+
 
 def select_po(request):
     g_e = request.session['gauser_extra']
@@ -207,7 +215,6 @@ def select_po(request):
                 except:
                     pass
             return JsonResponse(options, safe=False)
-
 
 
 def cupo_especialidad(cupo, especialidad):
@@ -310,7 +317,8 @@ def ajax_cupo(request):
                 centros_primaria = ['C.E.E. - Centro de Educación Especial',
                                     'C.R.A. - Colegio Rural Agrupado',
                                     'C.E.I.P. - Colegio de Educación Infantil y Primaria']
-                condiciones = Q(id=request.POST['po']) & (Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
+                # condiciones = Q(id=request.POST['po']) & (Q(g_e=g_e) | Q(ronda_centro__entidad__organization=g_e.ronda.entidad.organization))
+                condiciones = Q(id=request.POST['po'])
                 po = PlantillaOrganica.objects.get(condiciones)
                 po.habilitar_miembros_equipo_directivo()
                 # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
@@ -653,12 +661,25 @@ def ajax_cupo(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'edit_especialidades':
+
+            cupo = Cupo.objects.get(id=request.POST['cupo'])
+            con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+            con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+            if con1 or con2:
+                html = render_to_string('cupo_accordion_content_especialidad_edit.html', {'cupo': cupo,
+                                                                                          'CUERPOS': CUERPOS})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+
+
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
                 if con1 or con2:
-                    html = render_to_string('cupo_accordion_content_especialidad_edit.html', {'cupo': cupo})
+                    html = render_to_string('cupo_accordion_content_especialidad_edit.html', {'cupo': cupo,
+                                                                                              'CUERPOS': CUERPOS})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
@@ -685,7 +706,10 @@ def ajax_cupo(request):
                     ec = EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['espec'])
                     setattr(ec, request.POST['campo'], request.POST['valor'])
                     ec.save()
-                    return JsonResponse({'ok': True})
+                    html = ''
+                    if request.POST['campo'] == 'cod_cuerpo':
+                        html = render_to_string('cupo_accordion_content_especialidad_edit_options.html', {'e': ec})
+                    return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except Exception as msg:
@@ -939,7 +963,7 @@ def ajax_cupo(request):
                     especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                     materias = render_to_string('edit_cupo_materias.html',
                                                 {'materias': materias_cupo, 'especialidades': especialidades,
-                                                 's_c': True})
+                                                 's_c': True, 'CUERPOS': CUERPOS})
                     return JsonResponse({'ok': True, 'materias': materias})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
@@ -967,7 +991,7 @@ def ajax_cupo(request):
                 especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                 materias = render_to_string('edit_cupo_materias.html',
                                             {'materias': materias_cupo, 'especialidades': especialidades,
-                                             'especialidad': especialidad})
+                                             'especialidad': especialidad, 'CUERPOS': CUERPOS})
                 return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
                                      'especialidad': especialidad_nombre})
 
@@ -991,7 +1015,7 @@ def ajax_cupo(request):
                     especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                     materias = render_to_string('edit_cupo_materias.html',
                                                 {'materias': materias_cupo, 'especialidades': especialidades,
-                                                 'especialidad': especialidad})
+                                                 'especialidad': especialidad, 'CUERPOS': CUERPOS})
                     return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
                                          'especialidad': especialidad_nombre})
                 else:
@@ -1038,8 +1062,7 @@ def ajax_cupo(request):
                     especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                     materias = render_to_string('edit_cupo_materias.html',
                                                 {'materias': materias_cupo, 'especialidades': especialidades,
-                                                 's_c': s_c,
-                                                 'especialidad': especialidad})
+                                                 's_c': s_c, 'especialidad': especialidad, 'CUERPOS': CUERPOS})
                     return JsonResponse({'ok': True, 'materias': materias})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
@@ -1075,7 +1098,7 @@ def ajax_cupo(request):
                     materia.save()
                     especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                     materias = render_to_string('edit_cupo_materias.html',
-                                                {'materias': [materia], 'duplicated': True,
+                                                {'materias': [materia], 'duplicated': True, 'CUERPOS': CUERPOS,
                                                  'especialidades': especialidades, 'especialidad': None})
                     logger.info('%s, cupo %s duplicate_materia %s' % (g_e, cupo.id, materia.nombre))
                     return JsonResponse({'ok': True, 'materias': materias})
@@ -1340,7 +1363,7 @@ def edit_cupo(request, cupo_id):
         for especialidad in especialidades:
             cupo_especialidad(cupo, especialidad)
         # s_c stands for 'selected course' and in case of taking True value means edit_cupo doesn't have to show course
-        return render(request, "edit_cupo.html", {'formname': 'cupo', 'cupo': cupo, 'curso': cursos[0],
+        return render(request, "edit_cupo.html", {'formname': 'edit_cupo_profesorado', 'cupo': cupo, 'curso': cursos[0],
                                                   'materias': materias, 'especialidades': especialidades, 's_c': True,
                                                   'cursos': cursos,
                                                   'iconos':
@@ -1413,7 +1436,6 @@ def plantilla_organica(request):
             else:
                 crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.' +
                             '<br>Se requiere un archivo xls y ha cargado un archivo %s.' % file_masivo.content_type)
-
 
             # logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
             # CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
@@ -1748,6 +1770,63 @@ def plantilla_organica(request):
                       'docente': g_e,
                   })
 
+# @permiso_required('acceso_carga_masiva_horarios')
+def rrhh_cupos(request):
+    g_e = request.session["gauser_extra"]
+    inicio_rrhh_cupos = datetime.date(2022, 9, 1)
+    hoy = datetime.date.today()
+    cursos_escolares = {}
+    for y in range(inicio_rrhh_cupos.year, hoy.year):
+        curso = '%s-%s' % (y+1, y+2) # El cupo se calcula para el curso que viene
+        cursos_escolares[curso] = {'inicio': datetime.date(y, 9, 1), 'fin': datetime.date(y + 1, 8, 31), 'id': y}
+    # Por ejemplo si hoy fuera 1 de febrero de 2025 -- datetime.date(2025, 2, 1), cursos_escolares sería:
+    # {'2023-2024': {'inicio': datetime.date(2022, 9, 1), 'fin': datetime.date(2023, 8, 31), 'id': 2022},
+    #  '2024-2025': {'inicio': datetime.date(2023, 9, 1), 'fin': datetime.date(2024, 8, 31), 'id': 2023},
+    #  '2025-2026': {'inicio': datetime.date(2024, 9, 1), 'fin': datetime.date(2025, 8, 31), 'id': 2024}}
+
+
+    if request.method == 'POST':
+        if request.POST['action'] == 'carga_masiva_plantilla':
+            if not g_e.has_permiso('carga_plantillas_organicas'):
+                pass
+        elif request.POST['action'] == 'open_accordion' and request.is_ajax():
+            try:
+                y = int(request.POST['id'])
+                curso = cursos_escolares['%s-%s' % (y+1, y+2)]
+                cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True)
+                html = render_to_string('rrhh_cupos_accordion_content.html', {'cupos': cupos, 'g_e': g_e, 'y': y})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'desplegar_solicitud' and request.is_ajax():
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                html = render_to_string('rrhh_cupos_accordion_content_solicitud.html', {'cupo': cupo})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'genera_csvRRHH':
+            y = int(request.POST['curso_actual'])
+            curso = cursos_escolares['%s-%s' % (y + 1, y + 2)]
+            cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True)
+            csv_file = render_to_string('rrhh_cupos_accordion_content_solicitud_csv.csv', {'cupos': cupos})
+            response = HttpResponse(csv_file, content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=Solicitud_cupo_%s-%s.csv' % (y + 1, y + 2)
+            return response
+            # else:
+            #     crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+    return render(request, "rrhh_cupos.html",
+                  {
+                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Racima',
+                                  'permiso': 'carga_plantillas_organicas'},
+                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
+                                  'permiso': 'carga_datos_casiopea'}, {}),
+                      'formname': 'rrhh_cupos',
+                      'cursos_escolares': cursos_escolares,
+                      'g_e': g_e,
+                  })
 
 def comprueba_dnis(request):
     g_e = request.session["gauser_extra"]

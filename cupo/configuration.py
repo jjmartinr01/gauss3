@@ -26,6 +26,14 @@ MENU_DEFAULT = [
      'pos': 2,
      'parent': 'acceso_cupos'
      },
+    {'code_menu': 'acceso_rrhh_cupos',
+     'texto_menu': 'Cupos RRHH',
+     'href': 'rrhh_cupos',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 3,
+     'parent': 'acceso_cupos'
+     }
 ]
 # Se añaden otros permisos para el usuario
 

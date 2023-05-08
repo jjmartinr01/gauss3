@@ -9,6 +9,10 @@
             color: #008CBA;
         }
 
+        {#.show_inline {#}
+        {#    display: table-cell;#}
+        {# }#}
+
         .ckeditor {
             border: lightgrey 1px solid;
             min-height: 100px;
@@ -25,12 +29,6 @@
 
         <div>
             <h4 id="title_page"><strong>Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
-        </div>
-        <div id="info_web_link" style="display: none;">
-            <fieldset>
-                <legend>Información para hacer visibles las programaciones en la web del centro</legend>
-                fdasfa
-            </fieldset>
         </div>
         <div id="formulario_search" style="display: block;">
             <div class="row">
@@ -50,18 +48,21 @@
                     </select>
                 </div>
                 <div class="columns large-2">
-                    <a id="busca_progsec_manual" title="Buscar lista de programaciones"><i class="fa fa-search"></i> <b>Buscar</b></a>
+                    <a id="busca_progsec_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
                 </div>
             </div>
         </div>
-
-        <div id="bk_cargar_fichero_progsec" style="display: none;"> {# sag #}
-            <br><br>
-            <dl class="accordion" data-accordion id="bk_cargar_progsec">
-            {% include 'bkimportar_progsec.html' %}
-            </dl>
+        <div id="info_web_link" style="display: block;">
+            <fieldset>
+                <legend>Información para hacer visibles las programaciones en la web del centro</legend>
+                <p>Copia en la web el siguiente código:</p>
+                <pre>
+                    <span class="show_inline"><</span><span class="show_inline">iframe</span><span class="show_inline">&nbsp;</span><span
+                        class="show_inline">src="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"><</span><span
+                        class="show_inline">/iframe></span>
+                </pre>
+            </fieldset>
         </div>
-
         <div id="formulario_crear" style="display: none;">
             <div class="row">
                 <div class="columns large-5">
@@ -98,24 +99,27 @@
 
 {% block final %}
     <script>
-    var texto_editor;
-    function comprueba_cambio_texto(texto, progsec, campo) {
-        if (texto == texto_editor) {
-            $.post("/progsecundaria/", {
-                    action: 'update_texto',
-                    id: progsec,
-                    texto: texto_editor,
-                    campo: campo
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
+        habilita(['s_times-rectangle',]);
+
+        var texto_editor;
+
+        function comprueba_cambio_texto(texto, progsec, campo) {
+            if (texto == texto_editor) {
+                $.post("/progsecundaria/", {
+                        action: 'update_texto',
+                        id: progsec,
+                        texto: texto_editor,
+                        campo: campo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
         }
-    }
 
         {% comment %}
             config = {
@@ -157,7 +161,7 @@
             {#habilita(['s_search']);#}
             {% if g_e|has_permiso:"crea_programaciones" %}
                 {#habilita(['s_plus', 's_link']);#}
-                habilita(['s_plus', 's_upload']);
+                habilita(['s_plus',]);
                 $('#plus_sign').click(function (event) {
                     event.preventDefault();
                     $('#formulario_crear').toggle();
@@ -243,6 +247,37 @@
                                         setTimeout(function () {
                                             show_mensajes({
                                                 title: '<i class="fa fa-warning"></i> No es posible el borrado',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.recuperar_progsec', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Recuperar esta programación didáctica?',
+                    texto: 'Si aceptas, la programación se recuperará y podrá ser editada de nuevo', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Recuperar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", {action: 'recuperar_progsec', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#list_progsec').html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible la recuperación',
                                                 texto: data.msg
                                             });
                                         }, 500);
@@ -549,7 +584,15 @@
             $('body').on('change', '.select_tipo', function () {
                 var id = $(this).data('progsec');
                 var tipo = $(this).val();
-                $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo},
+                if (tipo == 'ACS' || tipo == 'AC') {
+                    $('.ajuste_competencial').show();
+                    var grados_100 = 'N';
+                } else {
+                    $('.ajuste_competencial').hide();
+                    var grados_100 = 'Y';
+                    $('.grado_cep').text(100);
+                }
+                $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo, grados_100: grados_100},
                     function (data) {
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
@@ -560,6 +603,32 @@
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });
+            });
+
+            var funcion_tiempo_espera_update_texto;
+            $('body').on('click', '.mod_grado_cep', function () {
+                clearTimeout(funcion_tiempo_espera_update_texto);
+                var progsec = $(this).data('progsec');
+                var tipo = $(this).data('tipo');
+                var cep = $(this).data('cep');
+                var el_valor = $('#cep_grado' + cep);
+                var valor = parseInt(el_valor.text());
+                if (tipo === 'minus') {
+                    valor = (valor - 5 < 0) ? 0 : valor - 5;
+                } else {
+                    valor = (valor + 5 > 100) ? 100 : valor + 5;
+                }
+                el_valor.text(valor);
+                funcion_tiempo_espera_update_texto = setTimeout(function () {
+                    $.post("/progsecundaria/", {action: 'mod_grado_cep', progsec: progsec, cep: cep, valor: valor},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 800);
             });
 
             $('body').on('change', '.select_departamento', function () {
@@ -595,6 +664,37 @@
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.miembros_departamento', function () {
+                var id = $(this).data('progsec');
+                var ges = $(this).val();
+                $.post("/progsecundaria/", {action: 'add_docprogsec', id: id, ges: ges},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            {#$('body').on('change', '.alumno_destinatario', function (e) {#}
+            $('body').on('change.select2', '.alumno_destinatario', function (e) {
+                var progsec = $(this).data('progsec');
+                var alumno = $(this).val();
+                $.post("/progsecundaria/", {
+                        action: 'alumno_destinatario',
+                        progsec: progsec,
+                        alumno: alumno
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
                         }
                     });
             });
@@ -692,35 +792,6 @@
                 $('#action').val('pdf_progsec');
                 document.getElementById('{{formname}}').submit();
             });
-
-            $('#Contenido').on('click', '.backup_progsec', function (e) { {# sag #}
-                    e.preventDefault();
-                    $('#action').val('backup_progsec');
-                    document.getElementById('{{formname}}').submit();
-                });
-
-            $("body").on('click', '#upload_sign', function (e) { {# sag #}
-                $("#bk_cargar_fichero_progsec").toggle("slow", function(){
-                    if($("#bk_cargar_fichero_progsec").is(":visible")){
-                        habilita(['s_check']);
-                    } else {
-                        habilita(['h_check']);
-                    }
-                });
-            });
-
-            $("body").on('click', '#check_sign', function (e) { {# sag #}
-                e.preventDefault();
-                if ($("#file_bkimportar").val()) {
-                    $('#action').val('bk_importar_progsec');
-                    document.getElementById('{{formname}}').submit();
-                } else {
-                    show_mensajes({
-                        title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
-                            'subir un archivo primero debes cargarlo pulsando en "Seleccionar archivo"'
-                    })
-                }
-            })
 
             {% comment %}
                 $("body").on('keyup', '#busca_progsec', function (e) {
@@ -834,6 +905,26 @@
                 texto: 'No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.'
             })
         {% endif %}
+
+        {# Recuperar programaciones borradas #}
+        $('#times-rectangle_sign').click(function (event) {
+            event.preventDefault();
+            $.post("/progsecundaria/", {action: 'programaciones_borradas'},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_progsec').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+            {#$('#formulario_crear').toggle();#}
+            {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+            {#setTimeout(function () {#}
+            {#    $('#curso_progsec').select2();#}
+            {#    $('#areamateria_progsec').select2();#}
+            {# }, 100); #}
+        });
     </script>
 
 {% endblock %}

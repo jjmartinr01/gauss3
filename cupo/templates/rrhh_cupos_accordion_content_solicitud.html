@@ -1,0 +1,26 @@
+<thead style="width: 100%;">
+<tr>
+    <th>Cuerpo</th>
+    <th>Especialidad</th>
+    <th>Jornada</th>
+    <th>Bilingüe</th>
+    <th>Itinerante</th>
+    <th>No afín</th>
+    <th>Vacante</th>
+    <th>Observaciones visibles</th>
+    <th>Observaciones ocultas</th>
+</tr>
+</thead>
+{% for s in cupo.solicitud_interinos %}
+    <tr>
+        <td title="{{ s.profesorado.especialidad.nombre }}">{{ s.profesorado.especialidad.cod_cuerpo }}</td>
+        <td title="{{ s.profesorado.especialidad.nombre }}">{{ s.profesorado.especialidad.cod_espec }}</td>
+        <td title="{{ s.get_jornada_display }}">{{ s.jornada }}</td>
+        <td>{% if s.bilingue %}<span style="color:green"><b>Sí</b></span> {% else %}No{% endif %}</td>
+        <td>{% if s.itinerante %}<span style="color:green"><b>Sí</b></span> {% else %}No{% endif %}</td>
+        <td>{% if s.noafin %}<span style="color:green"><b>Sí</b></span> {% else %}No{% endif %}</td>
+        <td>{% if s.vacante %}<span style="color:green"><b>Sí</b></span> {% else %}No{% endif %}</td>
+        <td>{{ s.observaciones }}</td>
+        <td>{{ s.observaciones_ocultas }}</td>
+    </tr>
+{% endfor %}

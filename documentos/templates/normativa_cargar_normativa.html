@@ -14,14 +14,28 @@
         </label>
     </div>
 </div>
+
 <div class="row">
     <div class="columns large-12">
         <label title="Seleccione los apartados normativos con los que está relacionada esta normativa">
-            <b>Seleccione los apartados normativos</b>
-            <select id="etiquetas_cargar_normativa" multiple>
-                {#                    <option value="">-------</option>#}
+            <b>Seleccione los apartados normativos asociados a la normativa</b>
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12" id="list_apartados_normativos">
+        {% for e in normativa.etiquetas.all %}
+            {% include "normativa_cargar_normativa_apartados.html" %}
+        {% endfor %}
+    </div>
+</div>
+<div class="row" style="margin-top: 3px;">
+    <div class="columns large-12">
+        <label>
+            <select id="etiquetas_cargar_normativa" data-normativa="{{ normativa.id }}">
+                <option value="">-------</option>
                 {% for etiqueta in etiquetas %}
-                    <option value="{{ etiqueta.id }}" {% if etiqueta in normativa.etiquetas.all %}selected{% endif %}>
+                    <option value="{{ etiqueta.id }}">
                         {{ etiqueta.nombre }}
                     </option>
                 {% endfor %}
@@ -29,6 +43,31 @@
         </label>
     </div>
 </div>
+{#<div class="row" id="especialidades_edit{{ cupo.id }}">#}
+{#</div>#}
+
+{% comment %}
+    <div class="row">
+        <div class="columns large-12">
+            <label title="Seleccione los apartados normativos con los que está relacionada esta normativa">
+                <b>Seleccione los apartados normativos</b>
+                <select id="etiquetas_cargar_normativa" multiple>
+                    {#                    <option value="">-------</option>#}
+                    {% for etiqueta in etiquetas %}
+                        <option value="{{ etiqueta.id }}"
+                                {% if etiqueta in normativa.etiquetas.all %}selected{% endif %}>
+                            {{ etiqueta.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+{% endcomment %}
+
+
+
+
 <div class="row">
     <div class="columns large-12">
         <label title="Indique el texto de la normativa. Se usuará para realizar búsquedas.">
@@ -50,7 +89,7 @@
         {#        </label>#}
         {#    </div>#}
         <div class="columns large-6">
-            <label title="Selecciona el archivo almacenado en tu ordenador"><b>Selecciona el archivo</b>
+            <label title="Seleccione el archivo almacenado en su ordenador"><b>Seleccione el archivo</b>
                 <input type="file" id="fichero_cargar_normativa">
             </label>
         </div>
@@ -78,3 +117,19 @@
         </div>
     </div>
 {% endif %}
+
+<script>
+    setTimeout(function () {
+        $('#etiquetas_cargar_normativa').select2({
+            "placeholder": "Escribe parte del nombre del apartado normativo",
+            "language": {
+                "noResults": function () {
+                    return "No hay coincidencias. <a href='#' id='select_add_new_etiqueta' class='button tiny info right'>Crear apartado</a>";
+                }
+            },
+            "escapeMarkup": function (markup) {
+                return markup;
+            }
+        });
+    }, 200);
+</script>

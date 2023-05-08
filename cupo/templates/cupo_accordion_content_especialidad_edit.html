@@ -2,44 +2,46 @@
 <table style="width: 100%;">
     <thead>
     <tr>
-        <th>Nombre</th>
-        <th>Cód. Cuerpo</th>
-        <th>Cód. Especialidad</th>
-        <th>Departamento</th>
+        <th style="width: 32%;">Nombre</th>
+        <th style="width: 34%;">Cód. Cuerpo</th>
+        <th style="width: 34%;">Cód. Especialidad</th>
+        {#        <th>Departamento</th>#}
     </tr>
     </thead>
     {% for e in cupo.especialidadcupo_set.all %}
         <tr>
-            <td>
-                <input type="text" class="espec_edit" data-campo="nombre" data-espec="{{ e.id }}"
-                       value="{{ e.nombre }}">
+            <td style="padding-top: 25px;width: 32%">
+                {#                <input type="text" class="espec_edit" data-campo="nombre" data-espec="{{ e.id }}"#}
+                {#                       value="{{ e.nombre }}">#}
+                {{ e.nombre }}
             </td>
-            <td>
-                <select data-espec="{{ e.id }}" class="espec_edit" data-campo="cod_cuerpo" data-espec="{{ e.id }}">
-                    {% if e.cod_cuerpo %}
-                        <option value="{{ e.cod_cuerpo }}">{{ e.cod_cuerpo }}</option>
-                    {% else %}
-                        <option value="">------</option>
-                    {% endif %}
-                    <option value="0590">0590</option>
-                    <option value="0591">0591</option>
-                    <option value="0592">0592</option>
-                    <option value="0593">0593</option>
-                    <option value="0594">0594</option>
-                    <option value="0595">0595</option>
-                    <option value="0596">0596</option>
-                    <option value="0597">0597</option>
-                    <option value="0598">0598</option>
+            <td style="width: 34%;">
+                <select data-espec="{{ e.id }}" class="espec_edit" data-campo="cod_cuerpo"
+                        data-espec="{{ e.id }}">
+                    <option value="">-----------</option>
+                    {% for c in CUERPOS %}
+                        <option value="{{ c.codigo }}" {% if c.codigo == e.cod_cuerpo %}selected{% endif %}>
+                            {{ c.codigo }} - {{ c.nombre }}
+                        </option>
+                    {% endfor %}
                 </select>
             </td>
-            <td>
-                <input type="text" class="espec_edit" data-campo="cod_espec" data-espec="{{ e.id }}"
-                       value="{{ e.cod_espec }}">
+            <td style="width: 34%;">
+                <select data-espec="{{ e.id }}" class="espec_edit" data-campo="cod_espec"
+                        data-espec="{{ e.id }}" id="select_especialidad{{ e.id }}">
+                    {% include "cupo_accordion_content_especialidad_edit_options.html" %}
+                </select>
             </td>
-            <td>
-                <input type="text" class="espec_edit" data-campo="dep" data-espec="{{ e.id }}"
-                       value="{{ e.dep }}">
-            </td>
+            {#            <td style="padding-top: 25px;">#}
+            {#                <input type="text" class="espec_edit" data-campo="dep" data-espec="{{ e.id }}"#}
+            {#                       value="{{ e.dep }}">#}
+            {#            </td>#}
         </tr>
     {% endfor %}
 </table>
+
+<script>
+    setTimeout(function () {
+        $('.espec_edit').select2();
+    }, 300);
+</script>

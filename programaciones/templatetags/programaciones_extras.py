@@ -25,9 +25,9 @@ def get_estadistica(objeto):
     psec_def = psecs.filter(tipo='DEF')
     psec_otr = psecs.exclude(
         id__in=[*psec_bor.values_list('id', flat=True)] + [*psec_def.values_list('id', flat=True)])
-    saprens = SitApren.objects.filter(sbas__psec__in=psecs)
-    asaprens = ActSitApren.objects.filter(sapren__in=saprens)
-    procs = InstrEval.objects.filter(asapren__in=asaprens)
+    saprens = SitApren.objects.filter(sbas__psec__in=psecs, borrado=False)
+    asaprens = ActSitApren.objects.filter(sapren__in=saprens, borrado=False)
+    procs = InstrEval.objects.filter(asapren__in=asaprens, borrado=False)
     return {'n_psecs': psecs.count(), 'n_psec_bor': psec_bor.count(), 'n_psec_def': psec_def.count(),
             'n_psec_otr': psec_otr.count(), 'n_saprens': saprens.count(), 'n_procs': procs.count(),
             'n_asaprens': asaprens.count()}

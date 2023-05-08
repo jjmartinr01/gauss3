@@ -16,6 +16,10 @@ class ProgSecAdminForm(forms.ModelForm):
         try:
             cargo_docente = Cargo.objects.filter(clave_cargo='g_docente', entidad=self.instance.gep.ge.ronda.entidad)
             self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda, cargos__in=cargo_docente)
+            try:
+                self.fields['alumno'].queryset = Gauser_extra.objects.filter(id=self.instance.alumno.id)
+            except:
+                self.fields['alumno'].queryset = Gauser_extra.objects.none()
         except:
             self.fields['gep'].queryset = Gauser_extra_programaciones.objects.none()
 class ProgSecAdmin(admin.ModelAdmin):
