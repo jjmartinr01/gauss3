@@ -1363,7 +1363,7 @@ def edit_cupo(request, cupo_id):
                 q2 = Q(profesorado__especialidad__cod_cuerpo='')
                 con1 = interinos.filter(q1 | q2).count() > 0
                 con2 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0
-                if not con1 or True:
+                if not con1:
                     if con2:
                         dce = get_dce_cupo(g_e)
                         c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
