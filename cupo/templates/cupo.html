@@ -324,7 +324,7 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        if (data.html){
+                        if (data.html) {
                             $('#select_especialidad' + espec).html(data.html);
                         }
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -735,14 +735,14 @@
             $('body').on('click', '.desbloquear_cupo', function (e) {
                 e.preventDefault();
                 var cupo = $(this).data('cupo');
-                $('#editar' + cupo).show();
-                $('#borrar' + cupo).show();
-                $('#bloqueado' + cupo).removeClass('fa-lock').addClass('fa-unlock');
-                $('#li_desbloquea' + cupo).hide();
-                $('#li_bloquea' + cupo).show();
                 $.post("/ajax_cupo/", {action: 'bloquea_cupo', cupo: cupo, bloquear: false},
                     function (data) {
                         if (data.ok) {
+                            $('#editar' + cupo).show();
+                            $('#borrar' + cupo).show();
+                            $('#bloqueado' + cupo).removeClass('fa-lock').addClass('fa-unlock');
+                            $('#li_desbloquea' + cupo).hide();
+                            $('#li_bloquea' + cupo).show();
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -753,14 +753,14 @@
             $('body').on('click', '.bloquear_cupo', function (e) {
                 e.preventDefault();
                 var cupo = $(this).data('cupo');
-                $('#editar' + cupo).hide();
-                $('#borrar' + cupo).hide();
-                $('#bloqueado' + cupo).removeClass('fa-unlock').addClass('fa-lock');
-                $('#li_desbloquea' + cupo).show();
-                $('#li_bloquea' + cupo).hide();
                 $.post("/ajax_cupo/", {action: 'bloquea_cupo', cupo: cupo, bloquear: true},
                     function (data) {
                         if (data.ok) {
+                            $('#editar' + cupo).hide();
+                            $('#borrar' + cupo).hide();
+                            $('#bloqueado' + cupo).removeClass('fa-unlock').addClass('fa-lock');
+                            $('#li_desbloquea' + cupo).show();
+                            $('#li_bloquea' + cupo).hide();
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -770,41 +770,41 @@
         {% endif %}
 
         {% if cupo_selected %}
-            setTimeout(function(){
+            setTimeout(function () {
                 var id = {{cupo_selected}};
-            if ($('#circle' + id).hasClass('fa-plus-circle')) {
-                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/ajax_cupo/", {action: 'open_accordion', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        console.log('El id: ', id);
-                                        $('#panel' + id).html(data.html);
-                                        $('#cupo').val(id);
-                                        inicializar_select2();
-                                        setTimeout(function () {
-                                            $(document).foundation();
-                                        }, 1000);
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
+                if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                    $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                    $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                    window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                    $.post("/ajax_cupo/", {action: 'open_accordion', id: id},
+                        function (data) {
+                            if (data.ok) {
+                                console.log('El id: ', id);
+                                $('#panel' + id).html(data.html);
+                                $('#cupo').val(id);
+                                inicializar_select2();
+                                setTimeout(function () {
+                                    $(document).foundation();
+                                }, 1000);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                }
             }, 200);
 
-                {#$.post("/ajax_cupo/", {action: 'open_accordion', id: {{cupo_selected}}},#}
-                {#    function (data) {#}
-                {#        if (data.ok) {#}
-                {#            $('#panel{{ cupo_selected }}').html(data.html);#}
-                {#            $('#cupo').val({{cupo_selected}});#}
-                {#            window.scrollTo(0, $('#accordion{{ cupo_selected }}').offset().top + 200);#}
-                {#            $("#update_ok").show().delay(1500).fadeOut();#}
-                {#        } else {#}
-                {#            $("#update_error").show().delay(1500).fadeOut();#}
-                {#        }#}
-                {#    });#}
+            {#$.post("/ajax_cupo/", {action: 'open_accordion', id: {{cupo_selected}}},#}
+            {#    function (data) {#}
+            {#        if (data.ok) {#}
+            {#            $('#panel{{ cupo_selected }}').html(data.html);#}
+            {#            $('#cupo').val({{cupo_selected}});#}
+            {#            window.scrollTo(0, $('#accordion{{ cupo_selected }}').offset().top + 200);#}
+            {#            $("#update_ok").show().delay(1500).fadeOut();#}
+            {#        } else {#}
+            {#            $("#update_error").show().delay(1500).fadeOut();#}
+            {#        }#}
+            {#    });#}
         {% endif %}
     </script>
 {% endblock %}

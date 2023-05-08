@@ -97,17 +97,26 @@ def cupo(request):
                 crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
         elif request.POST['action'] == 'genera_informeRRHH':
             cupo = Cupo.objects.get(id=request.POST['cupo'])
-            if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
-                dce = get_dce_cupo(g_e)
-                c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
-                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-                fich = open(dce.url_pdf, 'rb')
-                response = HttpResponse(fich, content_type='application/pdf')
-                nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
-                return response
+            interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT')
+            q1 = Q(profesorado__especialidad__cod_espec='')
+            q2 = Q(profesorado__especialidad__cod_cuerpo='')
+            con1 = interinos.filter(q1 | q2).count() > 0
+            con2 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0
+            if not con1:
+                if con2:
+                    dce = get_dce_cupo(g_e)
+                    c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
+                    pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                    fich = open(dce.url_pdf, 'rb')
+                    response = HttpResponse(fich, content_type='application/pdf')
+                    nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                    response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+                    return response
+                else:
+                    crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
             else:
-                crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+                msg = 'Hay especialidades en las que no se ha configurado el código del cuerpo o de la propia especialidad'
+                crear_aviso(request, False, msg)
         elif request.POST['action'] == 'genera_excel':
             cupo = Cupo.objects.get(id=request.POST['cupo'])
             if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
@@ -1348,13 +1357,36 @@ def edit_cupo(request, cupo_id):
                 response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
                 return response
             elif request.POST['action'] == 'genera_informeRRHH':
-                c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
-                pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-                fich = open(dce.url_pdf, 'rb')
-                response = HttpResponse(fich, content_type='application/pdf')
-                nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
-                return response
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT')
+                q1 = Q(profesorado__especialidad__cod_espec='')
+                q2 = Q(profesorado__especialidad__cod_cuerpo='')
+                con1 = interinos.filter(q1 | q2).count() > 0
+                con2 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0
+                if not con1 or True:
+                    if con2:
+                        dce = get_dce_cupo(g_e)
+                        c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
+                        pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                        fich = open(dce.url_pdf, 'rb')
+                        response = HttpResponse(fich, content_type='application/pdf')
+                        nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                        response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+                        return response
+                    else:
+                        crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+                else:
+                    m1 = '<h1>Aviso <i class="fa fa-warning"></i></h1>'
+                    m2 = '<p>Hay especialidades en las que no se ha configurado el código del cuerpo o el código de la propia especialidad.</p>'
+                    msg = m1 + m2
+                    crear_aviso(request, False, msg)
+                # c = render_to_string('cupoRRHH2pdf.html', {'cupo': cupo})
+                # pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+                # fich = open(dce.url_pdf, 'rb')
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # nombre = 'cupoRRHH%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+                # return response
 
         cursos = CursoCupo.objects.filter(cupo=cupo)
         cursos = sorted(cursos, key=lambda curso: clave_ex2int(curso))

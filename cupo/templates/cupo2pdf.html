@@ -64,9 +64,13 @@
                 <tr>
                     <td colspan="17" style="border-top: solid 1px #B4B5B0;"></td>
                 </tr>
-
             {% endfor %}
         {% endfor %}
+    <tr>
+        <td colspan="11"><b>Número total de periodos/horas:</b></td>
+        <td style="text-align:center;"><b>{{ filtro|total_horas_filtro }}</b></td>
+        <td colspan="5">&nbsp;</td>
+    </tr>
     </table>
 {% endfor %}
 

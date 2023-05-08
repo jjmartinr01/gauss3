@@ -168,6 +168,8 @@
                         $('#materias_list').html(data.materias);
                         $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
                         $('#especialidad option[value=empty]').prop('selected', true);
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -217,6 +219,7 @@
                     if (data.ok) {
                         $('#materias_list').html(data.materias);
                         $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
+                        calc_num_periodos_total()
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -272,6 +275,8 @@
                                 $(this).trigger('keyup');
                             });
                             $('#num_alumnos_curso').val('');
+                            calc_num_periodos_total();
+                            calc_num_periodos_total_grupos();
                         }
                     }
                 });
@@ -304,6 +309,8 @@
                                 $(this).trigger('keyup');
                             });
                             $('#max_num_alumnos_curso').val('');
+                            calc_num_periodos_total();
+                            calc_num_periodos_total_grupos();
                         }
                     }
                 });
@@ -336,6 +343,8 @@
                                 $(this).trigger('keyup');
                             });
                             $('#min_num_alumnos_curso').val('');
+                            calc_num_periodos_total();
+                            calc_num_periodos_total_grupos();
                         }
                     }
                 });
@@ -372,6 +381,8 @@
                         $('#row' + materia).after(data.materias);
                         $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
                         Foundation.libs.dropdown.close($('#drop' + materia));
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -385,6 +396,8 @@
                     if (data.ok) {
                         $('#row' + materia).remove();
                         $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -408,6 +421,8 @@
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
                             $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -490,6 +505,8 @@
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
                             $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -514,6 +531,8 @@
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
                             $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -538,6 +557,8 @@
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
                             $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
                         console.log(data.error);
@@ -559,6 +580,8 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                         $('#horas_media' + data.curso).html(data.horas_media);
+                        calc_num_periodos_total();
+                        calc_num_periodos_total_grupos();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
@@ -668,6 +691,41 @@
                 });
         });
 
+        function calc_num_periodos_total() {
+            setTimeout(
+                function () {
+                    var num_periodos_total = 0;
+                    $('.num_periodos').each(
+                        function () {
+                            num_periodos_total = num_periodos_total + parseFloat($(this).text());
+                        }
+                    );
+                    $('#div_num_periodos_total').val(num_periodos_total);
+                }, 300);
+        }
+
+        {# Llamar a la función la primera vez que se carga la página: #}
+        calc_num_periodos_total();
+
+        function calc_num_periodos_total_grupos() {
+            setTimeout(
+                function () {
+                    var num_periodos_total = 0;
+                    var num_periodos = 0;
+                    var num_grupos = 0;
+                    $('.num_periodos').each(
+                        function () {
+                            num_periodos = parseFloat($(this).text());
+                            num_grupos= parseFloat($(this).siblings('.num_grupos').text());
+                            num_periodos_total = num_periodos_total + num_periodos * num_grupos;
+                        }
+                    );
+                    $('#div_num_periodos_total_grupos').val(num_periodos_total);
+                }, 300);
+        }
+
+        {# Llamar a la función la primera vez que se carga la página: #}
+        calc_num_periodos_total_grupos();
 
         {% comment %}
             function isScrolledIntoView(elem) {

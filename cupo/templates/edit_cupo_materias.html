@@ -89,6 +89,18 @@
     <br>
     <hr>
     <div class="row">
+        <div class="columns large-5">
+            <label><b>Número total de periodos por grupo:</b>
+                <input type="number" min="0" max="500" id="div_num_periodos_total" readonly="readonly">
+            </label>
+        </div>
+    <div class="columns large-7">
+            <label><b>Número total de periodos entre todos los grupos:</b>
+                <input type="number" min="0" max="1500" id="div_num_periodos_total_grupos" readonly="readonly">
+            </label>
+        </div>
+    </div>
+    <div class="row">
         <div class="columns large-2">
             <label title="Escribe aquí el número total de alumnos en {{ materias.0.curso_cupo.nombre }}"><b>Alumnos</b>
                 <input data-curso="{{ materias.0.curso_cupo.id }}" class="num_total_alumnos_curso" type="number" min="0"

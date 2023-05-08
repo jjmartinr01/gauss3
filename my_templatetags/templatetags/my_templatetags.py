@@ -110,6 +110,14 @@ def materias_filtro(filtro):
     materias_cupo = Materia_cupo.objects.filter(cupo=filtro.cupo, nombre__icontains=filtro.filtro)
     return materias_cupo
 
+@register.filter
+def total_horas_filtro(filtro):
+    materias_cupo = Materia_cupo.objects.filter(cupo=filtro.cupo, nombre__icontains=filtro.filtro)
+    horas = 0
+    for m in materias_cupo:
+        horas += m.horas * m.num_grupos
+    return horas
+
 
 ###########
 
