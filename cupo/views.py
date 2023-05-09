@@ -445,13 +445,13 @@ def ajax_cupo(request):
                         else:
                             if 'Apoyo' in pxls.actividad or 'ACNEE' in pxls.actividad:
                                 nombre = '%s (%s)' % (pxls.actividad, pxls.materia)
-                                Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=nombre,
+                                Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=nombre[:119],
                                                                    horas=horas, clave_ex=pxls.x_actividad,
                                                                    especialidad=ec, min_num_alumnos=1,
                                                                    num_alumnos=3, max_num_alumnos=mn)
                             else:
                                 Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, clave_ex=pxls.x_actividad,
-                                                                   horas=horas, especialidad=ec, nombre=nombre,
+                                                                   horas=horas, especialidad=ec, nombre=nombre[:119],
                                                                    max_num_alumnos=mn, num_alumnos=cc.num_alumnos)
                     elif pxls.x_actividad in ['2', '614']:  # Esto sucede en las tutorías
                         eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
@@ -478,7 +478,7 @@ def ajax_cupo(request):
                                 nombre = nombres[pxls.x_actividad]
                             except:
                                 nombre = pxls.actividad
-                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=None, nombre=nombre,
+                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=None, nombre=nombre[:119],
                                                         horas=1, clave_ex=pxls.x_actividad, especialidad=ec,
                                                         min_num_alumnos=1, max_num_alumnos=100)
 

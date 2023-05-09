@@ -692,6 +692,13 @@
                 console.log('cupo', $('#cupo').val(), $(this).data('cupo'));
                 document.getElementById("{{ formname }}").submit();
             });
+            $('body').on('click', '.pdf_cupo_rrhh', function (e) {
+                e.preventDefault();
+                $('#action').val('genera_informeRRHH');
+                $('#cupo').val($(this).data('cupo'));
+                console.log('cupo', $('#cupo').val(), $(this).data('cupo'));
+                document.getElementById("{{ formname }}").submit();
+            });
             $('body').on('click', '.xls_cupo', function (e) {
                 e.preventDefault();
                 $('#action').val('genera_excel');

@@ -24,9 +24,12 @@
                 <li title="Generar el informe en pdf del cupo">
                     <a href="#" class="button pdf_cupo"
                        data-cupo="{{ cupo.id }}"><i class="fa fa-file-pdf-o"></i> PDF</a></li>
-                <li title="Generar el xls del cupo">
-                    <a href="#" class="button xls_cupo"
-                       data-cupo="{{ cupo.id }}"><i class="fa fa-file-excel-o"></i> XLS</a></li>
+{#                <li title="Generar el xls del cupo">#}
+{#                    <a href="#" class="button xls_cupo"#}
+{#                       data-cupo="{{ cupo.id }}"><i class="fa fa-file-excel-o"></i> XLS</a></li>#}
+                <li title="Generar el informe en pdf para RRHH">
+                    <a href="#" class="button pdf_cupo_rrhh"
+                       data-cupo="{{ cupo.id }}"><i class="fa fa-file-text-o"></i> RRHH</a></li>
             {% endif %}
             {% if request.session.gauser_extra|has_permiso:'bloquea_cupos' %}
                 <li title="Desbloquea el cupo para que otros puedan modificarlo" id="li_desbloquea{{ cupo.id }}"

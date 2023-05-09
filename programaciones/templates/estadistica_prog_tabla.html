@@ -50,6 +50,34 @@
             </tr>
         {% endwith %}
         </tbody>
+        <thead>
+        <tr>
+            <th colspan="8" class="thtd" style="position: relative;">
+                &nbsp;
+            </th>
+        </tr>
+        <tr>
+            <th class="thtd" colspan="3">Área/Materia/Módulo</th>
+            <th class="thtd" colspan="2">Tipo</th>
+            <th class="thtd">Nº de SAPs</th>
+            <th class="thtd">Nº actividades</th>
+            <th class="thtd">Nº proc. evaluación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for psec in objeto|get_programaciones %}
+            <tr>
+                <td class="thtd" title="Autor: {{ psec.gep.ge.gauser.get_full_name }} -- Nombre: {{ psec.nombre }}"
+                    colspan="3">
+                    <b>{{ psec.areamateria.nombre }}</b> ({{ psec.areamateria.get_curso_display }})
+                </td>
+                <td class="thtd" colspan="2">{{ psec.get_tipo_display }}</td>
+                <td class="thtd">{{ psec.get_saps|length }}</td>
+                <td class="thtd">{{ psec.get_asaprens|length }}</td>
+                <td class="thtd">{{ psec.get_instrevals|length }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
     </table>
 {% else %}
     <table style="width: 100%">

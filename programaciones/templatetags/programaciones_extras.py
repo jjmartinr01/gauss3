@@ -32,6 +32,9 @@ def get_estadistica(objeto):
             'n_psec_otr': psec_otr.count(), 'n_saprens': saprens.count(), 'n_procs': procs.count(),
             'n_asaprens': asaprens.count()}
 
+@register.filter
+def get_programaciones(e): #'e' es 'Entidad'
+    return ProgSec.objects.filter(pga__ronda=e.ronda, borrado=False).exclude(tipo='BOR').order_by('areamateria__curso')
 
 @register.filter
 def cbarra2br(texto):

@@ -10,6 +10,7 @@
     h1 {
         text-align: center;
     }
+
     h3 {
         text-align: center;
     }
@@ -33,6 +34,11 @@
         background: #B4B5B0;
     }
 </style>
+{% if not cupo.bloqueado %}
+    <h1 style="position: absolute;top:300px;color:grey;font-size: 7em;z-index: -1;">Este documento es un borrador</h1>
+    <h1 style="position: absolute;top:1050px;color:red;z-index: -1;">Para imprimir el documento definitivo
+        es necesario bloquear el cupo.</h1>
+{% endif %}
 <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Solicitud de profesores interinos de cupo</h1>
 <h3>{{ cupo.ronda.entidad.name }}</h3>
 <table style="width:100%;">
@@ -46,7 +52,8 @@
     {% ifchanged p.profesorado.especialidad %}
     <tr>
         <td style="border-top: solid 1px darkgray;"
-            colspan="5"><b>{{ p.profesorado.especialidad.nombre }}</b> &horbar;&horbar; {{ p.profesorado.especialidad.cod_cuerpo }} -
+            colspan="5"><b>{{ p.profesorado.especialidad.nombre }}</b>
+            &horbar;&horbar; {{ p.profesorado.especialidad.cod_cuerpo }} -
             {{ p.profesorado.especialidad.cod_espec }}</td>
     </tr>
     {% else %}

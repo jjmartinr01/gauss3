@@ -808,6 +808,18 @@ class ProgSec(models.Model):
         total_valores = ceps.aggregate(models.Sum('valor'))['valor__sum']
         return {cep.id: str(round(cep.valor / total_valores * 100, 2)) for cep in ceps}
 
+    @property
+    def get_saps(self):
+        return SitApren.objects.filter(sbas__psec=self, borrado=False)
+
+    @property
+    def get_asaprens(self):
+        return ActSitApren.objects.filter(sapren__in=self.get_saps, borrado=False)
+
+    @property
+    def get_instrevals(self):
+        return InstrEval.objects.filter(asapren__in=self.get_asaprens, borrado=False)
+
     def __str__(self):
         return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
 
