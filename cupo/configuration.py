@@ -77,4 +77,8 @@ PERMISOS = [{'code_nombre': 'crea_cupos',
              'nombre': 'Tiene permiso para cargar plantillas orgánicas desde Plantillas/Cupo',
              'menu': 'acceso_plantilla_organica'
              },
+            {'code_nombre': 'publica_cupo_para_rrhh',
+             'nombre': 'Tiene permiso para publicar el cupo y que sea leído en forma de csv por RRHH',
+             'menu': 'acceso_cupo_profesorado'
+             },
             ]

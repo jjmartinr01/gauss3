@@ -7,7 +7,7 @@ from django.utils.timezone import now
 
 from gauss.constantes import CARGOS_CENTROS
 from cupo.habilitar_permisos import Miembro_Equipo_Directivo
-from gauss.funciones import pass_generator, genera_nie
+from gauss.funciones import pass_generator, genera_nie, usuarios_ronda
 from autenticar.models import Gauser, Permiso, Menu_default
 from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento, Menu, \
     EspecialidadDocenteBasica, MiembroEDB
@@ -27,6 +27,7 @@ class Cupo(models.Model):
     ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la versión del cupo", max_length=150)
     bloqueado = models.BooleanField("¿Está bloqueado?", default=False)
+    pub_rrhh = models.BooleanField("¿Se publica para RRHH?", default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
@@ -34,6 +35,28 @@ class Cupo(models.Model):
         verbose_name_plural = 'Cupos de profesorado'
         ordering = ['-creado']
 
+    def puede_activarse_pub_rrhh(self, g_e):
+        cargo_inspector = Cargo.objects.get(entidad=self.ronda.entidad, clave_cargo='g_inspector_educacion')
+        gauser_inspectores = usuarios_ronda(self.ronda, cargos=[cargo_inspector]).values_list('gauser__id', flat=True)
+        con1 = g_e.gauser.id in gauser_inspectores
+        con2 = (self.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('publica_cupo_para_rrhh')
+        if con1 or con2:
+            interinos = Profesor_cupo.objects.filter(profesorado__cupo=self, tipo='INT')
+            q1 = Q(profesorado__especialidad__cod_espec='')
+            q2 = Q(profesorado__especialidad__cod_cuerpo='')
+            if interinos.filter(q1 | q2).count() == 0:
+                if self.bloqueado:
+                    return True, 'Se cumplen todas las condiciones.'
+                else:
+                    return False, 'El cupo debe estar bloqueado para activar la publicación.'
+            else:
+                msg = 'No es posible la publicación. Hay especialidades en las que no se ha configurado el código del cuerpo o el código de la propia especialidad.'
+                return False, msg
+        else:
+            return False, 'No tiene permisos suficientes. con1: %s, con2: %s' % (con1, con2)
+    @property
+    def es_posible_pdf_rrhh(self):
+        return self.bloqueado and self.pub_rrhh
     @property
     def solicitud_interinos(self):
         return Profesor_cupo.objects.filter(profesorado__cupo=self, tipo='INT')

@@ -16,8 +16,7 @@
         {% csrf_token %}
         <input type="hidden" id="action" name="action" value=""/>
         <input type="hidden" id="curso_actual" name="curso_actual" value=""/>
-        {#        <input type="hidden" id="especialidad" name="especialidad" value=""/>#}
-        {#        <input type="hidden" id="curso" name="curso" value=""/>#}
+        <input type="hidden" id="cupo_parcial" name="cupo_parcial" value=""/>
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Peticiones de cupo Recursos Humanos</strong></h4>
         </div>
@@ -109,6 +108,13 @@
             e.preventDefault();
             $('#curso_actual').val($(this).data('curso_actual'));
             $('#action').val('genera_csvRRHH');
+            document.getElementById("{{ formname }}").submit();
+        });
+
+        $('body').on('click', '.csv_parcial', function (e) {
+            e.preventDefault();
+            $('#cupo_parcial').val($(this).data('cupo'));
+            $('#action').val('genera_csvRRHH_parcial');
             document.getElementById("{{ formname }}").submit();
         });
     </script>

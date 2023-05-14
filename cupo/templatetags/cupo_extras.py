@@ -11,7 +11,18 @@ from estudios.models import Grupo, Curso
 
 register = Library()
 
-
+@register.filter
+def get_inspector(cupo):
+    try:
+        cargo_inspector = Cargo.objects.get(entidad=cupo.ronda.entidad, clave_cargo='g_inspector_educacion')
+        inspector = 'No ha sido elaborado por un/a Inspector/a'
+        for cp in cupo.cupopermisos_set.all():
+            ge = Gauser_extra.objects.get(gauser=cp.gauser, ronda=cupo.ronda)
+            if cargo_inspector in ge.cargos.all():
+                inspector = cp.gauser.get_full_name()
+        return 'Inspector/a: ' + inspector
+    except:
+        return 'No ha sido elaborado por un/a Inspector/a'
 @register.filter
 def get_especialidades(cod_cuerpo):
     return ESPECS[cod_cuerpo]

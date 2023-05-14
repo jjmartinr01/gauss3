@@ -243,12 +243,13 @@ def ajax_cupo(request):
                 cupo = Cupo.objects.get(id=request.POST['id'])
                 cexs = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                             clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
+                activa_pub_rrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
                 html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
                                                                         'especialidades_existentes': ESPECIALIDADES,
-                                                                        'request': request})
-                return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+                                                                        'request': request, 'aprrhh': activa_pub_rrhh})
+                return JsonResponse({'ok': True, 'html': html, 'msg': msg})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
                 crea_departamentos(g_e.ronda)
@@ -593,13 +594,52 @@ def ajax_cupo(request):
                     bloquear = request.POST['bloquear']
                     logger.info('%s, bloquea_cupo %s %s' % (g_e, cupo.id, bloquear))
                     cupo.bloqueado = {'true': True, 'false': False}[bloquear]
+                    if not cupo.bloqueado:
+                        cupo.pub_rrhh = False
                     cupo.save()
-                    return JsonResponse({'ok': True})
+                    aprrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
+                    html = render_to_string('cupo_accordion_content_pubrrhh.html', {'aprrhh': aprrhh,
+                                                                                    'cupo': cupo})
+                    return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except:
                 return JsonResponse({'ok': False})
-
+        elif action == 'checkbox_rrhh':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                es_posible, msg = cupo.puede_activarse_pub_rrhh(g_e)
+                if es_posible:
+                    cupo.pub_rrhh = not cupo.pub_rrhh
+                    cupo.save()
+                    aprrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
+                    html = render_to_string('cupo_accordion_content_pubrrhh.html', {'aprrhh': aprrhh,
+                                                                                    'cupo': cupo})
+                    logger.info('%s, publica RRHH cupo %s %s' % (g_e, cupo.id, cupo.pub_rrhh))
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': msg})
+                # cargo_inspector = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
+                # con1 = cargo_inspector in g_e.cargos.all()
+                # con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('publica_cupo_para_rrhh')
+                # if con1 or con2:
+                #     interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT')
+                #     q1 = Q(profesorado__especialidad__cod_espec='')
+                #     q2 = Q(profesorado__especialidad__cod_cuerpo='')
+                #     con1 = interinos.filter(q1 | q2).count() > 0
+                #     if not con1:
+                #         cupo.pub_rrhh = not cupo.pub_rrhh
+                #         cupo.save()
+                #         pub_rrhh = ['No', 'Sí'][cupo.pub_rrhh]
+                #         logger.info('%s, publica RRHH cupo %s %s' % (g_e, cupo.id, cupo.pub_rrhh))
+                #         return JsonResponse({'ok': True, 'pub_rrhh': pub_rrhh})
+                #     else:
+                #         msg = 'No es posible la publicación. Hay especialidades en las que no se ha configurado el código del cuerpo o el código de la propia especialidad.'
+                #         return JsonResponse({'ok': False, 'msg': msg})
+                # else:
+                #     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_filtro':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
@@ -1825,7 +1865,8 @@ def rrhh_cupos(request):
             try:
                 y = int(request.POST['id'])
                 curso = cursos_escolares['%s-%s' % (y+1, y+2)]
-                cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True)
+                cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True,
+                                            pub_rrhh=True)
                 html = render_to_string('rrhh_cupos_accordion_content.html', {'cupos': cupos, 'g_e': g_e, 'y': y})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
@@ -1840,13 +1881,24 @@ def rrhh_cupos(request):
         elif request.POST['action'] == 'genera_csvRRHH':
             y = int(request.POST['curso_actual'])
             curso = cursos_escolares['%s-%s' % (y + 1, y + 2)]
-            cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True)
+            cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True, pub_rrhh=True)
             csv_file = render_to_string('rrhh_cupos_accordion_content_solicitud_csv.csv', {'cupos': cupos})
             response = HttpResponse(csv_file, content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=Solicitud_cupo_%s-%s.csv' % (y + 1, y + 2)
             return response
-            # else:
-            #     crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+        elif request.POST['action'] == 'genera_csvRRHH_parcial':
+            cupo_parcial = Cupo.objects.filter(id=request.POST['cupo_parcial'], bloqueado=True, pub_rrhh=True)
+            try:
+                curso = slugify(cupo_parcial[0].curso_escolar_cupo)
+                centro = slugify(cupo_parcial[0].ronda.entidad.name)
+            except:
+                curso = 'curso_escolar'
+                centro = 'centro_educativo'
+            csv_file = render_to_string('rrhh_cupos_accordion_content_solicitud_csv.csv', {'cupos': cupo_parcial})
+            response = HttpResponse(csv_file, content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=Solicitud_cupo_%s-%s.csv' % (curso, centro)
+            return response
+
     return render(request, "rrhh_cupos.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',

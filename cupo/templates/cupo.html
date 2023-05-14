@@ -150,6 +150,17 @@
         </dl>
 
         <div id="especialidad_data"></div>
+        <div id="info_rrhh_modal" class="reveal-modal medium" data-reveal aria-labelledby="info_rrhh_modalTitle"
+             aria-hidden="true" role="dialog">
+            <h2 id="info_rrhh_modalTitle"><i class="fa fa-info-circle"></i> Información</h2>
+            <p>Para que esta opción esté activa se deben dar las siguientes condiciones:</p>
+            <ol>
+                <li>Debes tener un perfil "Inspector de Educación".</li>
+                <li>Todos los códigos de cuerpo y de especialidad deben estar asignados.</li>
+                <li>El cupo debe estar bloqueado.</li>
+            </ol>
+            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
     </form>
 {% endblock %}
 
@@ -750,6 +761,7 @@
                             $('#bloqueado' + cupo).removeClass('fa-lock').addClass('fa-unlock');
                             $('#li_desbloquea' + cupo).hide();
                             $('#li_bloquea' + cupo).show();
+                            $('#pub_rrhh' + cupo).html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -768,6 +780,7 @@
                             $('#bloqueado' + cupo).removeClass('fa-unlock').addClass('fa-lock');
                             $('#li_desbloquea' + cupo).show();
                             $('#li_bloquea' + cupo).hide();
+                            $('#pub_rrhh' + cupo).html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -813,5 +826,25 @@
             {#        }#}
             {#    });#}
         {% endif %}
+
+        $('body').on('click', '.checkbox_rrhh', function () {
+            var cupo = $(this).data('cupo');
+            $.post("/ajax_cupo/", {
+                    action: 'checkbox_rrhh',
+                    cupo: cupo
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#pub_rrhh' + cupo).html(data.html);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({'title': '<i class="fa fa-warning"></i> Error', 'texto': data.msg})
+                    }
+                });
+        });
+        $('body').on('click', '.info_pub_rrhh', function () {
+            $('#info_rrhh_modal').foundation('reveal', 'open');
+        });
     </script>
 {% endblock %}

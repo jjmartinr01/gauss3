@@ -1,5 +1,7 @@
 {% load entidades_extras %}
 {% load cupo_extras %}
+
+{% if cupos|length > 0 %}
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
@@ -15,7 +17,7 @@
             <li>
                 <a class="button csv_cupo small radius" data-curso_actual="{{ y }}"
                    title="Crear un archivo csv con la solicitud de cupo">
-                    <b><i class="fa fa-file-text-o"></i> Exportar CSV</b>
+                    <b><i class="fa fa-file-text-o"></i> Descargar CSV completo</b>
                 </a>
             </li>
         </ul>
@@ -29,13 +31,21 @@
             <td colspan="9" title="Haz click sobre el nombre del centro para deplegar la solicitud">
                 <a class="desplegar_solicitud" data-cupo="{{ cupo.id }}" data-abierto="0">
                     {{ cupo.ronda.entidad.name }} &horbar;&horbar; {{ cupo.solicitud_interinos|length }} solicitudes
+                    &horbar;&horbar; {{ cupo|get_inspector }}
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <span id="desplegada{{ cupo.id }}_0"><i class="fa fa-folder"></i></span>
                     <span style="display: none;" id="desplegada{{ cupo.id }}_1"><i class="fa fa-folder-open"></i></span>
                 </a>
+                <a class="right csv_parcial" title="Descargar CSV con el cupo de este centro" data-cupo="{{ cupo.id }}">
+                    &nbsp;&nbsp;<i class="fa fa-download"></i> CSV
+                </a>
+                <span class="right">{{ cupo.modificado }}</span>
             </td>
         </tr>
         </thead>
         <tbody id="solicitud_interinos{{ cupo.id }}"></tbody>
     {% endfor %}
 </table>
+{% else %}
+    <h4> <i class="fa fa-warning"></i> Todavía no hay ningún estudio de cupo disponible para cargar desde Recursos Humanos</h4>
+{% endif %}

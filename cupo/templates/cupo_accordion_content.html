@@ -53,10 +53,27 @@
 
 
 <div class="row">
-    <div class="columns large-12">
+    <div class="columns large-8">
         <label><b>Escribe el nombre del cupo:</b>
             <input type="text" class="change_nombre_cupo" value="{{ cupo.nombre }}" data-cupo="{{ cupo.id }}">
         </label>
+    </div>
+    <div class="columns large-4">
+        <label><b>¿Publicar para RRHH? <a class="info_pub_rrhh"><i class="fa fa-info-circle"></i></a> </b>
+{#            <input type="checkbox" class="checkbox_rrhh" value="{{ cupo.nombre }}" data-cupo="{{ cupo.id }}">#}
+        </label>&nbsp;&nbsp;
+    <span id="pub_rrhh{{ cupo.id }}">
+        {% include "cupo_accordion_content_pubrrhh.html" %}
+    </span>
+{#    {% if aprrhh %}#}
+{#        <a id="}" class="checkbox_rrhh" data-cupo="{{ cupo.id }}" style="font-weight: bold;">#}
+{#            {% if cupo.pub_rrhh %}Sí{% else %}No{% endif %}#}
+{#        </a>#}
+{#    {% else %}#}
+{#        <span style="font-weight: bold;color: grey;" title="Esta opción no está ">#}
+{#            {% if cupo.pub_rrhh %}Sí{% else %}No{% endif %}#}
+{#        </span>#}
+{#    {% endif %}#}
     </div>
 </div>
 <hr>
