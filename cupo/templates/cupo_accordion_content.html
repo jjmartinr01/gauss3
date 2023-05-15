@@ -24,9 +24,9 @@
                 <li title="Generar el informe en pdf del cupo">
                     <a href="#" class="button pdf_cupo"
                        data-cupo="{{ cupo.id }}"><i class="fa fa-file-pdf-o"></i> PDF</a></li>
-{#                <li title="Generar el xls del cupo">#}
-{#                    <a href="#" class="button xls_cupo"#}
-{#                       data-cupo="{{ cupo.id }}"><i class="fa fa-file-excel-o"></i> XLS</a></li>#}
+                {#                <li title="Generar el xls del cupo">#}
+                {#                    <a href="#" class="button xls_cupo"#}
+                {#                       data-cupo="{{ cupo.id }}"><i class="fa fa-file-excel-o"></i> XLS</a></li>#}
                 <li title="Generar el informe en pdf para RRHH">
                     <a href="#" class="button pdf_cupo_rrhh"
                        data-cupo="{{ cupo.id }}"><i class="fa fa-file-text-o"></i> RRHH</a></li>
@@ -53,28 +53,33 @@
 
 
 <div class="row">
-    <div class="columns large-8">
+    <div class="columns large-3">
+        {% if request.session.gauser_extra|has_permiso:'cambia_ronda_cupos' %}
+            <label><b>Centro (Curso escolar):</b>&nbsp;&nbsp;
+                <select class="select_ronda_cupo" data-cupo="{{ cupo.id }}">
+                    <option value="{{ cupo.ronda.id }}">{{ cupo.ronda.entidad.name }} ({{ cupo.ronda.nombre }})</option>
+                    {% for ronda in rondas %}
+                        <option value="{{ ronda.id }}">{{ ronda.entidad.name }} ({{ ronda.nombre }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+        {% else %}
+            <label><b>Centro (Curso escolar):</b>&nbsp;&nbsp;</label>
+            <span style="font-size: small;">{{ cupo.ronda.entidad.name }} ({{ cupo.ronda.nombre }})</span>
+        {% endif %}
+    </div>
+    <div class="columns large-6">
         <label><b>Escribe el nombre del cupo:</b>
             <input type="text" class="change_nombre_cupo" value="{{ cupo.nombre }}" data-cupo="{{ cupo.id }}">
         </label>
     </div>
-    <div class="columns large-4">
-        <label><b>¿Publicar para RRHH? <a class="info_pub_rrhh"><i class="fa fa-info-circle"></i></a> </b>
-{#            <input type="checkbox" class="checkbox_rrhh" value="{{ cupo.nombre }}" data-cupo="{{ cupo.id }}">#}
-        </label>&nbsp;&nbsp;
-    <span id="pub_rrhh{{ cupo.id }}">
-        {% include "cupo_accordion_content_pubrrhh.html" %}
-    </span>
-{#    {% if aprrhh %}#}
-{#        <a id="}" class="checkbox_rrhh" data-cupo="{{ cupo.id }}" style="font-weight: bold;">#}
-{#            {% if cupo.pub_rrhh %}Sí{% else %}No{% endif %}#}
-{#        </a>#}
-{#    {% else %}#}
-{#        <span style="font-weight: bold;color: grey;" title="Esta opción no está ">#}
-{#            {% if cupo.pub_rrhh %}Sí{% else %}No{% endif %}#}
-{#        </span>#}
-{#    {% endif %}#}
+    <div class="columns large-3">
+        <label><b>¿Publicar para RRHH? <a class="info_pub_rrhh"><i class="fa fa-info-circle"></i></a> </b></label>&nbsp;&nbsp;
+        <span id="pub_rrhh{{ cupo.id }}">
+            {% include "cupo_accordion_content_pubrrhh.html" %}
+        </span>
     </div>
+
 </div>
 <hr>
 <div class="row">
@@ -133,7 +138,7 @@
 <div class="row">
     <div class="columns large-12">
         <label><b>Cursos incluidos en el cupo ({{ cupo.cursocupo_set.all|length }}):</b>
-{#        <a class="edit_cursos right" data-cupo="{{ cupo.id }}"><i class="fa fa-pencil-square-o"></i></a>#}
+            {#        <a class="edit_cursos right" data-cupo="{{ cupo.id }}"><i class="fa fa-pencil-square-o"></i></a>#}
         </label>
     </div>
 </div>

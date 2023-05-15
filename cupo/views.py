@@ -32,7 +32,7 @@ from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, Especia
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
-    EspecialidadDocenteBasica, Cargo, MiembroEDB, DocConfEntidad
+    EspecialidadDocenteBasica, Cargo, MiembroEDB, DocConfEntidad, Ronda
 from entidades.models import Departamento as Depentidad
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar, Gauser_extra_estudios
@@ -244,9 +244,11 @@ def ajax_cupo(request):
                 cexs = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                             clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
                 activa_pub_rrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
+                rondas = Ronda.objects.filter(nombre=cupo.ronda.nombre)
                 html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
                                                                         'especialidades_existentes': ESPECIALIDADES,
-                                                                        'request': request, 'aprrhh': activa_pub_rrhh})
+                                                                        'request': request, 'aprrhh': activa_pub_rrhh,
+                                                                        'rondas': rondas})
                 return JsonResponse({'ok': True, 'html': html, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -612,6 +614,8 @@ def ajax_cupo(request):
                 if es_posible:
                     cupo.pub_rrhh = not cupo.pub_rrhh
                     cupo.save()
+                    if cupo.pub_rrhh:
+                        Cupo.objects.filter(ronda=cupo.ronda).exclude(id=cupo.id).update(pub_rrhh=False)
                     aprrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
                     html = render_to_string('cupo_accordion_content_pubrrhh.html', {'aprrhh': aprrhh,
                                                                                     'cupo': cupo})
@@ -619,25 +623,17 @@ def ajax_cupo(request):
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'msg': msg})
-                # cargo_inspector = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
-                # con1 = cargo_inspector in g_e.cargos.all()
-                # con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('publica_cupo_para_rrhh')
-                # if con1 or con2:
-                #     interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT')
-                #     q1 = Q(profesorado__especialidad__cod_espec='')
-                #     q2 = Q(profesorado__especialidad__cod_cuerpo='')
-                #     con1 = interinos.filter(q1 | q2).count() > 0
-                #     if not con1:
-                #         cupo.pub_rrhh = not cupo.pub_rrhh
-                #         cupo.save()
-                #         pub_rrhh = ['No', 'Sí'][cupo.pub_rrhh]
-                #         logger.info('%s, publica RRHH cupo %s %s' % (g_e, cupo.id, cupo.pub_rrhh))
-                #         return JsonResponse({'ok': True, 'pub_rrhh': pub_rrhh})
-                #     else:
-                #         msg = 'No es posible la publicación. Hay especialidades en las que no se ha configurado el código del cuerpo o el código de la propia especialidad.'
-                #         return JsonResponse({'ok': False, 'msg': msg})
-                # else:
-                #     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'select_ronda_cupo':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                if g_e.has_permiso('cambia_ronda_cupos'):
+                    cupo.ronda = Ronda.objects.get(id=request.POST['ronda'])
+                    cupo.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'El único usuario con permisos es gauss'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_filtro':
@@ -688,8 +684,8 @@ def ajax_cupo(request):
                     return JsonResponse({'ok': True, 'nombre': cupo.nombre})
                 else:
                     return JsonResponse({'ok': False})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
         elif action == 'select_add_especialidad':
             try:
@@ -1326,7 +1322,8 @@ def ajax_cupo(request):
                 campo = request.POST['campo']
                 valor = request.POST['valor']
                 p_c = Profesor_cupo.objects.get(id=request.POST['id'], profesorado__cupo__id=cupo)
-                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin' or campo == 'vacante':
+                # if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin' or campo == 'vacante':
+                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin' or campo == 'sustituto':
                     valores = {'true': True, 'false': False}
                     valor = valores[valor]
                 elif campo == 'borrar':

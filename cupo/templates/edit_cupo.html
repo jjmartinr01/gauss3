@@ -593,7 +593,8 @@
             var id = $(this).data('id');
             var campo = $(this).data('campo');
             var valor = null;
-            if (campo == 'bilingue' || campo == 'itinerante' || campo == 'noafin' || campo == 'vacante') {
+            {#if (campo == 'bilingue' || campo == 'itinerante' || campo == 'noafin' || campo == 'vacante') {#}
+            if (campo == 'bilingue' || campo == 'itinerante' || campo == 'noafin' || campo == 'sustituto') {
                 valor = $(this).prop('checked');
             } else if (campo != 'borrar' && campo != 'duplicar') {
                 valor = $(this).val();

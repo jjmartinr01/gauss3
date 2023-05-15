@@ -846,5 +846,19 @@
         $('body').on('click', '.info_pub_rrhh', function () {
             $('#info_rrhh_modal').foundation('reveal', 'open');
         });
+        $('body').on('change', '.select_ronda_cupo', function () {
+            var cupo = $(this).data('cupo');
+            var ronda = $(this).val();
+            $.post("/ajax_cupo/", {
+                    action: 'select_ronda_cupo', cupo: cupo, ronda: ronda
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
     </script>
 {% endblock %}

@@ -22,8 +22,10 @@
                                     {% if p.itinerante %}checked{% endif %}></label></td>
     <td><label>No afín<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="noafin"
                                  {% if p.noafin %}checked{% endif %}></label></td>
-    <td><label>Vacante<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="vacante"
-                                 {% if p.vacante %}checked{% endif %}></label></td>
+    <td><label>Sustituto<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="sustituto"
+                                 {% if p.sustituto %}checked{% endif %}></label></td>
+{#    <td><label>Vacante<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="vacante"#}
+{#                                 {% if p.vacante %}checked{% endif %}></label></td>#}
 </tr>
 <tr class="">
     <td colspan="5">

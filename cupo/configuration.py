@@ -81,4 +81,8 @@ PERMISOS = [{'code_nombre': 'crea_cupos',
              'nombre': 'Tiene permiso para publicar el cupo y que sea leído en forma de csv por RRHH',
              'menu': 'acceso_cupo_profesorado'
              },
+            {'code_nombre': 'cambia_ronda_cupos',
+             'nombre': 'Tiene permiso para cambiar la ronda a los cupos que tiene acceso',
+             'menu': 'acceso_cupo_profesorado'
+             }
             ]
