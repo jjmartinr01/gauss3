@@ -244,7 +244,7 @@ def ajax_cupo(request):
                 cexs = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                             clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
                 activa_pub_rrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
-                rondas = Ronda.objects.filter(nombre=cupo.ronda.nombre)
+                rondas = Ronda.objects.filter(nombre__icontains='/%s' % datetime.date.today().year)
                 html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
                                                                         'especialidades_existentes': ESPECIALIDADES,
                                                                         'request': request, 'aprrhh': activa_pub_rrhh,

@@ -262,6 +262,13 @@ class Profesor_cupo(models.Model):
     observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
     observaciones_ocultas = models.TextField('Observaciones ocultas', blank=True, null=True, default='')
 
+    @property
+    def observaciones_sin_newlines(self):
+        return self.observaciones.replace('\n', ' ## ')
+
+    @property
+    def observaciones_ocultas_sin_newlines(self):
+        return self.observaciones_ocultas.replace('\n', ' ## ')
     class Meta:
         verbose_name_plural = 'Profesores del cupo'
         ordering = ['profesorado__especialidad__dep', 'tipo', 'jornada']

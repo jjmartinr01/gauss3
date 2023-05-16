@@ -18,6 +18,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
+from autenticar.models import Permiso
 from gauss.funciones import html_to_pdf_options, usuarios_ronda, html_to_pdf_dce
 from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
@@ -971,9 +972,22 @@ def asignar_centros_inspeccion(request):
                         g_e_asignado.save()
                         cargo_inspector, c = Cargo.objects.get_or_create(entidad=ci.centro,
                                                                          clave_cargo='g_inspector_educacion')
+                        # if c:
+                        #     cargo_inspector.borrable = False
+                        #     cargo_inspector.save()
                         if c:
-                            cargo_inspector.borrable = False
-                            cargo_inspector.save()
+                            cpermisos = ['acceso_datos_entidad', 'acceso_calendario', 'acceso_vista_calendario',
+                                         'crea_eventos',
+                                         # 'acceso_cupos', 'acceso_cupo_profesorado', 'acceso_plantilla_organica',
+                                         'acceso_reuniones', 'acceso_lectura_actas_reunion',
+                                         'acceso_programaciones_didacticas',
+                                         'acceso_progsecundaria', 'acceso_cuaderno_docente', 'acceso_repositorio_sap',
+                                         've_todas_programaciones', 'crea_programaciones']
+                            permisos = Permiso.objects.filter(code_nombre__in=cpermisos)
+                            cargo_inspector.permisos.add(*permisos)
+                        cargo_inspector.borrable = False
+                        cargo_inspector.cargo = 'Inspector de Educación'
+                        cargo_inspector.save()
                         g_e_asignado.cargos.add(cargo_inspector)
                     except Exception as msg:
                         mensaje = 'Error al asignar el centro al inspector: %s' % ia.inspector.gauser.get_full_name()
