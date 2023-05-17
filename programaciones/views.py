@@ -3610,7 +3610,6 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': False})
         elif action == 'update_calalum':
             try:
-                #fasdfasf
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
                                                   ieval__asapren__sapren__sbas__psec=cuaderno.psec)
