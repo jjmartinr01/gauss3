@@ -40,6 +40,8 @@
            data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-up"></i></a>
         <a class="button tiny close_calalum alert" title="Cerrar el diálogo del instrumento"
            data-alumno="{{ calalum.alumno.id }}" data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-times"></i></a>
+        <a class="button tiny delete_calalum alert" title="Borrar la calificación del alumno/Asignar un cero"
+           data-alumno="{{ calalum.alumno.id }}" data-cuaderno="{{ calalum.cp.id }}"><b>0</b></a>
     </div>
 
     {% if calalum.ecp.tipo == 'ESVCL' %}
