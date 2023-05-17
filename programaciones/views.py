@@ -3646,18 +3646,27 @@ def cuadernodocente(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_esvcn':
-            # try:
-            ca = CalAlum.objects.get(id=request.POST['calalum'])
-            ca.calalumvalor_set.all().delete()
-            valor = float(request.POST['valor'])
-            ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
-            for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
-                e.y = idx
-                e.save()
-            CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
-            return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
-        # except:
-        #     return JsonResponse({'ok': False})
+            try:
+                ca = CalAlum.objects.get(id=request.POST['calalum'])
+                ca.calalumvalor_set.all().delete()
+                valor = float(request.POST['valor'])
+                ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
+                for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
+                    e.y = idx
+                    e.save()
+                CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
+                return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'delete_calalum_valores':
+            try:
+                ca = CalAlum.objects.get(id=request.POST['calalum'])
+                cieval = ca.cie.id
+                alumno = ca.alumno.id
+                ca.calalumvalor_set.all().delete()
+                return JsonResponse({'ok': True, 'cieval': cieval, 'alumno': alumno})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'update_obs':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
