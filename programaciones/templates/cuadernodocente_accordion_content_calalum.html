@@ -27,22 +27,43 @@
     }
 </style>
 <div class="maximo_width" style="display: inline-block; margin-left: 10px;" id="div_calalum{{ calalum.cp.id }}">
-    <div style="display: inline-block;width: 60vw;">
-        <span class="calalum_title">{{ calalum.alumno.gauser.last_name }}, {{ calalum.alumno.gauser.first_name }}</span>
-        <p class="maximo_width">{{ calalum.cie.cevps.cev.texto }}</p>
+    <div class="row">
+        <div class="columns large-7">
+            <span class="calalum_title">{{ calalum.alumno.gauser.last_name }}, {{ calalum.alumno.gauser.first_name }}</span>
+            <p class="maximo_width">{{ calalum.cie.cevps.cev.texto }}</p>
+        </div>
+        <div class="columns large-5">
+            <ul class="button-group right radius">
+                <li><a class="button tiny next_calalum" title="Pasar al siguiente alumno/a"
+                       data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"
+                       data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-down"></i></a></li>
+                <li><a class="button tiny previous_calalum" title="Ir al anterior alumno/a"
+                       data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"
+                       data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-up"></i></a></li>
+                <li><a class="button tiny close_calalum alert" title="Cerrar el diálogo del instrumento"
+                       data-alumno="{{ calalum.alumno.id }}" data-cuaderno="{{ calalum.cp.id }}"><i
+                        class="fa fa-times"></i></a></li>
+                <li><a class="button tiny delete_calalum_valores warning" title="Borrar la calificación del alumno"
+                       data-calalum="{{ calalum.id }}"><i class="fa fa-eraser"></i></a></li>
+            </ul>
+        </div>
     </div>
-    <div style="display: inline-block;">
-        <a class="button tiny next_calalum" title="Pasar al siguiente alumno/a"
-           data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"
-           data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-down"></i></a>
-        <a class="button tiny previous_calalum" title="Ir al anterior alumno/a"
-           data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"
-           data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-up"></i></a>
-        <a class="button tiny close_calalum alert" title="Cerrar el diálogo del instrumento"
-           data-alumno="{{ calalum.alumno.id }}" data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-times"></i></a>
-        <a class="button tiny delete_calalum_valores alert" title="Borrar la calificación del alumno/Asignar un cero"
-           data-calalum="{{ calalum.id }}"><b>0</b></a>
-    </div>
+    {#    <div style="display: inline-block;width: 50vw;">#}
+    {#        <span class="calalum_title">{{ calalum.alumno.gauser.last_name }}, {{ calalum.alumno.gauser.first_name }}</span>#}
+    {#        <p class="maximo_width">{{ calalum.cie.cevps.cev.texto }}</p>#}
+    {#    </div>#}
+    {#    <div style="display: inline-block;">#}
+    {#        <a class="button tiny next_calalum" title="Pasar al siguiente alumno/a"#}
+    {#           data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"#}
+    {#           data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-down"></i></a>#}
+    {#        <a class="button tiny previous_calalum" title="Ir al anterior alumno/a"#}
+    {#           data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"#}
+    {#           data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-up"></i></a>#}
+    {#        <a class="button tiny close_calalum alert" title="Cerrar el diálogo del instrumento"#}
+    {#           data-alumno="{{ calalum.alumno.id }}" data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-times"></i></a>#}
+    {#        <a class="button tiny delete_calalum_valores alert" title="Borrar la calificación del alumno"#}
+    {#           data-calalum="{{ calalum.id }}">0</a>#}
+    {#    </div>#}
 
     {% if calalum.ecp.tipo == 'ESVCL' %}
         <table class="maximo_width" id="tabla_esvcl{{ calalum.id }}">
