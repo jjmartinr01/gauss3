@@ -6,7 +6,6 @@ import simplejson as json
 import re
 import string
 import locale
-import pdfkit
 import logging
 import xlwt
 from xlwt import Formula
@@ -17,17 +16,17 @@ from django.core.files.base import ContentFile
 from django.utils.timezone import datetime
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
-from django.template import RequestContext
 from django.db.models import Q, Sum
 from django import forms
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.template.loader import render_to_string
+from django.template import Template, Context
 
 from autenticar.models import Gauser
 from entidades.models import Subentidad, Cargo, Gauser_extra
 
 from gauss.rutas import *
-from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, get_dce
+from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, get_dce, genera_pdf
 from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa, File_contabilidad, \
     Remesa_emitida, OrdenAdeudo
 from autenticar.control_acceso import permiso_required
@@ -79,15 +78,18 @@ def presupuestos(request):
             partidas = Partida.objects.filter(presupuesto=presupuesto)
             gastos = partidas.filter(tipo='GASTO').aggregate(gasto_total=Sum('cantidad'))
             ingresos = partidas.filter(tipo='INGRE').aggregate(ingreso_total=Sum('cantidad'))
-            fichero = 'presupuesto_%s_%s' % (g_e.ronda.entidad.id, presupuesto.id)
             c = render_to_string('presupuesto2pdf.html',
                                  {'presupuesto': presupuesto, 'partidas': partidas, 'gastos': gastos,
-                                  'ingresos': ingresos})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            logger.info('%s, pdf_presupuesto' % g_e)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            return response
+                                  'ingresos': ingresos, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'presupuesto_%s_%s' % (g_e.ronda.entidad.id, presupuesto.id)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # logger.info('%s, pdf_presupuesto' % g_e)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+            # return response
         elif request.POST['action'] == 'add_presupuesto':
             describir = request.POST['describir']
             describir = 'No hay descripción para este presupesto.' if len(describir) < 5 else describir
@@ -159,15 +161,17 @@ def presupuesto(request, id=False):
             partidas = Partida.objects.filter(presupuesto=presupuesto)
             gastos = partidas.filter(tipo='GASTO').aggregate(gasto_total=Sum('cantidad'))
             ingresos = partidas.filter(tipo='INGRE').aggregate(ingreso_total=Sum('cantidad'))
-
-            fichero = 'presupuesto_%s_%s' % (g_e.ronda.entidad.id, g_e.ronda.id)
             c = render_to_string('presupuesto2pdf.html',
                                  {'presupuesto': presupuesto, 'partidas': partidas, 'gastos': gastos,
-                                  'ingresos': ingresos})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            return response
+                                  'ingresos': ingresos, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'presupuesto_%s_%s' % (g_e.ronda.entidad.id, g_e.ronda.id)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+            # return response
 
     gastos = partidas.filter(tipo='GASTO').aggregate(gasto_total=Sum('cantidad'))
     ingresos = partidas.filter(tipo='INGRE').aggregate(ingreso_total=Sum('cantidad'))
@@ -272,18 +276,21 @@ def gastos_ingresos(request):
                 asientos_partida = Asiento.objects.filter(partida=partida)
                 total_partida = asientos_partida.aggregate(total=Sum('cantidad'))
                 gi_ingresos.append([partida, asientos_partida, total_partida['total']])
-            fichero = 'gastos_ingresos_%s_%s' % (g_e.ronda.entidad.id, g_e.ronda.id)
             c = render_to_string('gastos_ingresos2pdf.html', {
                 'gi_ingresos': gi_ingresos,
                 'gi_gastos': gi_gastos,
                 'g_total': asientos.filter(partida__tipo='GASTO').aggregate(total=Sum('cantidad'))['total'],
                 'i_total': asientos.filter(partida__tipo='INGRE').aggregate(total=Sum('cantidad'))['total'],
                 'pg_total': partidas_gastos.aggregate(total=Sum('cantidad'))['total'],
-                'pi_total': partidas_ingresos.aggregate(total=Sum('cantidad'))['total']})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            return response
+                'pi_total': partidas_ingresos.aggregate(total=Sum('cantidad'))['total'], 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'gastos_ingresos_%s_%s' % (g_e.ronda.entidad.id, g_e.ronda.id)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+            # return response
 
         if request.POST['action'] == 'bajar_justificante':
             asiento = Asiento.objects.get(id=request.POST['asiento_id'])
@@ -501,13 +508,16 @@ def politica_cuotas(request):
         if request.POST['action'] == 'pdf_politicas_cuotas':
             dce = get_dce(g_e.ronda.entidad, 'Configuración de informes de contabilidad')
             politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad)
-            fichero = 'Politica_cuotas_%s_%s' % (g_e.ronda.entidad.id, g_e.ronda.id)
-            c = render_to_string('politica_cuotas2pdf.html', {'politicas': politicas})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
+            c = render_to_string('politica_cuotas2pdf.html', {'politicas': politicas, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'Politica_cuotas_%s_%s.pdf' % (g_e.ronda.entidad.id, g_e.ronda.id)
+            # return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+            #                     content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            response = HttpResponse(open(dce.url_pdf, 'rb'), content_type='application/pdf')
             response.set_cookie('fileDownload',
                                 value='true')  # Creo cookie para controlar la descarga (fileDownload.js)
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+            response['Content-Disposition'] = 'attachment; filename=' + nombre
             return response
         elif request.POST['action'] == 'descarga_remesa':
             remesa_emitida = Remesa_emitida.objects.get(id=request.POST['id_remesa_emitida'])
@@ -799,11 +809,15 @@ def ordenes_adeudo(request):
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
                                         firma__isnull=False, gauser=g_e.gauser)
         c = orden.texto_firmado
-        pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-        fich = open(dce.url_pdf, 'rb')
-        response = HttpResponse(fich, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename=orden_adeudo_directo_SEPA%s.pdf' % orden.id
-        return response
+        genera_pdf(c, dce)
+        nombre = 'orden_adeudo_directo_SEPA%s.pdf' % orden.id
+        return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                            content_type='application/pdf')
+        # p_dfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+        # fich = open(dce.url_pdf, 'rb')
+        # response = HttpResponse(fich, content_type='application/pdf')
+        # response['Content-Disposition'] = 'attachment; filename=orden_adeudo_directo_SEPA%s.pdf' % orden.id
+        # return response
     ordenes_firmadas = OrdenAdeudo.objects.filter(fecha_firma__isnull=False, politica__entidad=g_e.ronda.entidad)
     politicas = Politica_cuotas.objects.filter(entidad=g_e.entidad)
     return render(request, "ordenes_adeudo.html",
@@ -828,7 +842,8 @@ def firmar_orden_adeudo(request, id_oa):
                 orden_adeudo.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 orden_adeudo.fecha_firma = date.today()
                 orden_adeudo.save()
-                orden_adeudo.texto_firmado = render_to_string('orden_adeudo2pdf.html', {'orden': orden_adeudo,
+                dce = get_dce(g_e.ronda.entidad, 'Configuración para órdenes de adeudo')
+                orden_adeudo.texto_firmado = render_to_string('orden_adeudo2pdf.html', {'orden': orden_adeudo, 'dce': dce,
                                                                                         'firma_data': firma_data})
                 orden_adeudo.save()
                 crear_aviso(request, False, 'Orden de adeudo firmada correctamente.')
@@ -857,11 +872,15 @@ def mis_ordenes_adeudo(request):
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
                                         firma__isnull=False, gauser=g_e.gauser)
         c = orden.texto_firmado
-        pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-        fich = open(dce.url_pdf, 'rb')
-        response = HttpResponse(fich, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename=orden_adeudo_directo_SEPA%s.pdf' % orden.id
-        return response
+        genera_pdf(c, dce)
+        nombre = 'orden_adeudo_directo_SEPA%s.pdf' % orden.id
+        return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                            content_type='application/pdf')
+        # p_dfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+        # fich = open(dce.url_pdf, 'rb')
+        # response = HttpResponse(fich, content_type='application/pdf')
+        # response['Content-Disposition'] = 'attachment; filename=orden_adeudo_directo_SEPA%s.pdf' % orden.id
+        # return response
     mis_ordenes_firmadas = OrdenAdeudo.objects.filter(gauser=g_e.gauser, fecha_firma__isnull=False,
                                                       politica__entidad=g_e.ronda.entidad)
     mis_ordenes_pendientes = comprueba_ordenes_adeudo(g_e)

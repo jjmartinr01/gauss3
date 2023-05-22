@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import xlrd
 import logging
-import pdfkit
 import simplejson as json
 from difflib import get_close_matches
 
@@ -12,7 +11,7 @@ from lxml import etree as ElementTree
 from datetime import datetime, timedelta, time, date
 from bs4 import BeautifulSoup
 
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -24,7 +23,7 @@ from django.utils.html import strip_tags
 
 from autenticar.control_acceso import permiso_required
 from entidades.tasks import carga_masiva_from_excel
-from gauss.funciones import usuarios_de_gauss, usuarios_ronda, get_dce
+from gauss.funciones import usuarios_de_gauss, usuarios_ronda, get_dce, genera_pdf
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia, SeguimientoAlumno, \
     PlataformaDistancia, SesionExtra
@@ -46,13 +45,16 @@ def actillas(request):
         doc_actillas = 'Configuración de documentos de actillas'
         dce = get_dce(g_e.ronda.entidad, doc_actillas)
         grupos = Grupo.objects.filter(id__in=request.POST.getlist('grupo'))
-        fichero = 'actillaS_' + str(g_e.ronda.entidad.code) + '_' + slugify(datetime.now())
-        c = render_to_string('actillas2pdf.html', {'grupos': grupos, })
-        fich = pdfkit.from_string(c, False, dce.get_opciones)
-        logger.info('%s, pdf_actillas' % g_e)
-        response = HttpResponse(fich, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename=' + fichero
-        return response
+        c = render_to_string('actillas2pdf.html', {'grupos': grupos, 'dce': dce})
+        genera_pdf(c, dce)
+        nombre = 'Actillas_%s_%s' % (str(g_e.ronda.entidad.code), slugify(datetime.now()))
+        return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                            content_type='application/pdf')
+        # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+        # logger.info('%s, pdf_actillas' % g_e)
+        # response = HttpResponse(fich, content_type='application/pdf')
+        # response['Content-Disposition'] = 'attachment; filename=' + nombre
+        # return response
     if g_e.has_permiso('genera_actillas') or g_e.has_permiso('genera_actillas2'):
         grupos = Grupo.objects.filter(ronda=g_e.ronda)
     else:

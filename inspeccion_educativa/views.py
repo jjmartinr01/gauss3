@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import xlwt
-import pdfkit
-# from weasyprint import HTML, CSS
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
@@ -19,7 +17,7 @@ import sys
 from django.core import serializers
 
 from autenticar.models import Permiso
-from gauss.funciones import html_to_pdf_options, usuarios_ronda, html_to_pdf_dce
+from gauss.funciones import usuarios_ronda, get_dce, genera_pdf
 from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
@@ -324,23 +322,14 @@ def tareas_ie(request):
                 return JsonResponse({'ok': False})
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_informe':
+            inf_semanal = 'Configuración informes semanales de actuaciones'
+            dce = get_dce(g_e.ronda.entidad, inf_semanal)
             instareas = InspectorTarea.objects.all()
             fichero = 'Informe_%s_%s' % (str(g_e.ronda.entidad.code), g_e.id)
             texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'title': fichero})
-            ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
-            opciones = {
-                'orientation': 'Landscape',
-                'page-size': 'A4',
-                'margin-top': '5.5cm',
-                'margin-right': '0.5cm',
-                'margin-bottom': '0.5cm',
-                'margin-left': '0.5cm',
-            }
-            fich = html_to_pdf_options(request, texto_html, opciones, fichero=fichero, media=ruta)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            logger.info('%s, genera informe de inspección' % (g_e))
-            return response
+            genera_pdf(texto_html, dce)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % fichero,
+                                content_type='application/pdf')
         elif request.POST['action'] == 'crea_informe_excel':
             fecha_inicio = datetime.strptime(request.POST['fecha_inicio_ti'], '%d-%m-%Y')
             fecha_fin = datetime.strptime(request.POST['fecha_fin_ti'], '%d-%m-%Y')
@@ -405,15 +394,7 @@ def tareas_ie(request):
             return response
         elif request.POST['action'] == 'crea_informe_pdf':
             inf_semanal = 'Configuración informes semanales de actuaciones'
-            try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=inf_semanal)
-            except:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                dce.pk = None
-                dce.nombre = inf_semanal
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
+            dce = get_dce(g_e.ronda.entidad, inf_semanal)
             fecha_inicio = datetime.strptime(request.POST['fecha_inicio_ti'], '%d-%m-%Y')
             fecha_fin = datetime.strptime(request.POST['fecha_fin_ti'], '%d-%m-%Y')
             general = True
@@ -435,22 +416,11 @@ def tareas_ie(request):
                 general = False
 
             texto_html = render_to_string('informe_personal2pdf.html', {'datos': datos, 'fecha_fin': fecha_fin,
-                                                                        'fecha_inicio': fecha_inicio,
+                                                                        'fecha_inicio': fecha_inicio, 'dce': dce,
                                                                         'es_informe_general': general})
-            ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
-            opciones = {
-                'orientation': 'Landscape',
-                'page-size': 'A4',
-                'margin-top': '5.5cm',
-                'margin-right': '0.5cm',
-                'margin-bottom': '0.5cm',
-                'margin-left': '0.5cm',
-            }
-            fich = html_to_pdf_dce(texto_html, dce, ruta, filename=fichero)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero
-            logger.info('%s, genera informe de inspección' % (g_e))
-            return response
+            genera_pdf(texto_html, dce)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s' % fichero,
+                                content_type='application/pdf')
         elif request.POST['action'] == 'upload_archivo_xhr':
             try:
                 n_files = int(request.POST['n_files'])
@@ -690,20 +660,7 @@ def informes_ie(request):
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'pdf_ie':
             doc_ie = 'Configuración de informes de Inspección Educativa'
-            try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_ie)
-            except:
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                except:
-                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                    dce.predeterminado = True
-                    dce.save()
-                dce.pk = None
-                dce.nombre = doc_ie
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
+            dce = get_dce(g_e.ronda.entidad, doc_ie)
             ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
             if not ie.instarea:
                 tarea = TareaInspeccion.objects.create(ronda_centro=g_e.ronda.entidad.ronda, tipo='HA', actuacion='IN',
@@ -715,14 +672,20 @@ def informes_ie(request):
             ie.instarea.tarea.fecha = ie.modificado
             ie.instarea.tarea.save()
             c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True, 'dce': dce})
-            # css = CSS(string=render_to_string('weasyprint_styles.css', {'dce': dce}))
-            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            # doc = HTML(string=c)
-            # doc.write_pdf(dce.url_pdf, stylesheets=[css])
-            fich = open(dce.url_pdf, 'rb')
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
-            return response
+            genera_pdf(c, dce)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % slugify(ie.asunto),
+                                content_type='application/pdf')
+            # fich = open(dce.url_pdf, 'rb')
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
+            # return response
+
+
+            # with open(dce.url_pdf, 'rb') as fh:
+            #     response = HttpResponse(fh.read(), content_type='application/pdf')
+            #     # response['Content-Disposition'] = 'inline; filename=%s.pdf' % slugify(ie.asunto)
+            #     response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
+            #     return response
         elif request.POST['action'] == 'upload_archivo_xhr':
             try:
                 n_files = int(request.POST['n_files'])
@@ -1061,7 +1024,8 @@ def asignar_centros_inspeccion(request):
         elif request.POST['action'] == 'get_centros_inspector':
             try:
                 inspector = Gauser_extra.objects.get(id=request.POST['inspector'])
-                cis_ids = InspectorAsignado.objects.filter(inspector__id=request.POST['inspector']).values_list('cenins__id', flat=True)
+                cis_ids = InspectorAsignado.objects.filter(inspector__id=request.POST['inspector']).values_list(
+                    'cenins__id', flat=True)
                 cis = CentroInspeccionado.objects.filter(id__in=cis_ids)
                 html = render_to_string('asignar_centros_inspector_buscar.html', {'cis': cis, 'buscar': True,
                                                                                   'inspectores': inspectores})

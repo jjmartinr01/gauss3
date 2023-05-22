@@ -19,6 +19,8 @@
         page-break-before: always;
     }
 </style>
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 <h1>Resultados de la evaluación de {{ efpa.docente.gauser.get_full_name }} </h1>
 <h2>Funcionario/a en prácticas</h2>
 

@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import logging
 from datetime import datetime, timedelta
 
-import pdfkit
 from dateutil.rrule import rrule, MONTHLY
 import csv
 import base64
@@ -34,10 +33,12 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.core.paginator import Paginator
+from django.utils.text import slugify
 from django.forms.models import model_to_dict
+from django.template import Template, Context
 
 from entidades.models import Gauser_extra, Entidad, DocConfEntidad
-from gauss.funciones import pass_generator, usuarios_ronda, get_dce
+from gauss.funciones import pass_generator, usuarios_ronda, get_dce, genera_pdf
 from gauss.rutas import RUTA_MEDIA, MEDIA_VUT, RUTA_BASE
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
@@ -97,7 +98,7 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
 # -------------------------------------------------------------------------------
 
 
-@permiso_required('acceso_viviendas')
+# @permiso_required('acceso_viviendas')
 def viviendas(request):
     g_e = request.session['gauser_extra']
     vvs = viviendas_autorizado(g_e)
@@ -114,14 +115,18 @@ def viviendas(request):
                 if viajeros.count() > 0:
                     p_d = request.POST['protocol_domain']
                     c = render_to_string('libro_registro_policia.html',
-                                         {'vivienda': vivienda, 'viajeros': viajeros, 'p_d': p_d})
-                    fich = pdfkit.from_string(c, False, dce.get_opciones)
-                    logger.info('Creado pdf libro de registros')
-                    response = HttpResponse(fich, content_type='application/pdf')
-                    logger.info('Creado pdf libro de registros 2')
-                    response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                    logger.info('Creado pdf libro de registros 3')
-                    return response
+                                         {'vivienda': vivienda, 'viajeros': viajeros, 'p_d': p_d, 'dce': dce})
+                    genera_pdf(c, dce)
+                    nombre = 'Libro_registro_viajeros.pdf'
+                    return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                        content_type='application/pdf')
+                    # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                    # logger.info('Creado pdf libro de registros')
+                    # response = HttpResponse(fich, content_type='application/pdf')
+                    # logger.info('Creado pdf libro de registros 2')
+                    # response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                    # logger.info('Creado pdf libro de registros 3')
+                    # return response
                 else:
                     crear_aviso(request, False,
                                 '<p>No se puede generar un libro de registros. No hay ningún viajero registrado.</p>')
@@ -1913,12 +1918,16 @@ def contabilidad_vut(request):
                 fecha_anterior_limite = datetime.today().date() - timedelta(1100)
                 viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
                                                   reserva__entrada__gte=fecha_anterior_limite)
-                c = render_to_string('libro_registro_policia.html',
-                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = FileResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                return response
+                c = render_to_string('libro_registro_policia.html', {'vivienda': vivienda, 'viajeros': viajeros,
+                                                                     'ruta_base': RUTA_BASE, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = 'Libro_registro_viajeros.pdf'
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = FileResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                # return response
         elif action == 'download_file_asiento':
             asiento = AsientoVUT.objects.get(id=request.POST['asiento'])
             permiso = Permiso.objects.get(code_nombre='edita_asiento_vut')
@@ -2923,12 +2932,16 @@ def web_vut(request):
                 fecha_anterior_limite = datetime.today().date() - timedelta(1100)
                 viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
                                                   reserva__entrada__gte=fecha_anterior_limite)
-                c = render_to_string('libro_registro_policia.html',
-                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                return response
+                c = render_to_string('libro_registro_policia.html', {'vivienda': vivienda, 'viajeros': viajeros,
+                                                                     'ruta_base': RUTA_BASE, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = 'Libro_registro_viajeros.pdf'
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                # return response
 
     return render(request, "web_vut.html",
                   {
@@ -2963,12 +2976,16 @@ def web_vut_id(request, vivienda_id):
                 fecha_anterior_limite = datetime.today().date() - timedelta(1100)
                 viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
                                                   reserva__entrada__gte=fecha_anterior_limite)
-                c = render_to_string('libro_registro_policia.html',
-                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                return response
+                c = render_to_string('libro_registro_policia.html', {'vivienda': vivienda, 'viajeros': viajeros,
+                                                                     'ruta_base': RUTA_BASE, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = 'Libro_registro_viajeros.pdf'
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                # return response
 
     return render(request, "web_vut_id.html",
                   {
@@ -2984,11 +3001,15 @@ def reserva_vut_crea_recibo(request, reserva_id):
     reserva = Reserva.objects.get(id=reserva_id)
     if reserva.vivienda in viviendas:
         if request.method == 'POST':
-            c = render_to_string('recibo_html_vut.html', {'recibo_html': request.POST['recibo_html']})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
-            return response
+            c = render_to_string('recibo_html_vut.html', {'recibo_html': request.POST['recibo_html'], 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'justificante_de_pago.pdf'
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
+            # return response
         return render(request, "reserva_vut_crea_recibo.html",
                       {
                           'formname': 'reserva_vut_crea_recibo',
@@ -3001,10 +3022,14 @@ def reserva_vut_crea_recibo(request, reserva_id):
         if reserva.vivienda in viviendas:
             if request.method == 'POST':
                 c = request.POST['html']
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
-                return response
+                genera_pdf(c, dce)
+                nombre = 'justificante_de_pago.pdf'
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
+                # return response
             return render(request, "reserva_vut_crea_recibo.html",
                           {
                               'formname': 'reserva_vut_crea_recibo',
@@ -3169,6 +3194,9 @@ def genera_pdf_contrato(contrato):
         dce.editable = False
         dce.save()
     contrato_vut = contrato
+    heading_footing = Template("""<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+                                  <span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>""")
+    c = Context({'dce': dce})
     preambulo = """<!DOCTYPE html>
                                 <html lang="es">
                                 <head>
@@ -3179,25 +3207,29 @@ def genera_pdf_contrato(contrato):
                                     p, li { text-align: justify; }
                                     </style>
                                 </head>
-                                <body>"""
+                                <body>
+                                """
     if contrato_vut.hay_firmas:
         firmas = render_to_string('contratos_vut_accordion_content_texto_firmas.html',
                                   {'contrato': contrato_vut})
     else:
         firmas = ''
     final = "</body></html>"
-    html = preambulo + contrato_vut.texto + firmas + final
+    html = preambulo + heading_footing.render(c) + contrato_vut.texto + firmas + final
     filename = 'Contrato_%s_%s.pdf' % (str(contrato_vut.propietario.gauser.id), str(contrato_vut.id))
     ruta = MEDIA_VUT + '%s/contratos_alquiler/' % contrato_vut.propietario.ronda.entidad.code
     fichero = '%s%s' % (ruta, filename)
     if not os.path.exists(os.path.dirname(ruta)):
         os.makedirs(os.path.dirname(ruta))
-    pdfkit.from_string(html, fichero, dce.get_opciones)
-    fich = open(fichero, 'rb')
-    response = HttpResponse(fich, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename=%s' % filename
-    logger.info('Se genera pdf del contrato id: %s ' % contrato_vut.id)
-    return response
+    genera_pdf(html, dce)
+    return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=filename,
+                        content_type='application/pdf')
+    # pdfkit.from_string(html, fichero, dce.get_opciones)
+    # fich = open(fichero, 'rb')
+    # response = HttpResponse(fich, content_type='application/pdf')
+    # response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    # logger.info('Se genera pdf del contrato id: %s ' % contrato_vut.id)
+    # return response
 
 
 def firconvut(request, secret_id, n):

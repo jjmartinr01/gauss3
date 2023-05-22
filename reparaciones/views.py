@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import pdfkit
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 # from django.template import RequestContext
@@ -15,11 +14,11 @@ from datetime import datetime, date
 from django.core.mail import EmailMessage
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.template.loader import render_to_string
 import simplejson as json
 from gauss.rutas import *
-from gauss.funciones import get_dce
+from gauss.funciones import get_dce, genera_pdf
 from mensajes.views import encolar_mensaje
 
 logger = logging.getLogger('django')
@@ -49,15 +48,18 @@ def gestionar_reparaciones(request):
             q_tipo = Q(tipo__in=tipo)
             q_entidad = Q(detecta__ronda__entidad=g_e.ronda.entidad)
             reparaciones = Reparacion.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
-
-            fichero = 'Reparaciones%s_%s_%s' % (
+            c = render_to_string('reparaciones2pdf.html', {'reparaciones': reparaciones, 'MA': MEDIA_ANAGRAMAS,
+                                                           'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'Reparaciones%s_%s_%s' % (
                 str(g_e.ronda.entidad.code), request.POST['tipo_busqueda'], g_e.gauser.username)
-            c = render_to_string('reparaciones2pdf.html', {'reparaciones': reparaciones, 'MA': MEDIA_ANAGRAMAS, })
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            logger.info('%s, pdf_reparaciones' % g_e)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            return response
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # logger.info('%s, pdf_reparaciones' % g_e)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+            # return response
 
     Reparacion.objects.filter(detecta__ronda__entidad=g_e.ronda.entidad, borrar=True).delete()
     reparaciones = Reparacion.objects.filter(detecta__ronda__entidad=g_e.ronda.entidad, fecha_comunicado__gte=g_e.ronda.inicio,

@@ -23,7 +23,8 @@
     </style>
 </head>
 <body>
-
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 Número total de incidencias: {{ reparaciones|length }}
 <br>
 <table width="100%" style="border-spacing:20px;">

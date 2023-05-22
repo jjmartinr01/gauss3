@@ -68,7 +68,8 @@
     </style>
 </head>
 <body>
-
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 {% for grupo in grupos %}
     <p>Curso escolar: {{ grupo.ronda.entidad.ronda.nombre }}</p>
     <h2> ACTA DE LA EVALUACIÓN ({% now "d-m-Y" %})</h2>

@@ -97,6 +97,10 @@
         <button type="submit" style="position: fixed;top:40px;right: 30px;">Genera PDF</button>
     </form>
 {% endif %}
+
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
+
 <h1>Programación Didáctica</h1>
 <h2>{{ progsec.nombre }}</h2>
 <p style="text-align: center; font-weight: bold;">{{ progsec.areamateria.nombre }} -

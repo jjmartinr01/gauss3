@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import pdfkit
 import logging
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse
@@ -11,7 +10,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from entidades.models import Gauser_extra
-from gauss.funciones import get_dce
+from gauss.funciones import get_dce, genera_pdf
 from horarios.models import Sesion, Horario, SesionExtra
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Curso
 from competencias_clave.models import CompetenciasMateria, CompetenciasMateriaAlumno
@@ -103,13 +102,16 @@ def cc_valorar_mis_alumnos(request):
                                                             materia__materia__curso__etapa__in=etapas)
             ids = cmas.values_list('alumno', flat=True).distinct()
             alumnos = Gauser_extra.objects.filter(id__in=ids).order_by('gauser_extra_estudios__grupo')
-            fichero = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
-            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos,})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            logger.info('%s, pdf_cc_valorar_mis_alumnos' % g_e)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s' % fichero
-            return response
+            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # logger.info('%s, pdf_cc_valorar_mis_alumnos' % g_e)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=%s' % nombre
+            # return response
 
     return render(request, "cc_valorar_mis_alumnos.html",
                   {
@@ -216,13 +218,16 @@ def cc_valorar_cualquier_alumno(request):
                                                             materia__materia__curso__etapa__in=etapas)
             ids = cmas.values_list('alumno', flat=True).distinct()
             alumnos = Gauser_extra.objects.filter(id__in=ids).order_by('gauser_extra_estudios__grupo')
-            fichero = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
-            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, 'profesores': profesores})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            logger.info('%s, pdf_cc_valorar_cualquier_alumno' % g_e)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero
-            return response
+            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, 'profesores': profesores, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # logger.info('%s, pdf_cc_valorar_cualquier_alumno' % g_e)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=' + nombre
+            # return response
 
     return render(request, "cc_valorar_cualquier_alumno.html",
                   {
@@ -308,12 +313,15 @@ def cc_configuracion(request):
                                                             materia__materia__curso__etapa__in=etapas)
             ids = cmas.values_list('alumno', flat=True).distinct()
             alumnos = Gauser_extra.objects.filter(id__in=ids).order_by('gauser_extra_estudios__grupo')
-            fichero = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
-            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, })
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero
-            return response
+            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre,
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=' + nombre
+            # return response
 
     respuesta = {
         'formname': 'configura_materias_pendientes',

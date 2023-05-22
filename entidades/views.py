@@ -6,7 +6,6 @@ import os
 import re
 import logging
 import xlwt
-import pdfkit
 from time import sleep
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -35,7 +34,8 @@ from mensajes.views import crear_aviso
 from bancos.views import asocia_banco_entidad, num_cuenta2iban
 from gauss.rutas import *
 from gauss.constantes import CARGOS
-from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, genera_nie, usuarios_organization
+from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, genera_nie, usuarios_organization, \
+    genera_pdf
 from datetime import date
 import simplejson as json
 from django.template.loader import render_to_string
@@ -2597,15 +2597,11 @@ def doc_configuration(request):
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'pdf_doc_conf':
             dce = dces.get(id=request.POST['doc_conf'])
-            c = render_to_string('docconf_pruebas_template.html', {'g_e': g_e})
-            # if not os.path.exists(os.path.dirname(dce.url_pdf)):
-            #     os.makedirs(os.path.dirname(dce.url_pdf))
-            # pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            # fich = open(dce.url_pdf, 'rb')
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=doc_conf%s.pdf' % dce.id
-            return response
+            nombre_archivo = 'doc_conf%s.pdf' % dce.id
+            c = render_to_string('docconf_pruebas_template.html', {'g_e': g_e, 'dce': dce})
+            genera_pdf(c, dce)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre_archivo,
+                                content_type='application/pdf')
 
     return render(request, "doc_configuration.html",
                   {

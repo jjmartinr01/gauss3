@@ -1,4 +1,6 @@
 {% load my_templatetags %}
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 <h1 style="text-align: center;">Aspectos generales del Proyecto Educativo del Centro</h1>
 <h2 style="text-align: center;">{{ pec.entidad.name }}</h2>
 

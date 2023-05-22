@@ -133,8 +133,8 @@ class Informe_sancionador(models.Model):
         ordering = ['fecha_incidente']
 
     def __str__(self):
-        return u'Informe sancionador a %s. Entidad: %s (%s)' % (
-            self.sancionado, self.sancionado.entidad.name, self.sancionador)
+        return 'Informe sancionador a %s. Entidad: %s (%s)' % (
+            self.sancionado, self.sancionado.ronda.entidad.name, self.sancionador)
 
 class FechaExpulsion(models.Model):
     informe = models.ForeignKey(Informe_sancionador, on_delete=models.CASCADE)
@@ -161,5 +161,5 @@ class Expulsar(models.Model):
         verbose_name_plural = 'Expulsiones'
 
     def __str__(self):
-        return u'Informe de expulsión a %s. Entidad: %s (%s)' % (
-            self.expulsado, self.expulsado.entidad.name, self.expulsa)
+        return 'Informe de expulsión a %s. Entidad: %s (%s)' % (
+            self.expulsado, self.expulsado.ronda.entidad.name, self.expulsa)

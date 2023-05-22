@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import logging
-import pdfkit
 # import urlparse
 import urllib  # .parse import parse_qs # Sirve para leer los forms serializados y pasados por ajax
 import base64
@@ -12,7 +11,7 @@ import simplejson as json
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import File, ContentFile
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.text import slugify
@@ -24,7 +23,7 @@ from autenticar.control_acceso import permiso_required
 from calendario.models import Vevent
 from entidades.models import Subentidad, Gauser_extra
 from entidades.views import decode_selectgcs
-from gauss.funciones import human_readable_list, usuarios_ronda, get_dce
+from gauss.funciones import human_readable_list, usuarios_ronda, get_dce, genera_pdf
 from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
 from gauss.constantes import DIAS, MESES
 from mensajes.models import Aviso, Mensaje, Etiqueta
@@ -410,12 +409,15 @@ def conv_reunion(request):
             try:
                 dce = get_dce(g_e.ronda.entidad, 'Configuración para convocatorias de reunión')
                 convocatoria = ConvReunion.objects.get(id=request.POST['id_conv_reunion'], entidad=g_e.ronda.entidad)
-                fichero = 'convocatoria_%s_%s' % (g_e.ronda.entidad.code, convocatoria.id)
-                c = render_to_string('convreunion2pdf.html', {'convocatoria': convocatoria, 'pdf': True})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-                return response
+                nombre = 'convocatoria_%s_%s' % (g_e.ronda.entidad.code, convocatoria.id)
+                c = render_to_string('convreunion2pdf.html', {'convocatoria': convocatoria, 'pdf': True, 'dce': dce})
+                genera_pdf(c, dce)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+                # return response
             except:
                 crear_aviso(request, False, 'No es posible generar el pdf de la convocatoria solicitada')
         elif request.POST['action'] == 'update_page':
@@ -946,14 +948,17 @@ def redactar_actas_reunion(request):
                 dce = get_dce(g_e.ronda.entidad, 'Configuración para actas de reunión')
                 acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fecha = acta.convocatoria.fecha_hora.strftime('%Y%m%d')
-                nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha)) + '.pdf'
+                nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha))
                 p_d = request.POST['protocol_domain']
-                c = render_to_string('acta_reunion2pdf.html', {'acta': acta, 'pdf': True, 'p_d': p_d})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                logger.info('Creado pdf: %s' % nombre_fichero)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
-                return response
+                c = render_to_string('acta_reunion2pdf.html', {'acta': acta, 'pdf': True, 'p_d': p_d, 'dce': dce})
+                genera_pdf(c, dce)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre_fichero + '.pdf',
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # logger.info('Creado pdf: %s' % nombre_fichero)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
+                # return response
             except:
                 crear_aviso(request, False, 'No es posible generar el pdf del acta solicitada')
         elif request.POST['action'] == 'upload_archivo_xhr':

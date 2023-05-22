@@ -36,9 +36,11 @@
 </style>
 {% if not cupo.es_posible_pdf_rrhh %}
     <h1 style="position: absolute;top:300px;color:grey;font-size: 7em;z-index: -1;">Este documento es un borrador</h1>
-    <h1 style="position: absolute;top:1050px;color:red;z-index: -1;">Para imprimir el documento definitivo
-        es necesario bloquear el cupo.</h1>
+    <h1 style="position: absolute;bottom:100px;color:coral;z-index: -1;">Para imprimir el documento definitivo
+        es necesario bloquear el cupo y publicarlo para RRHH.</h1>
 {% endif %}
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Solicitud de profesores interinos de cupo</h1>
 <h3>{{ cupo.ronda.entidad.name }}</h3>
 <table style="width:100%;">

@@ -1,4 +1,10 @@
 {% load my_templatetags %}
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Aspectos Generales de la PGA</title>
+</head>
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 <h1 style="text-align: center;">Aspectos generales de la programación general anual</h1>
 <h2 style="text-align: center;">{{ pga.ronda.entidad.name }}</h2>
 

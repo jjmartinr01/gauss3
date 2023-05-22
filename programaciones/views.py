@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-import pdfkit
 from datetime import date, datetime
 import simplejson as json
 import unicodedata
@@ -19,7 +18,7 @@ from django.template import RequestContext
 from django.db.models import Q, Sum
 from django import forms
 from django.forms import ModelForm
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.template.loader import render_to_string
 from django.core.files.base import File
 from django.core.paginator import Paginator
@@ -30,7 +29,7 @@ from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
 from entidades.models import Cargo, EntidadExtra, DocConfEntidad
 from entidades.templatetags.entidades_extras import profesorado
-from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce, clone_object
+from gauss.funciones import usuarios_ronda, usuarios_de_gauss, get_dce, clone_object, genera_pdf
 from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
@@ -99,46 +98,50 @@ def cargar_programaciones(request):
             else:
                 crear_aviso(request, False, 'No tienes permiso para descargar programaciones cargadas por otros')
         elif action == 'generar_zip_pga' and g_e.has_permiso('descarga_pga'):
-            doc_pga = 'Configuración de documentos de la PGA'
-            dce = get_dce(g_e.ronda.entidad, doc_pga)
-            pga = PGA.objects.get(ronda=g_e.ronda)
-            # try:
-            # Procesado del archivo de aspectos de la PGA
-            c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga})
-            ruta = rutas_aspectos_pga(pga)['absoluta']
-            nombre_fichero = 'aspectos_generales_pga'
-            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
-                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
-            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales de la PGA')
-            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
-                os.remove('%s%s.html' % (ruta, nombre_fichero))
-            # Procesado del archivo de aspectos del PEC
-            pec = PEC.objects.get(entidad=g_e.ronda.entidad)
-            c = render_to_string('aspectos_generales_pec2pdf.html', {'pec': pec})
-            ruta = rutas_pec(pec)['absoluta']
-            nombre_fichero = 'aspectos_generales_pec'
-            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
-                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
-            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales del PEC')
-            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
-                os.remove('%s%s.html' % (ruta, nombre_fichero))
-            # Generación del ZIP que contiene toda la PGA
-            ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
-            ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
-            fichero = "PGA_{0}_{1}".format(g_e.ronda.entidad.code, slugify(g_e.ronda.nombre))
-            ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
             try:
-                # Create target Directory. Si existiera se produciría la excepción
-                os.mkdir(ruta_curso_escolar)
-                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
-            except FileExistsError:
-                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
-            shutil.make_archive(ruta_zip + fichero, 'zip', ruta_curso_escolar)
-            fich = open(ruta_zip + fichero + '.zip', 'rb')
-            crear_aviso(request, True, "%s genera y descarga %s" % (g_e.gauser.get_full_name(), fichero))
-            response = HttpResponse(fich, content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero + '.zip')
-            return response
+                doc_pga = 'Configuración de documentos de la PGA'
+                dce = get_dce(g_e.ronda.entidad, doc_pga)
+                pga = PGA.objects.get(ronda=g_e.ronda)
+                # try:
+                # Procesado del archivo de aspectos de la PGA
+                c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga, 'dce': dce})
+                ruta = rutas_aspectos_pga(pga)['absoluta']
+                nombre_fichero = 'aspectos_generales_pga'
+                if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.html' % (ruta, nombre_fichero))
+                # Procesado del archivo de aspectos del PEC
+                pec = PEC.objects.get(entidad=g_e.ronda.entidad)
+                c = render_to_string('aspectos_generales_pec2pdf.html', {'pec': pec, 'dce': dce})
+                ruta = rutas_pec(pec)['absoluta']
+                nombre_fichero = 'aspectos_generales_pec'
+                if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.html' % (ruta, nombre_fichero))
+                # Generación del ZIP que contiene toda la PGA
+                ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
+                ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
+                fichero = "PGA_{0}_{1}".format(g_e.ronda.entidad.code, slugify(g_e.ronda.nombre))
+                ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
+                try:
+                    # Create target Directory. Si existiera se produciría la excepción
+                    os.mkdir(ruta_curso_escolar)
+                    os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+                except FileExistsError:
+                    os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+                shutil.make_archive(ruta_zip + fichero, 'zip', ruta_curso_escolar)
+                fich = open(ruta_zip + fichero + '.zip', 'rb')
+                crear_aviso(request, True, "%s genera y descarga %s" % (g_e.gauser.get_full_name(), fichero))
+                response = HttpResponse(fich, content_type='application/zip')
+                response['Content-Disposition'] = 'attachment; filename=%s' % (fichero + '.zip')
+                return response
+            except Exception as msg:
+                crear_aviso(request, False, 'Se ha producido un error: %s' % str(msg))
+                # return JsonResponse({'error': True, 'msg': str(msg)})
             # except:
             #     pass
 
@@ -640,15 +643,14 @@ def programaciones(request):
                                                                                                         '_') + '.pdf'
                 return response
             except:
+                dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
                 fichero = '%s_%s' % (g_e.ronda.entidad.code, programacion.id)
-                c = render_to_string('programacion2pdf.html', {'programacion': programacion},
+                ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + fichero + '.pdf'
+                c = render_to_string('programacion2pdf.html', {'programacion': programacion, 'dce': dce},
                                      request=request)
-                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ESCRITOS,
-                                   title='Programacion_modulo generado con GAUSS')
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + programacion.asunto.replace(' ',
-                                                                                                        '_') + '.pdf'
-                return response
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % fichero,
+                                    content_type='application/pdf')
         elif request.POST['action'] == 'download_pdf':
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
             try:
@@ -659,8 +661,9 @@ def programaciones(request):
                 response['Content-Disposition'] = 'attachment; filename=' + fich_name
                 return response
             except:
+                dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
                 crear_aviso(request, True, 'Detecta id y se genera el pdf de la programación: %s' % (programacion))
-                c = render_to_string('programacion2pdf.html', {'prog': programacion})
+                c = render_to_string('programacion2pdf.html', {'prog': programacion, 'dce': dce})
                 crear_aviso(request, True, 'prog 2')
                 fichero = replace_normalize(programacion.modulo.materia.nombre)
                 crear_aviso(request, True, 'prog 3')
@@ -682,14 +685,11 @@ def programaciones(request):
                 crear_aviso(request, True, 'prog 7')
                 programacion.save()
                 crear_aviso(request, True, 'prog 8')
-                fich = html_to_pdf(request, c, fichero=fichero, media=file_path,
-                                   title='Programación del módulo generada con GAUSS')
-                crear_aviso(request, True, 'prog 9')
-                response = HttpResponse(fich, content_type='application/pdf')
-                crear_aviso(request, True, 'prog 10')
-                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-                crear_aviso(request, True, 'prog 11')
-                return response
+                dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
+                ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + fichero + '.pdf'
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % fichero,
+                                    content_type='application/pdf')
         elif request.POST['action'] == 'download_html':
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
             fich_name = replace_normalize(programacion.modulo.materia.nombre) + '.html'
@@ -1240,8 +1240,9 @@ def editar_programacion(request):
             c = render_to_string('programacion2pdf.html', {'prog': programacion})
             # -----------------------------------
             ruta = '%s%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code)
-            fich = html_to_pdf(request, c, fichero='programacion_ccff', media=ruta,
-                               title='Programación del módulo generada con GAUSS')
+            dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
+            genera_pdf(c, dce)
+            fich = open(dce.url_pdf, 'rb')
             materia = Materia.objects.get(curso__ronda=g_e.ronda, clave_ex=programacion.modulo.materia.clave_ex)
             try:
                 p = ProgramacionSubida.objects.get(materia=materia)
@@ -1258,36 +1259,21 @@ def editar_programacion(request):
                                                       content_type='application/pdf')
             programacion.file_path = p.archivo.url
             programacion.save()
-            # -----------------------------------
-            # fichero = replace_normalize(programacion.modulo.materia.nombre)
-            # curso = g_e.ronda.entidad.ronda.nombre.replace('/', '-')
-            # file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
-            #                                     curso, g_e.gauser_extra_programaciones.departamento.nombre,
-            #                                     programacion.modulo.materia.curso.get_etapa_display(),
-            #                                     programacion.modulo.materia.curso.nombre)
-            # file_path = replace_normalize(file_path)
-            # programacion.file_path = file_path + fichero
-            # programacion.save()
-            # fich = html_to_pdf(request, c, fichero=fichero, media=file_path,
-            #                    title='Programación del módulo generada con GAUSS')
-            # response = HttpResponse(fich, content_type='application/pdf')
-            # response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            # return response
-            # -----------------------------------
             response = HttpResponse(p.archivo, content_type=p.content_type)
             response['Content-Disposition'] = 'attachment; filename=%s' % p.filename
             return response
             # -----------------------------------
         if request.POST['action'] == 'pdf_ud':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
             ud = UD_modulo.objects.get(id=request.POST['unidad_didactica'])
             crear_aviso(request, True, 'Genera el pdf de la unidad didáctica: %s' % (ud.nombre))
             fichero = '%s_%s_%s' % (g_e.ronda.entidad.code, ud.programacion.id, ud.id)
-            c = render_to_string('ud2pdf.html', {'ud': ud})
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_PROGRAMACIONES,
-                               title='Programacion_modulo generado con GAUSS')
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + ud.nombre.replace(' ', '_') + '.pdf'
-            return response
+            c = render_to_string('ud2pdf.html', {'ud': ud, 'dce': dce})
+            dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
+            ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + fichero + '.pdf'
+            genera_pdf(c, dce, ruta_archivo=ruta)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % fichero,
+                                content_type='application/pdf')
     else:
         if 'prog' in request.GET:
             try:
@@ -1347,12 +1333,12 @@ def titulos(request):
                 return response
             except:
                 fichero = '%s_%s' % (g_e.ronda.entidad.code, titulo.id)
-                c = render_to_string('titulo2pdf.html', {'titulo': titulo}, request=request)
-                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ESCRITOS,
-                                   title='Titulo_FP generado con GAUSS')
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=' + titulo.asunto.replace(' ', '_') + '.pdf'
-                return response
+                dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
+                c = render_to_string('titulo2pdf.html', {'titulo': titulo, 'dce': dce}, request=request)
+                ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + fichero + '.pdf'
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % fichero,
+                                    content_type='application/pdf')
     return render(request, "titulosFP_foundation.html",
                   {
                       'iconos':
@@ -1519,12 +1505,11 @@ def editar_titulo(request):
             c = render_to_string('titulo2pdf.html', {
                 'titulo': titulo,
             }, request=request)
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ESCRITOS,
-                               title='Titulo_FP generado con GAUSS')
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + titulo.asunto.replace(' ',
-                                                                                              '_') + '.pdf'
-            return response
+            dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
+            ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + fichero + '.pdf'
+            genera_pdf(c, dce, ruta_archivo=ruta)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='%s.pdf' % fichero,
+                                content_type='application/pdf')
     else:
         form_contacto = ContactoForm()
         try:
@@ -1808,45 +1793,48 @@ def aspectos_pga(request):
                 pass
         elif request.POST['action'] == 'downloadpga':
             pga = PGA.objects.get(id=request.POST['pga'], ronda=g_e.ronda)
-            # try:
-            # Procesado del archivo de aspectos de la PGA
-            c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga})
-            ruta = rutas_aspectos_pga(pga)['absoluta']
-            nombre_fichero = 'aspectos_generales_pga'
-            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
-                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
-            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales de la PGA')
-            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
-                os.remove('%s%s.html' % (ruta, nombre_fichero))
-            # Procesado del archivo de aspectos del PEC
-            pec = PEC.objects.get(entidad=g_e.ronda.entidad)
-            c = render_to_string('aspectos_generales_pec2pdf.html', {'pec': pec})
-            ruta = rutas_pec(pec)['absoluta']
-            nombre_fichero = 'aspectos_generales_pec'
-            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
-                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
-            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales del PEC')
-            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
-                os.remove('%s%s.html' % (ruta, nombre_fichero))
-            # Generación del ZIP que contiene toda la PGA
-            ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
-            ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
-            fichero = "PGA_{0}_{1}".format(g_e.ronda.entidad.code, slugify(g_e.ronda.nombre))
-            ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
             try:
-                # Create target Directory. Si existiera se produciría la excepción
-                os.mkdir(ruta_curso_escolar)
-                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
-            except FileExistsError:
-                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
-            shutil.make_archive(ruta_zip + fichero, 'zip', ruta_curso_escolar)
-            fich = open(ruta_zip + fichero + '.zip', 'rb')
-            crear_aviso(request, True, "%s genera y descarga %s" % (g_e.gauser.get_full_name(), fichero))
-            response = HttpResponse(fich, content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero + '.zip')
-            return response
-            # except:
-            #     pass
+                # Procesado del archivo de aspectos de la PGA
+                dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones de CCFF')
+                c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga, 'dce': dce})
+                ruta = rutas_aspectos_pga(pga)['absoluta']
+                nombre_fichero = 'aspectos_generales_pga'
+                if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+                ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + nombre_fichero + '.pdf'
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.html' % (ruta, nombre_fichero))
+                # Procesado del archivo de aspectos del PEC
+                pec = PEC.objects.get(entidad=g_e.ronda.entidad)
+                c = render_to_string('aspectos_generales_pec2pdf.html', {'pec': pec, 'dce': dce})
+                ruta = rutas_pec(pec)['absoluta']
+                nombre_fichero = 'aspectos_generales_pec'
+                if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+                ruta = MEDIA_PROGRAMACIONES + g_e.ronda.entidad.code + '/' + nombre_fichero + '.pdf'
+                genera_pdf(c, dce, ruta_archivo=ruta)
+                if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                    os.remove('%s%s.html' % (ruta, nombre_fichero))
+                # Generación del ZIP que contiene toda la PGA
+                ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
+                ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
+                fichero = "PGA_{0}_{1}".format(g_e.ronda.entidad.code, slugify(g_e.ronda.nombre))
+                ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
+                try:
+                    # Create target Directory. Si existiera se produciría la excepción
+                    os.mkdir(ruta_curso_escolar)
+                    os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+                except FileExistsError:
+                    os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+                shutil.make_archive(ruta_zip + fichero, 'zip', ruta_curso_escolar)
+                fich = open(ruta_zip + fichero + '.zip', 'rb')
+                crear_aviso(request, True, "%s genera y descarga %s" % (g_e.gauser.get_full_name(), fichero))
+                response = HttpResponse(fich, content_type='application/zip')
+                response['Content-Disposition'] = 'attachment; filename=%s' % (fichero + '.zip')
+                return response
+            except Exception as msg:
+                crear_aviso(request, False, 'Se ha producido un error: %s' % str(msg))
 
     return render(request, "aspectos_pga.html",
                   {
@@ -2589,29 +2577,20 @@ def progsecundaria(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
     elif request.method == 'POST':
         if request.POST['action'] == 'pdf_progsec':
-            doc_progsec = 'Configuración de programaciones didácticas'
-            try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec)
-            except:
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                except:
-                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                    dce.predeterminado = True
-                    dce.save()
-                dce.pk = None
-                dce.nombre = doc_progsec
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
+            dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones didácticas')
             progsec = ProgSec.objects.get(id=request.POST['id_progsec'])
-            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True})
-            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            fich = open(dce.url_pdf, 'rb')
-            response = HttpResponse(fich, content_type='application/pdf')
-            nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
-            return response
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify('%s_%s' % (progsec.areamateria.nombre, progsec.areamateria.get_curso_display()))
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+
+            # p_dfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # fich = open(dce.url_pdf, 'rb')
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            # return response
         elif request.POST['action'] == 'download_file':
             try:
                 pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
@@ -2666,27 +2645,18 @@ def verprogramacion(request, secret, id):
         progsec = ProgSec.objects.get(id=id, pga__ronda__entidad=entidad)
         if 'pdf' in request.GET:
             doc_progsec = 'Configuración de programaciones didácticas'
-            try:
-                dce = DocConfEntidad.objects.get(entidad=entidad, nombre=doc_progsec)
-            except:
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
-                except:
-                    dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
-                    dce.predeterminado = True
-                    dce.save()
-                dce.pk = None
-                dce.nombre = doc_progsec
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
-            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True})
-            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            fich = open(dce.url_pdf, 'rb')
-            response = HttpResponse(fich, content_type='application/pdf')
-            nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
-            return response
+            dce = get_dce(entidad, doc_progsec)
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify('%s_%s' % (progsec.areamateria.nombre, progsec.areamateria.get_curso_display()))
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+            # p_dfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # fich = open(dce.url_pdf, 'rb')
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            # return response
 
         return render(request, "verprogramacion.html",
                       {
@@ -3088,28 +3058,19 @@ def estadistica_prog(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'genera_pdf':
             doc_progsec_estadistica = 'Configuración de estadística para las programaciones'
-            try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec_estadistica)
-            except:
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                except:
-                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                    dce.predeterminado = True
-                    dce.save()
-                dce.pk = None
-                dce.nombre = doc_progsec_estadistica
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
+            dce = get_dce(g_e.ronda.entidad, doc_progsec_estadistica)
             tablas = request.POST['textarea_listado_estadistica']
-            c = render_to_string('estadistica_prog_html2pdf.html', {'tablas': tablas})
-            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            fich = open(dce.url_pdf, 'rb')
-            response = HttpResponse(fich, content_type='application/pdf')
-            nombre = 'Informe_estadística'
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
-            return response
+            c = render_to_string('estadistica_prog_html2pdf.html', {'tablas': tablas, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify('Informe_estadística')
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+            # p_dfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # fich = open(dce.url_pdf, 'rb')
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # nombre = 'Informe_estadística'
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            # return response
 
     return render(request, "estadistica_prog.html",
                   {

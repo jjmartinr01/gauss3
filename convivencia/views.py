@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import pdfkit
 from datetime import date
 import os
 from os.path import normpath, basename
@@ -15,7 +14,7 @@ from django.core.files.base import ContentFile
 import base64
 
 from autenticar.control_acceso import permiso_required
-from gauss.funciones import usuarios_de_gauss, get_dce
+from gauss.funciones import usuarios_de_gauss, get_dce, genera_pdf
 from gauss.rutas import RUTA_BASE, MEDIA_ANAGRAMAS, MEDIA_CONVIVENCIA
 from convivencia.models import *
 from entidades.models import Subentidad, DocConfEntidad
@@ -255,16 +254,16 @@ def sancionar_conductas(request):
                     if mc.count() > 0:
                         mc[0].mensaje.delete()
                         mc.delete()
-                    encolar_mensaje(emisor=g_e, receptores=receptores, asunto=asunto, html=texto,
-                                   etiqueta='is%s' % informe.id)
+                    # encolar_mensaje(emisor=g_e, receptores=receptores, asunto=asunto, html=texto,
+                    #                etiqueta='is%s' % informe.id)
                 # Fin de código para enviar correo
                 texto_html = render_to_string('is2pdf.html', {'informe': informe, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS,
-                                                              'listar_conductas': listar_conductas,
+                                                              'listar_conductas': listar_conductas, 'dce': dce,
                                                               'expulsiones': expulsiones, 'informes': informes})
                 nombre = '%s_%s.pdf' % (slugify(informe.sancionado.gauser.get_full_name()),
                     timezone.localtime(informe.created).strftime('%d-%m-%Y_%H%M'))
                 url_pdf = MEDIA_CONVIVENCIA + '%s/%s' % (g_e.ronda.entidad.code, nombre)
-                pdfkit.from_string(texto_html, url_pdf, dce.get_opciones)
+                genera_pdf(texto_html, dce, ruta_archivo=url_pdf)
                 fich = open(url_pdf, 'rb')
                 informe.texto_html = texto_html
                 nombre_fichero = 'convivencia/%s/%s' % (g_e.ronda.entidad.code, nombre)
@@ -306,11 +305,11 @@ def sancionar_conductas(request):
 def sancionar_conductas_ajax(request):
     if request.method == 'POST' and request.is_ajax():
         g_e = request.session['gauser_extra']
-        sub_alumnos = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='alumnos')
+        cargo_alumno = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_alumno')
         action = request.POST['action']
         if action == 'buscar_usuarios':
             texto = request.POST['q']
-            usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_alumnos])
+            usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[cargo_alumno])
             filtrados = usuarios.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
             options = []
             for u in filtrados:

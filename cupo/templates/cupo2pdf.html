@@ -34,8 +34,14 @@
         page-break-before: always;
     }
 
-
+    #tabla_resumen td{
+        border: 1px solid black;
+        text-align:center;
+        padding-top:2px;
+    }
 </style>
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 <h1>&nbsp;</h1><h1>&nbsp;</h1><h1>&nbsp;</h1>
 <h1>INFORME CUPO</h1>
 <h1>{{ cupo.ronda.entidad.name }}</h1>
@@ -76,27 +82,27 @@
 
 
 <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Resumen de horas por especialidades</h1>
-<table id="tabla_resumen" style="width:100%;" border="1">
+<table id="tabla_resumen" style="width:100%;">
     <tr>
-        <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong>
+        <td colspan="4"><strong>Especialidad</strong>
         </td>
-        <td style="text-align:center;padding-top:2px;"><strong> horas</strong></td>
-        <td style="text-align:center;padding-top:2px;font-weight: 700;">JC</td>
-        <td style="text-align:center;padding-top:2px;font-weight: 700;">2/3</td>
-        <td style="text-align:center;padding-top:2px;font-weight: 700;">1/2</td>
-        <td style="text-align:center;padding-top:2px;font-weight: 700;">1/3</td>
+        <td><strong> Horas</strong></td>
+        <td style="font-weight: 700;">JC</td>
+        <td style="font-weight: 700;">2/3</td>
+        <td style="font-weight: 700;">1/2</td>
+        <td style="font-weight: 700;">1/3</td>
         <td></td>
     </tr>
     {% for p in cupo.profesores_cupo_set.all %}
         {% if p.num_horas > 0 %}
             <tr>
-                <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.especialidad.nombre }}
+                <td colspan="4">{{ p.especialidad.nombre }}
                 </td>
-                <td style="padding-top:2px;padding-left: 50px;"><strong> {{ p.num_horas }}</strong></td>
-                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_completos }}</td>
-                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_dostercios }}</td>
-                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_media }}</td>
-                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_tercio }}</td>
+                <td><strong> {{ p.num_horas }}</strong></td>
+                <td>{{ p.reparto_profes.profes_completos }}</td>
+                <td>{{ p.reparto_profes.profes_dostercios }}</td>
+                <td>{{ p.reparto_profes.profes_media }}</td>
+                <td>{{ p.reparto_profes.profes_tercio }}</td>
                 <td>{% if p.reparto_profes.periodos_sobrantes > 0 %}
                     <span style="color:red;">{{ p.reparto_profes.periodos_sobrantes }}</span>
                 {% else %}

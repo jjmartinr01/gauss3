@@ -4,8 +4,13 @@ import logging
 import string
 import random
 import os
-import pdfkit
-# from weasyprint import HTML, CSS
+
+from django.http import HttpResponse, Http404
+
+try:
+    from weasyprint import HTML, CSS
+except:
+    import pdfkit
 import re
 from django.db.models import Q
 from django.template import Context, Template
@@ -15,6 +20,43 @@ from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad, CargaMasiv
 from datetime import date, timedelta, datetime
 logger = logging.getLogger('django')
 
+
+def get_dce(entidad, nombre):
+    try:
+        dce = DocConfEntidad.objects.get(entidad=entidad, nombre=nombre)
+    except:
+        try:
+            dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
+        except:
+            dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
+            dce.predeterminado = True
+            dce.save()
+        dce.pk = None
+        dce.nombre = nombre
+        dce.predeterminado = False
+        dce.editable = False
+        dce.save()
+    return dce
+def genera_pdf(html, dce, ruta_archivo=None):
+    if not ruta_archivo:
+        ruta_archivo = dce.url_pdf
+    # nombre_archivo = os.path.basename(ruta_archivo)
+    nombre_directorio = os.path.dirname(ruta_archivo)
+    if not os.path.exists(nombre_directorio):
+        os.makedirs(nombre_directorio)
+    try:
+        css = CSS(string=render_to_string('weasyprint_styles.css', {'dce': dce}))
+        doc = HTML(string=html)
+        doc.write_pdf(ruta_archivo, stylesheets=[css])
+    except:
+        pdfkit.from_string(html, ruta_archivo, dce.get_opciones)
+
+    # if os.path.exists(dce.url_pdf):
+    #     with open(dce.url_pdf, 'rb') as fh:
+    #         response = HttpResponse(fh.read(), content_type='application/pdf')
+    #         response['Content-Disposition'] = 'inline; filename=' + nombre_archivo
+    #         return response
+    # raise Http404
 def borra_carga_masiva_antigua(carga):
     if type(carga) == CargaMasiva:
         try:
@@ -151,7 +193,6 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         if pie:
             options['--footer-html'] = 'file://%s' % pie
         logger.info('Preparado para generar pdf')
-        a=b
         pdfkit.from_string(c, fichero_pdf, options)
         logger.info('Pdf generado')
     elif tipo == 'sin_cabecera':
@@ -473,23 +514,6 @@ def nombre_usuario(g_e, alias=False):
         return g_e.alias if g_e.alias else nombre(g_e)
     else:
         return nombre(g_e)
-
-def get_dce(entidad, nombre):
-    try:
-        dce = DocConfEntidad.objects.get(entidad=entidad, nombre=nombre)
-    except:
-        try:
-            dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
-        except:
-            dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
-            dce.predeterminado = True
-            dce.save()
-        dce.pk = None
-        dce.nombre = nombre
-        dce.predeterminado = False
-        dce.editable = False
-        dce.save()
-    return dce
 
 def genera_nie(a=''):
     if a:

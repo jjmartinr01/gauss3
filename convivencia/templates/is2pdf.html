@@ -22,6 +22,8 @@
     </style>
 </head>
 <body>
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
 <h2 style="text-align:center;"> COMUNICACIÓN DE CONDUCTAS CONTRARIAS Y SANCIONES</h2>
 
 Alumno: <strong> {{ informe.sancionado.gauser.get_full_name }}</strong>

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# from datetime import datetime
-import pdfkit
 import xlrd
 from django.contrib.auth import login
 import simplejson as json
@@ -12,7 +10,7 @@ from xlwt import Formula
 from time import sleep
 from django.utils.timezone import datetime, timedelta
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
 import html2text
@@ -30,7 +28,7 @@ from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from formularios.models import *
 from gauss.rutas import *
-from gauss.funciones import get_dce, genera_nie
+from gauss.funciones import get_dce, genera_nie, genera_pdf
 from entidades.models import Gauser_extra
 from horarios.tasks import carga_masiva_from_file
 
@@ -587,11 +585,16 @@ def formularios(request):
             dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
             try:
                 gform = Gform.objects.get(id=request.POST['gform'])
-                c = render_to_string('gform2pdf.html', {'gfrs': gform.gformresponde_set.filter(respondido=True)})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
-                return response
+                c = render_to_string('gform2pdf.html', {'gfrs': gform.gformresponde_set.filter(respondido=True),
+                                                        'dce': dce})
+                genera_pdf(c, dce)
+                nombre = slugify(gform.nombre)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+                # return response
             except Exception as msg:
                 aviso = 'Se ha producido un error en el procesamiento de la platilla que debes corregir: %s' % str(msg)
                 crear_aviso(request, False, aviso)
@@ -651,11 +654,15 @@ def ver_gform(request, id, identificador):
             if request.POST['action'] == 'genera_pdf':
                 dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
                 gform = Gform.objects.get(id=request.POST['gform'])
-                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
-                return response
+                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = slugify(gform.nombre)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+                # return response
         elif request.method == 'GET':
             gform = Gform.objects.get(id=id, identificador=identificador)
             return render(request, "ver_gform.html", {'gform': gform})
@@ -673,11 +680,15 @@ def ver_resultados(request, id, identificador):
             if request.POST['action'] == 'genera_pdf':
                 dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
                 gform = Gform.objects.get(id=request.POST['gform'])
-                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
-                return response
+                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = slugify(gform.nombre)
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+                # return response
         elif request.method == 'GET':
             gform = Gform.objects.get(id=id, identificador=identificador)
             gform_respondidos = gform.gformresponde_set.filter(respondido=True)
@@ -762,11 +773,15 @@ def mis_formularios(request):
                 gfds = gform.gformdestinatario_set.filter(corrector__gauser=g_e.gauser)
             else:
                 gfds = GformDestinatario.objects.filter(id=request.POST['gfd'])
-            c = render_to_string('mis_formularios_accordion_content_gfd2pdf.html', {'gfds': gfds})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s_eval.pdf' % slugify(gfds[0].gform.nombre)
-            return response
+            c = render_to_string('mis_formularios_accordion_content_gfd2pdf.html', {'gfds': gfds, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = '%s_eval' % slugify(gfds[0].gform.nombre)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=%s_eval.pdf' % slugify(gfds[0].gform.nombre)
+            # return response
         except Exception as msg:
             aviso = 'Se ha producido un error en el procesamiento de la platilla que debes corregir: %s' % str(msg)
             crear_aviso(request, False, aviso)
@@ -1037,11 +1052,15 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
         if request.POST['action'] == 'genera_pdf':
             dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
             gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e__gauser=g_e.gauser)
-            c = render_to_string('gform2pdf.html', {'gfrs': [gfr]})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gfr.gform.nombre)
-            return response
+            c = render_to_string('gform2pdf.html', {'gfrs': [gfr], 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify(gfr.gform.nombre)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gfr.gform.nombre)
+            # return response
         elif request.POST['action'] == 'upload_archivo_xhr':
             try:
                 n_files = int(request.POST['n_files'])
@@ -1109,11 +1128,15 @@ def mis_respuestas(request, id, identificador, gfr_identificador=''):
         if request.POST['action'] == 'genera_pdf':
             dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
             gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e__gauser=g_e.gauser)
-            c = render_to_string('gform2pdf.html', {'gfrs': [gfr]})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gfr.gform.nombre)
-            return response
+            c = render_to_string('gform2pdf.html', {'gfrs': [gfr], 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify(gfr.gform.nombre)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+            # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gfr.gform.nombre)
+            # return response
         elif request.POST['action'] == 'descarga_gauss_file':
             gfsi = gfsis.get(id=request.POST['gfsi'])
             gfri = GformRespondeInput.objects.get(gformresponde=gformresponde, gfsi=gfsi)
@@ -1469,12 +1492,16 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                 ie.texto = render_to_string('mis_evalpract_accordion_content_informe_INSP.html', {'efpa': efpa})
                 ie.save()
                 # Datos para la creación del documento de valoración:
-                c = render_to_string('mis_evalpract_accordion_content_informe.html', {'efpa': efpa})
-                fich = pdfkit.from_string(c, False, dce.get_opciones)
-                response = HttpResponse(fich, content_type='application/pdf')
-                nombre = slugify(efpa.docente.gauser.get_full_name())
-                response['Content-Disposition'] = 'attachment; filename=Evaluacion_%s.pdf' % nombre
-                return response
+                c = render_to_string('mis_evalpract_accordion_content_informe.html', {'efpa': efpa, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = 'Evaluacion_%s' % slugify(efpa.docente.gauser.get_full_name())
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                    content_type='application/pdf')
+                # fich = p_dfkit.from_string(c, False, dce.get_opciones)
+                # response = HttpResponse(fich, content_type='application/pdf')
+                # nombre = slugify(efpa.docente.gauser.get_full_name())
+                # response['Content-Disposition'] = 'attachment; filename=Evaluacion_%s.pdf' % nombre
+                # return response
             except Exception as msg:
                 aviso = 'Se ha producido un error en el procesamiento de la evaluación: %s' % str(msg)
                 crear_aviso(request, False, aviso)

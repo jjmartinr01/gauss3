@@ -6,7 +6,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Informe de Inspección: {{ ie.asunto }}</title>
 
-    {% comment %}
     <style type="text/css">
         html {
             font-family: Arial, Helvetica, sans-serif;
@@ -34,32 +33,13 @@
             page-break-before: always;
         }
 
-        @media print {
-            @page {
-                @top-center {
-                    content: element(heading);
-                    width: 100%;
-                }
-                margin-right: {{ dce.marginright }}mm;
-                margin-left: {{ dce.marginleft }}mm;
-                margin-top: {{ dce.margintop }}mm;
-                margin-bottom: {{ dce.marginbotton }}mm;
-                size: {{ dce.pagesize }} {{ dce.orientation }};
-            }
-        }
-
-        p.rh {
-            position: running(heading);
-        }
-
-        {#p.rh::before {#}
-        {#    content: counter(page) ' / ';#}
-        {# }#}
+        .gauss_header{display: none;}
     </style>
-{% endcomment %}
 </head>
 <body>
-{#<p class="rh">{% autoescape off %}{{ dce.header }}{% endautoescape %}</p>#}
+
+<span class="gauss_header">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+
 <div class="informe_no_editable">
     <table class="informe_no_editable">
         <tr>

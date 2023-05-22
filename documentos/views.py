@@ -1,9 +1,8 @@
 # coding=utf-8
 # Create your views here.
 import os
-import pdfkit
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render
 from django.utils.timezone import datetime
 from django.utils.text import slugify
@@ -19,7 +18,7 @@ from entidades.models import Subentidad, Cargo, DocConfEntidad
 from documentos.forms import Ges_documentalForm, Contrato_gaussForm
 from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental, \
     TextoEvaluable, NormativaEtiqueta, Normativa
-from gauss.funciones import usuarios_ronda
+from gauss.funciones import usuarios_ronda, genera_pdf
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS, RUTA_BASE
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso, enviar_correo
@@ -481,13 +480,11 @@ def contrato_gauss(request):
         if request.POST['action'] == 'obtener_pdf':
             dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
             contrato = Contrato_gauss.objects.get(entidad=g_e.ronda.entidad)
-            fichero = 'Contrato_GAUSS_sin_firmar'
-            c = render_to_string('contrato_gauss2pdf.html', {'contrato': contrato, 'MA': MEDIA_ANAGRAMAS},
+            c = render_to_string('contrato_gauss2pdf.html', {'contrato': contrato, 'MA': MEDIA_ANAGRAMAS, 'dce': dce},
                                  request=request)
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            return response
+            genera_pdf(c, dce)
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename='Contrato_GAUSS_sin_firmar.pdf',
+                                content_type='application/pdf')
 
     form = Contrato_gaussForm(instance=contrato)
     return render(request, "contrato_gauss.html",
