@@ -49,6 +49,7 @@ def genera_pdf(html, dce, ruta_archivo=None):
         doc = HTML(string=html)
         doc.write_pdf(ruta_archivo, stylesheets=[css])
     except Exception as msg:
+        a = str(msg)
         pdfkit.from_string(html, ruta_archivo, dce.get_opciones)
 
     # if os.path.exists(dce.url_pdf):

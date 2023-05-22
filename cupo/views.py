@@ -608,7 +608,7 @@ def ajax_cupo(request):
                     cupo.save()
                     aprrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
                     html = render_to_string('cupo_accordion_content_pubrrhh.html', {'aprrhh': aprrhh,
-                                                                                    'cupo': cupo})
+                                                                                    'cupo': cupo, 'msg': msg})
                     return JsonResponse({'ok': True, 'html': html, 'msg': msg})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})

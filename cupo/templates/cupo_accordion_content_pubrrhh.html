@@ -4,7 +4,7 @@
     </a>
 {% else %}
     <span style="font-weight: bold;color: grey;"
-          title="Esta opción no está disponible. Pulsa sobre el icono de información.">
+          title="Esta opción no está disponible. Pulsa sobre el icono de información. {{ msg }}">
             {% if cupo.pub_rrhh %}Sí{% else %}No{% endif %}
     </span>
 {% endif %}
