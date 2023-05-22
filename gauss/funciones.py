@@ -8,6 +8,7 @@ import os
 from django.http import HttpResponse, Http404
 
 try:
+    a=b
     from weasyprint import HTML, CSS
 except:
     import pdfkit
