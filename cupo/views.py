@@ -255,7 +255,7 @@ def ajax_cupo(request):
                 html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
                                                                         'especialidades_existentes': ESPECIALIDADES,
                                                                         'request': request, 'aprrhh': activa_pub_rrhh,
-                                                                        'rondas': rondas})
+                                                                        'rondas': rondas, 'msg': msg})
                 return JsonResponse({'ok': True, 'html': html, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -609,7 +609,7 @@ def ajax_cupo(request):
                     aprrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
                     html = render_to_string('cupo_accordion_content_pubrrhh.html', {'aprrhh': aprrhh,
                                                                                     'cupo': cupo})
-                    return JsonResponse({'ok': True, 'html': html})
+                    return JsonResponse({'ok': True, 'html': html, 'msg': msg})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except:

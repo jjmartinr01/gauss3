@@ -48,7 +48,7 @@ def genera_pdf(html, dce, ruta_archivo=None):
         css = CSS(string=render_to_string('weasyprint_styles.css', {'dce': dce}))
         doc = HTML(string=html)
         doc.write_pdf(ruta_archivo, stylesheets=[css])
-    except:
+    except Exception as msg:
         pdfkit.from_string(html, ruta_archivo, dce.get_opciones)
 
     # if os.path.exists(dce.url_pdf):
