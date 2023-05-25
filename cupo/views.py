@@ -801,7 +801,9 @@ def ajax_cupo(request):
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
                 if con1 or con2:
-                    EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['especialidad']).delete()
+                    especialidad = EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['especialidad'])
+                    # Profesores_cupo.object.filter(especialidad=especialidad).delete()
+                    especialidad.delete()
                     return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})

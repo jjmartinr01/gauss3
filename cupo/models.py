@@ -36,6 +36,7 @@ class Cupo(models.Model):
         ordering = ['-creado']
 
     def puede_activarse_pub_rrhh(self, g_e):
+        msg = ''
         cargo_inspector = Cargo.objects.get(entidad=self.ronda.entidad, clave_cargo='g_inspector_educacion')
         gauser_inspectores = usuarios_ronda(self.ronda, cargos=[cargo_inspector]).values_list('gauser__id', flat=True)
         con1 = g_e.gauser.id in gauser_inspectores
@@ -44,16 +45,21 @@ class Cupo(models.Model):
             interinos = Profesor_cupo.objects.filter(profesorado__cupo=self, tipo='INT')
             q1 = Q(profesorado__especialidad__cod_espec='')
             q2 = Q(profesorado__especialidad__cod_cuerpo='')
-            if interinos.filter(q1 | q2).count() == 0:
+            interinos_condiciones = interinos.filter(q1 | q2).distinct()
+            if interinos_condiciones.count() == 0:
                 if self.bloqueado:
                     return True, 'Se cumplen todas las condiciones.'
                 else:
                     return False, 'El cupo debe estar bloqueado para activar la publicación.'
             else:
-                msg = 'No es posible la publicación. Hay especialidades en las que no se ha configurado el código del cuerpo o el código de la propia especialidad.'
+                msg += 'Existen interinos sin código de especialidad y/o cuerpo.'
+                for ic in interinos_condiciones:
+                    msg += ' %s - %s.' %(ic.profesorado.especialidad.nombre, ic.nombre)
+                msg += 'No es posible la publicación.'
                 return False, msg
         else:
-            return False, 'No tiene permisos suficientes. con1: %s, con2: %s' % (con1, con2)
+            msg = 'gauser: %s - inspectores: %s' %(g_e.gauser.id, ', '.join(gauser_inspectores))
+            return False, 'No tiene permisos suficientes. con1: %s, con2: %s. %s' % (con1, con2, msg)
     @property
     def es_posible_pdf_rrhh(self):
         return self.bloqueado and self.pub_rrhh

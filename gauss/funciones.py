@@ -8,7 +8,6 @@ import os
 from django.http import HttpResponse, Http404
 
 try:
-    a=b
     from weasyprint import HTML, CSS
 except:
     import pdfkit
@@ -51,6 +50,8 @@ def genera_pdf(html, dce, ruta_archivo=None):
         doc.write_pdf(ruta_archivo, stylesheets=[css])
     except Exception as msg:
         a = str(msg)
+
+        import pdfkit
         pdfkit.from_string(html, ruta_archivo, dce.get_opciones)
 
     # if os.path.exists(dce.url_pdf):
