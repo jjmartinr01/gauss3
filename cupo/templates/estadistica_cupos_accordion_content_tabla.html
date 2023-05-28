@@ -1,0 +1,64 @@
+{% load cupo_extras %}
+{% load programaciones_extras %}
+<style>
+    th {
+        text-align: center !important;
+        font-weight: bold;
+    }
+
+    td {
+        text-align: center !important;
+    }
+</style>
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th colspan="11" style="position: relative;">
+            Estadística de {{ cupo.ronda.entidad.name }}
+            <span style="position: absolute;right: 10px;">
+                    <a class="remove_tabla"><i class="fa fa-times-circle"></i></a>
+                </span>
+        </th>
+    </tr>
+    <tr>
+        <th rowspan="2">Especialidad</th>
+        <th rowspan="2">Periodos/Horas</th>
+        <th colspan="5">Jornadas funcionales</th>
+        <th colspan="4">Jornadas cupo</th>
+    </tr>
+    <tr>
+        <th>JC</th>
+        <th>2/3</th>
+        <th>1/2</th>
+        <th>1/3</th>
+        <th>Sobran</th>
+        <th>JC</th>
+        <th>2/3</th>
+        <th>1/2</th>
+        <th>1/3</th>
+    </tr>
+    </thead>
+    {% for p in cupo.profesores_cupo_set.all %}
+        {% if p.num_horas > 0 %}
+            <tr>
+                <td>{{ p.especialidad.nombre }}</td>
+                <td><strong> {{ p.num_horas }}</strong></td>
+                <td>{{ p.reparto_profes.profes_completos }}</td>
+                <td>{{ p.reparto_profes.profes_dostercios }}</td>
+                <td>{{ p.reparto_profes.profes_media }}</td>
+                <td>{{ p.reparto_profes.profes_tercio }}</td>
+                <td>{% if p.reparto_profes.periodos_sobrantes > 0 %}
+                    <span style="color:red;">{{ p.reparto_profes.periodos_sobrantes }}</span>
+                {% else %}
+                    <span style="color:green;">&#10004;</span>
+                {% endif %}</td>
+            {% with interinos=p|cupo_jornadas %}
+                <td>{{ interinos.jc }}</td>
+                <td>{{ interinos.j23 }}</td>
+                <td>{{ interinos.j12 }}</td>
+                <td>{{ interinos.j13 }}</td>
+            {% endwith %}
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>

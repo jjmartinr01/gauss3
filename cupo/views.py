@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-import datetime
+# import datetime
 import os
 import random
 
@@ -12,12 +12,13 @@ from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
+from django.utils.timezone import datetime
 
 from autenticar.control_acceso import permiso_required
 from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento, get_apartados, get_columnas, \
     get_columnas_edb
 from entidades.templatetags.entidades_extras import puestos_especialidad
-from gauss.funciones import pass_generator, genera_pdf
+from gauss.funciones import pass_generator, genera_pdf, get_dce
 from gauss.rutas import *
 from django.http import HttpResponse, FileResponse
 from django.db.models import Q
@@ -178,7 +179,7 @@ def cupo(request):
                 crear_aviso(request, False, 'No tienes permiso para generar del archivo excel solicitado')
 
     cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
-    f = datetime.datetime(2021, 1, 1)
+    f = datetime(2021, 1, 1)
     # cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(id__in=cupos_id)).distinct()
     try:
@@ -251,7 +252,7 @@ def ajax_cupo(request):
                 cexs = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                             clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
                 activa_pub_rrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
-                rondas = Ronda.objects.filter(nombre__icontains='/%s' % datetime.date.today().year)
+                rondas = Ronda.objects.filter(nombre__icontains='/%s' % datetime.today().year)
                 html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
                                                                         'especialidades_existentes': ESPECIALIDADES,
                                                                         'request': request, 'aprrhh': activa_pub_rrhh,
@@ -262,7 +263,7 @@ def ajax_cupo(request):
         elif action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
                 crea_departamentos(g_e.ronda)
-                fecha_hora = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
+                fecha_hora = datetime.now().strftime('%d-%m-%Y %H:%M')
                 nombre = '%s - Cupo creado el %s' % (g_e.ronda.entidad.name, fecha_hora)
                 cupo = Cupo.objects.create(ronda=g_e.ronda, nombre=nombre)
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
@@ -344,7 +345,7 @@ def ajax_cupo(request):
                 #     J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
                 # else:
                 #     J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
-                fecha_hora = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
+                fecha_hora = datetime.now().strftime('%d-%m-%Y %H:%M')
                 nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, fecha_hora)
                 # cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
                 #                            min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
@@ -723,7 +724,6 @@ def ajax_cupo(request):
                 return JsonResponse({'ok': True, 'html': html})
             else:
                 return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
-
 
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
@@ -1849,21 +1849,22 @@ def plantilla_organica(request):
                       'docente': g_e,
                   })
 
-# @permiso_required('acceso_carga_masiva_horarios')
-def rrhh_cupos(request):
-    g_e = request.session["gauser_extra"]
-    inicio_rrhh_cupos = datetime.date(2022, 9, 1)
-    hoy = datetime.date.today()
+def get_cursos_escolares_cupo():
+    inicio_rrhh_cupos = datetime(2022, 9, 1).date()
+    hoy = datetime.today().date()
     cursos_escolares = {}
     for y in range(inicio_rrhh_cupos.year, hoy.year):
-        curso = '%s-%s' % (y+1, y+2) # El cupo se calcula para el curso que viene
-        cursos_escolares[curso] = {'inicio': datetime.date(y, 9, 1), 'fin': datetime.date(y + 1, 8, 31), 'id': y}
+        curso = '%s-%s' % (y + 1, y + 2)  # El cupo se calcula para el curso que viene
+        cursos_escolares[curso] = {'inicio': datetime(y, 9, 1).date(), 'fin': datetime(y + 1, 8, 31).date(), 'id': y}
     # Por ejemplo si hoy fuera 1 de febrero de 2025 -- datetime.date(2025, 2, 1), cursos_escolares sería:
     # {'2023-2024': {'inicio': datetime.date(2022, 9, 1), 'fin': datetime.date(2023, 8, 31), 'id': 2022},
     #  '2024-2025': {'inicio': datetime.date(2023, 9, 1), 'fin': datetime.date(2024, 8, 31), 'id': 2023},
     #  '2025-2026': {'inicio': datetime.date(2024, 9, 1), 'fin': datetime.date(2025, 8, 31), 'id': 2024}}
-
-
+    return cursos_escolares
+# @permiso_required('acceso_carga_masiva_horarios')
+def rrhh_cupos(request):
+    g_e = request.session["gauser_extra"]
+    cursos_escolares = get_cursos_escolares_cupo()
     if request.method == 'POST':
         if request.POST['action'] == 'carga_masiva_plantilla':
             if not g_e.has_permiso('carga_plantillas_organicas'):
@@ -1871,7 +1872,7 @@ def rrhh_cupos(request):
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
             try:
                 y = int(request.POST['id'])
-                curso = cursos_escolares['%s-%s' % (y+1, y+2)]
+                curso = cursos_escolares['%s-%s' % (y + 1, y + 2)]
                 cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True,
                                             pub_rrhh=True)
                 html = render_to_string('rrhh_cupos_accordion_content.html', {'cupos': cupos, 'g_e': g_e, 'y': y})
@@ -1888,7 +1889,8 @@ def rrhh_cupos(request):
         elif request.POST['action'] == 'genera_csvRRHH':
             y = int(request.POST['curso_actual'])
             curso = cursos_escolares['%s-%s' % (y + 1, y + 2)]
-            cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True, pub_rrhh=True)
+            cupos = Cupo.objects.filter(creado__lte=curso['fin'], creado__gte=curso['inicio'], bloqueado=True,
+                                        pub_rrhh=True)
             csv_file = render_to_string('rrhh_cupos_accordion_content_solicitud_csv.csv', {'cupos': cupos})
             response = HttpResponse(csv_file, content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=Solicitud_cupo_%s-%s.csv' % (y + 1, y + 2)
@@ -1918,6 +1920,94 @@ def rrhh_cupos(request):
                       'cursos_escolares': cursos_escolares,
                       'g_e': g_e,
                   })
+
+
+entidadesextra_tipos = ['C.E.O. - Centro de Educación Obligatoria',
+                            'C.I.P.F.P. - Centro Integrado Público de Formación Profesional',
+                            'E.S.D. - Escuela Superior de Diseño',
+                            #'C.P.E.D. - Centro Privado Autorizado de Enseñanzas Deportivas',
+                            #'C.P.E.I - Centro Privado de Educación Infantil',
+                            'C.E.P.A. - Centro Público de Educación de Personas Adultas',
+                            'C.E.E. - Centro de Educación Especial',
+                            #'E.M.M. - Escuela Pública de Música',
+                            #'E.I.P.C.M. - Escuela Municipal de Educación Infantil',
+                            'I.E.S. - Instituto de Educación Secundaria',
+                            #'E.P.M. - Escuela Privada de Música',
+                            'C.R.A. - Colegio Rural Agrupado',
+                            #'C.P.E.E. - Centro Privado de Educación Especial',
+                            #'C.E.M. - Conservatorio Elemental de Música',
+                            #'C.P.E.I.P. - Centro Privado de Educación Infantil y Primaria',
+                            #'C.P.E.S. - Centro Privado de Educación Secundaria', 'E.I.P.C. - Escuela Infantil',
+                            'C.E.I.P. - Colegio de Educación Infantil y Primaria',
+                            #'C.P.D.E.E. - Centro Docente Privado Extranjero en España',
+                            #'C.P.F.P.E. - Centro Privado de Formación Profesional Específica',
+                            #'C.P.E.I.P.S. - Centro Privado de Educación Infantil Primaria y Secundaria',
+                            'E.O.I. - Escuela Oficial de Idiomas', 'C.P.M. - Conservatorio Profesional de Música',
+                            #'C.P.F.P. - Centro Privado de Formación Profesional',
+                            'S.I.E.S. - Sección de Instituto de Educación Secundaria']
+# @permiso_required('acceso_estadistica_cupos')
+def estadistica_cupos(request):
+    g_e = request.session['gauser_extra']
+    cursos_escolares = get_cursos_escolares_cupo()
+    if request.method == 'POST':
+        action = request.POST['action']
+        if action == 'open_accordion':
+            try:
+                estad = {}
+                y = int(request.POST['id'])
+                curso_escolar = cursos_escolares['%s-%s' % (y + 1, y + 2)]
+                cupos = Cupo.objects.filter(creado__gte=curso_escolar['inicio'], creado__lte=curso_escolar['fin'])
+                entidades = Entidad.objects.filter(entidadextra__tipo_centro__in=entidadesextra_tipos)
+                estad['n_centros'] = entidades.count()
+                estad['n_cupos'] = cupos.count()
+                estad['n_borradores'] = cupos.filter(bloqueado=False).count()
+                estad['n_bloqueados'] = cupos.filter(bloqueado=True).count()
+                estad['n_pubrrhh'] = cupos.filter(pub_rrhh=True).count()
+                estad['min_fecha'] = datetime.now().date()
+                estad['max_fecha'] = datetime(1970, 1, 1).date()
+                for cupo in cupos:
+                    estad['min_fecha'] = cupo.creado if cupo.creado < estad['min_fecha'] else estad['min_fecha']
+                    estad['max_fecha'] = cupo.modificado if cupo.modificado > estad['max_fecha'] else estad['max_fecha']
+                html = render_to_string('estadistica_cupos_accordion_content.html', {'estad': estad,
+                                                                                     'curso_escolar': curso_escolar,
+                                                                                     'entidades': entidades})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'estadistica_entidad' and request.is_ajax():
+            try:
+                y = int(request.POST['id'])
+                curso_escolar = cursos_escolares['%s-%s' % (y + 1, y + 2)]
+                cupos = Cupo.objects.filter(creado__gte=curso_escolar['inicio'], creado__lte=curso_escolar['fin'])
+                cupo = cupos.get(pub_rrhh=True, ronda__entidad__id=request.POST['entidad'])
+                html = render_to_string('estadistica_cupos_accordion_content_tabla.html', {'cupo': cupo})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'genera_pdf':
+            doc_cupos_estadistica = 'Configuración de estadística para los cupos'
+            dce = get_dce(g_e.ronda.entidad, doc_cupos_estadistica)
+            tablas = request.POST['textarea_listado_estadistica']
+            c = render_to_string('estadistica_cupos_html2pdf.html', {'tablas': tablas, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify('Informe_estadística_cupos')
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
+
+
+    return render(request, "estadistica_cupos.html",
+                  {
+                      'formname': 'estadistica_cupos',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'libre',
+                            'title': 'Generar PDF a partir de la información mostrada en pantalla'},
+                           ),
+                      # 'entidades': Entidad.objects.filter(entidadextra__isnull=False),
+                      'g_e': g_e,
+                      'cursos_escolares': cursos_escolares,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
 
 def comprueba_dnis(request):
     g_e = request.session["gauser_extra"]

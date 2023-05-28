@@ -12,4 +12,5 @@ urlpatterns = [
     path('arregla_duplicados/', views.arregla_duplicados),
     # path('select_po/', views.select_po),
     path('rrhh_cupos/', views.rrhh_cupos),
+    path('estadistica_cupos/', views.estadistica_cupos),
 ]

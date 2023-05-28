@@ -1,0 +1,53 @@
+{% load my_templatetags %}
+{% load cupo_extras %}
+
+
+<div class="row">
+    <div class="columns large-5">
+        <label>Selecciona el centro educativo:
+            <select id="select_entidad{{ curso_escolar.id }}" class="select_entidad">
+                <option value="">-------</option>
+                {% for entidad in entidades %}
+                    <option value="{{ entidad.id }}">{{ entidad.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<br>
+
+<div id="div_tablas_estadistica{{ curso_escolar.id }}">
+    <table style="width: 100%" id="tabla_estadistica_general{{ curso_escolar.id }}">
+        <thead>
+        <tr>
+            <th colspan="6" class="thtd" style="position: relative;">
+                Estadística de cupos
+                <span style="position: absolute;right: 10px;">
+                    <a class="remove_tabla"><i class="fa fa-times-circle"></i></a>
+                </span>
+            </th>
+        </tr>
+        <tr>
+            <th class="thtd">Nº de centros</th>
+            <th class="thtd">Nº cupos</th>
+            <th class="thtd">Borradores</th>
+            <th class="thtd">Bloqueados</th>
+            <th class="thtd">Publicados RRHH</th>
+            <th class="thtd">Fechas realización</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="thtd">{{ estad.n_centros }}</td>
+            <td class="thtd">{{ estad.n_cupos }}</td>
+            <td class="thtd">{{ estad.n_borradores }}</td>
+            <td class="thtd">{{ estad.n_bloqueados }}</td>
+            <td class="thtd">{{ estad.n_pubrrhh }}</td>
+            <td class="thtd">{{ estad.min_fecha }} - {{ estad.max_fecha }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <div id="div_estadistica_cupos{{ curso_escolar.id }}">
+
+    </div>
+</div>

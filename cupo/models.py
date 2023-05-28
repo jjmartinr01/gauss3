@@ -277,7 +277,7 @@ class Profesor_cupo(models.Model):
         return self.observaciones_ocultas.replace('\n', ' ## ')
     class Meta:
         verbose_name_plural = 'Profesores del cupo'
-        ordering = ['profesorado__especialidad__dep', 'tipo', 'jornada']
+        ordering = ['profesorado__especialidad__cod_cuerpo', 'profesorado__especialidad__cod_espec', 'tipo', 'jornada']
 
     def __str__(self):
         return '%s (%s) -- %s:%s' % (

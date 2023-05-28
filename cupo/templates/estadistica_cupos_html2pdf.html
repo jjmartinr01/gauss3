@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Informe con estadística de cupos</title>
+
+    <style>
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            text-align: justify;
+        }
+
+        h1 {
+            text-align: center;
+         }
+        th, td {
+            text-align: center;
+            border: 1px gray solid!important;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 30px;
+            border-collapse: collapse!important;
+        }
+    </style>
+</head>
+<body>
+<span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
+<span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
+<h1>INFORME ESTADÍSTICA CUPOS</h1>
+{% autoescape off %}
+{{ tablas }}
+{% endautoescape %}
+</body>
+</html>

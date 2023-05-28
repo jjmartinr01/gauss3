@@ -1,0 +1,110 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load cupo_extras %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center !important;
+            color: #008CBA;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="curso_escolar" id="curso_escolar" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+
+        <div>
+            <h4 id="title_page"><strong>Estadística Cupos</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cupos">
+            {% for nombre, curso_escolar in cursos_escolares.items %}
+                <dd class="accordion-navigation" id="accordion{{ curso_escolar.id }}">
+                    <a href="#panel{{ curso_escolar.id }}">
+                        <i id="circle{{ curso_escolar.id }}" class="fa fa-plus-circle circle_icon"></i>
+                        <b>Estadística del estudio de cupos realizado para el curso {{ nombre }}</b>
+                    </a>
+                    <div id="panel{{ curso_escolar.id }}" data-id="{{ curso_escolar.id }}"
+                         class="content accordion-cupo">
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+    <textarea style="display: none;" id="textarea_listado_estadistica" name="textarea_listado_estadistica"></textarea>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_file-pdf-o'])
+
+        function inicializa_select2(id) {
+            $('#select_entidad' + id).select2();
+
+            $('#select_entidad' + id).change(function () {
+                var entidad = $(this).val();
+                $.post("/estadistica_cupos/", {'action': 'estadistica_entidad', 'entidad': entidad, 'id': id},
+                    function (data) {
+                        if (data.ok) {
+                            $('#div_estadistica_cupos' + id).prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Error',
+                                texto: 'No se ha podido encontrar un cupo publicado del centro seleccionado.'})
+                        }
+                    });
+            });
+        }
+
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-cupo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/estadistica_cupos/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $('#curso_escolar').val(id);
+                                        setTimeout(function () {
+                                            inicializa_select2(id);
+                                        }, 200);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+
+        $('body').on('click', '.remove_tabla', function (e) {
+            $(this).closest('table').remove();
+        });
+
+        $('#file-pdf-o_sign').click(function (e) {
+            e.preventDefault();
+            var curso_escolar = $('#curso_escolar').val();
+            var style = '<style>table, td, th{border:1px}</style>';
+            var html = $('#div_tablas_estadistica' +  curso_escolar).html();
+            $('#textarea_listado_estadistica').val(style + html);
+            $('#action').val('genera_pdf');
+            document.getElementById('{{ formname }}').submit();
+        });
+    </script>
+{% endblock %}

@@ -33,6 +33,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 3,
      'parent': 'acceso_cupos'
+     },
+    {'code_menu': 'acceso_estadistica_cupos',
+     'texto_menu': 'Estadística cupos',
+     'href': 'estadistica_cupos',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 4,
+     'parent': 'acceso_cupos'
      }
 ]
 # Se añaden otros permisos para el usuario

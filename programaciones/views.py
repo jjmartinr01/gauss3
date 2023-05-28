@@ -3080,7 +3080,7 @@ def estadistica_prog(request):
                             'title': 'Generar PDF a partir de la información mostrada en pantalla'},
                            ),
                       'departamentos': None,
-                      'entidades': Entidad.objects.all(),
+                      'entidades': Entidad.objects.filter(entidadextra__isnull=False),
                       'g_e': g_e,
                       'objeto': g_e.ronda.entidad.organization,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),

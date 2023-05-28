@@ -92,7 +92,7 @@ def value_dict(dict, key):
 # Módulo de cupo
 @register.filter
 def interinos(cupo):
-    return Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT').order_by('profesorado__especialidad')
+    return Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT')
 
 
 @register.filter
