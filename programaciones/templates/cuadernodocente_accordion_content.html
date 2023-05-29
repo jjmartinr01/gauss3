@@ -51,7 +51,12 @@
     }
 </style>
 <div class="row">
-    <div class="columns large-12">
+    <div class="columns large-6">
+        <span class="label warning radius" style="font-weight: bold;">
+            {{ cuaderno.psec.areamateria.nombre }} ({{ cuaderno.psec.areamateria.get_curso_display }})
+        </span>
+    </div>
+    <div class="columns large-6">
         <ul class="button-group right">
             <li><a title="Asignar el cuaderno a otro docente"
                    class="button asignar_cuadernoprof tiny"><i class="fa fa-user"></i><i
@@ -176,8 +181,8 @@
                             <th>Calificación<br>{{ cep.ce.asignatura }}</th>
                         {% endifchanged %}
                         <th id="cep_title{{ cep.id }}"
-                            title="{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}<br>
-                            {{ cep.ce.texto|truncatechars:20 }}</th>
+                            title="{{ cep.ce.orden }}.- {{ cep.ce.nombre }} &#013;&#013;{{ cep.ce.texto }}">CE{{ cep.ce.orden }}<br>
+                            {{ cep.ce.nombre|truncatechars:20 }}</th>
                     {% endfor %}
                 </tr>
                 </thead>

@@ -72,7 +72,8 @@
     <div class="columns large-12">
         {% for alumno in alumnos %}
             <a class="button tiny round carga_alumnocc" href="" data-alumno="{{ alumno.id }}">
-                <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>
+{#                <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>#}
+            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
             </a>
         {% endfor %}
     </div>
