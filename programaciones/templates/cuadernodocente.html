@@ -315,7 +315,8 @@
                         element.text('--');
                     }
                     if (campo === 'valor') {
-                        nuevo_texto = parseFloat(nuevo_texto.replace(',', '.').replace(/[^\d.]/g, ''));
+                        var valor_float = parseFloat(nuevo_texto.replace(',', '.').replace(/[^\d.]/g, ''));
+                        nuevo_texto = Math.max(0, Math.min(10, valor_float));
                         if (!nuevo_texto) {
                             element.text(0);
                         } else {
@@ -549,7 +550,7 @@
             } else {
                 valor = element.data('valor');
             }
-            valor = parseFloat(valor.replace(',', '.').replace(/[^\d.]/g, ''));
+            valor = Math.max(0, Math.min(10, parseFloat(valor.replace(',', '.').replace(/[^\d.]/g, ''))));
             if (!valor) {
                 valor = 0;
             }

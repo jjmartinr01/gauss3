@@ -3610,7 +3610,7 @@ def cuadernodocente(request):
             try:
                 ca = CalAlum.objects.get(id=request.POST['calalum'])
                 ca.calalumvalor_set.all().delete()
-                valor = float(request.POST['valor'])
+                valor = max(0, min(10, float(request.POST['valor'])))
                 ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
                 for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
                     e.y = idx
