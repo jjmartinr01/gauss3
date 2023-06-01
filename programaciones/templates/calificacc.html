@@ -92,6 +92,11 @@
                         $.each(data.cal_dos, function (id, value) {
                             $('#' + id).html(value);
                         });
+                        {# Instrucciones para rellenar tabla que genera el informe de CC: #}
+                        $.each(data.cal_ces, function (id, value) {
+                            $('#' + id).html(value);
+                        });
+                        {# Fin de las instrucciones #}
                         setTimeout(function () {
                             for (var idx in data.dos_claves) {
                                 var clave = data.dos_claves[idx];
@@ -151,6 +156,7 @@
                                     }
                                     {# Fin de las instrucciones #}
                                 });
+
                             }
                         }, 1000);
                         $("#update_ok").show().delay(1500).fadeOut();
