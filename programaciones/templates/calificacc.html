@@ -108,23 +108,6 @@
                                     } else {
                                         $('#' + clave).html((cal_do / num_cal_do).toFixed(2));
                                     }
-
-                                    {# Instrucciones para rellenar tabla que genera el informe de CC: #}
-                                    if (num_cal_do === 0) {
-                                        $('#cal_' + clave).html('D');
-                                    } else {
-                                        var calificacion = (cal_do / num_cal_do);
-                                        if (calificacion <= 4) {
-                                            $('#cal_' + clave).html('D');
-                                        } else if (calificacion <= 6) {
-                                            $('#cal_' + clave).html('C');
-                                        } else if (calificacion <= 8) {
-                                            $('#cal_' + clave).html('B');
-                                        } else {
-                                            $('#cal_' + clave).html('A');
-                                        }
-                                    }
-                                    {# Fin de las instrucciones #}
                                 });
                             }
                         }, 500);
@@ -144,6 +127,22 @@
                                     } else {
                                         $('#' + clave).html((cal_cc / num_cal_cc).toFixed(2));
                                     }
+                                    {# Instrucciones para rellenar tabla que genera el informe de CC: #}
+                                    if (num_cal_cc === 0) {
+                                        $('#cal_' + clave).html('D');
+                                    } else {
+                                        var calificacion = (cal_cc / num_cal_cc);
+                                        if (calificacion <= 4) {
+                                            $('#cal_' + clave).html('D');
+                                        } else if (calificacion <= 6) {
+                                            $('#cal_' + clave).html('C');
+                                        } else if (calificacion <= 8) {
+                                            $('#cal_' + clave).html('B');
+                                        } else {
+                                            $('#cal_' + clave).html('A');
+                                        }
+                                    }
+                                    {# Fin de las instrucciones #}
                                 });
                             }
                         }, 1000);
