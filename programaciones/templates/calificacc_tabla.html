@@ -138,43 +138,106 @@
 </table>
 
 <div id="tabla_generar_informe">
-<table style="width: 100%;">
-    <thead>
-    <tr>
-        <th colspan="2" style="text-align: center;">Informe de aquisición de competencias clave</th>
-    </tr>
-    <tr>
-        <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>
-        <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>
-    </tr>
-    <tr>
-        <th>Competencia Clave</th>
-        <th style="text-align: center;">Calificación</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for cc in ps.competenciaclave_set.all %}
+    <table style="width: 100%;">
+        <thead>
         <tr>
-            <td>
-                {{ cc.competencia }}
-            </td>
-            <td id="cal_{{ cc.siglas }}" style="font-weight: bold;text-align: center;"></td>
+            <th colspan="2" style="text-align: center;">Informe de aquisición de competencias clave</th>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<p>La notación sobre el grado de adquisición de las competencias clave se ha realizado utilizando la nomenclatura A, B,
-    C, D con el siguiente significado:</p>
-<p>
-    A: Ha alcanzado en grado alto, de forma destacada, la adquisición de la competencia.
-</p>
-<p>
-    B: Ha alcanzado un nivel suficiente, en grado medio,de adquisición de la competencia.
-</p>
-<p>
-    C: Ha logrado, en grado bajo, o está en proceso de alcanzar la competencia correspondiente.
-</p>
-<p>
-    D: No ha alcanzado el grado esperado de la competencia.
-</p>
+        <tr>
+            <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>
+            <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>
+        </tr>
+        <tr>
+            <th>Competencia Clave</th>
+            <th style="text-align: center;">Calificación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cc in ps.competenciaclave_set.all %}
+            <tr>
+                <td>
+                    {{ cc.competencia }}
+                </td>
+                <td id="cal_{{ cc.siglas }}" style="font-weight: bold;text-align: center;"></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p>La notación sobre el grado de adquisición de las competencias clave se ha realizado utilizando la nomenclatura A,
+        B,
+        C, D con el siguiente significado:</p>
+    <p>
+        A: Ha alcanzado en grado alto, de forma destacada, la adquisición de la competencia.
+    </p>
+    <p>
+        B: Ha alcanzado un nivel suficiente, en grado medio,de adquisición de la competencia.
+    </p>
+    <p>
+        C: Ha logrado, en grado bajo, o está en proceso de alcanzar la competencia correspondiente.
+    </p>
+    <p>
+        D: No ha alcanzado el grado esperado de la competencia.
+    </p>
+
+    <table style="width: 100%;">
+        <thead>
+        <tr>
+            <th colspan="3" style="text-align: center;">Perfil de salida (evaluación de los descriptores operativos)
+            </th>
+        </tr>
+        <tr>
+            <th colspan="2">Competencia Clave y Descriptores Operativos asociados</th>
+            <th style="text-align: center;">Calificación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cc in ps.competenciaclave_set.all %}
+            {% for do in cc.descriptoroperativo_set.all %}
+                <tr>
+                    {% if forloop.first %}
+                        <td rowspan="{{ cc.descriptoroperativo_set.all|length }}" class="fixed_column">
+                            <span class="verticalText">{{ cc.competencia }}</span>
+                        </td>
+                    {% endif %}
+                    <td title="{{ do.clave }}" class="fixed_column2">
+                        CE{{ do.texto }}
+                    </td>
+                    <td id="cal_do{{ do.clave }}"></td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table style="width: 100%;">
+        <thead>
+        <tr>
+            <th colspan="3" style="text-align: center;">Evaluación de las competencias específicas vinculadas a cada
+                asignatura
+            </th>
+        </tr>
+        <tr>
+            <th>Asignatura</th>
+            <th>Competencia Específica</th>
+            <th>Calificación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for am in ams %}
+            {% for ce in am.competenciaespecifica_set.all %}
+                <tr>
+                    {% if forloop.first %}
+                        <td rowspan="{{ am.competenciaespecifica_set.all|length }}" class="fixed_column nombre_materia">
+                            <span class="verticalText">{{ am.nombre }}</span>
+                        </td>
+                    {% endif %}
+                    <td title="CE{{ ce.orden }}" class="fixed_column2">
+                        {{ ce.nombre }}
+                    </td>
+                    <td id="cal_ce_informe{{ ce.id }}"></td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
 </div>

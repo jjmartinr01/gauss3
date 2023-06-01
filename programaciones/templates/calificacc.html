@@ -108,6 +108,13 @@
                                     } else {
                                         $('#' + clave).html((cal_do / num_cal_do).toFixed(2));
                                     }
+                                    {# Instrucciones para rellenar tabla que genera el informe de CC: #}
+                                    if (num_cal_do === 0) {
+                                        $('#cal_do' + clave).html(0);
+                                    } else {
+                                        $('#cal_do' + clave).html((cal_do / num_cal_do).toFixed(2));
+                                    }
+                                    {# Fin de las instrucciones #}
                                 });
                             }
                         }, 500);

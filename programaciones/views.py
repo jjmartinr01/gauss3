@@ -3899,6 +3899,7 @@ def calificacc(request):
         elif action == 'carga_alumnocc':
             try:
                 cal_dos = {}
+                cal_ces = {}
                 # alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
                 # cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge], borrado=False)
                 alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
@@ -3916,12 +3917,13 @@ def calificacc(request):
                 for cal_ce_alumno in cals_ces_alumnos:
                     ce = cal_ce_alumno.cep.ce
                     cal_ce = cal_ce_alumno.valor
+                    cal_ces['cal_ce_informe%s' % ce.id] = cal_ce
                     for do in ce.dos.all():
                         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
                                      'nombre_alumno': alumno.gauser.get_full_name(), 'html': html,
-                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre})
+                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cal_ces': cal_ces})
                 # cals_alumno = CalAlum.objects.filter(alumno=alumno.ge)
                 # for cal_alumno in cals_alumno:
                 #     ce = cal_alumno.cie.cevps.cepsec.ce
