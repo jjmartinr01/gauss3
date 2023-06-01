@@ -3897,7 +3897,7 @@ def calificacc(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'carga_alumnocc':
-            # try:
+            try:
                 cal_dos = {}
                 # alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
                 # cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge], borrado=False)
@@ -3920,7 +3920,8 @@ def calificacc(request):
                         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                                     'nombre_alumno': alumno.gauser.get_full_name(), 'html': html})
+                                     'nombre_alumno': alumno.gauser.get_full_name(), 'html': html,
+                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre})
                 # cals_alumno = CalAlum.objects.filter(alumno=alumno.ge)
                 # for cal_alumno in cals_alumno:
                 #     ce = cal_alumno.cie.cevps.cepsec.ce
@@ -3930,8 +3931,8 @@ def calificacc(request):
                 #         cal_dos[key] = cal_ce
                 # return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
                 #                      'nombre_alumno': alumno.ge.gauser.get_full_name(), 'html': html})
-            # except Exception as msg:
-            #     return JsonResponse({'ok': False, 'msg': str(msg)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':
             try:
                 palabras = request.POST['texto'].split()
@@ -3948,7 +3949,15 @@ def calificacc(request):
                     return JsonResponse({'ok': False, 'msg': 'Debes escribir algo para poder buscar.'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-
+    elif request.method == 'POST' and request.POST['action'] == 'genera_pdf':
+        doc_progsec_informe_cc = 'Configuración para el informe de adquisición de competencias clave'
+        dce = get_dce(g_e.ronda.entidad, doc_progsec_informe_cc)
+        tablas = request.POST['textarea_tabla_generar_informe']
+        c = render_to_string('califcacc_tabla_alumno_html2pdf.html', {'tablas': tablas, 'dce': dce})
+        genera_pdf(c, dce)
+        nombre = slugify('Informe_competencias_clave')
+        return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                            content_type='application/pdf')
     grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
                                          borrado=False).values_list('grupo__id', 'grupo__nombre')
     return render(request, "calificacc.html",

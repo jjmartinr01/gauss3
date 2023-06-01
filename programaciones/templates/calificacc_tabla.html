@@ -72,8 +72,8 @@
     <div class="columns large-12">
         {% for alumno in alumnos %}
             <a class="button tiny round carga_alumnocc" href="" data-alumno="{{ alumno.id }}">
-{#                <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>#}
-            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                {#                <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>#}
+                <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
             </a>
         {% endfor %}
     </div>
@@ -82,9 +82,15 @@
 <table class="tabla_cc">
     <thead>
     <tr>
-        <th colspan="2" rowspan="2" id="nombre_alumno" class="fixed_column"> Nombre del alumno</th>
+        <th colspan="2" rowspan="2" class="fixed_column" style="text-align: center;">
+            <span id="nombre_alumno">Nombre del alumno</span>
+            <a id="boton_informe_cc_pdf" style="display: none;"><br>
+                <i class="fa fa-file-pdf-o"></i> Informe
+            </a>
+        </th>
         {% for cc in ps.competenciaclave_set.all %}
-            <th colspan="{{ cc.descriptoroperativo_set.all|length }}">{{ cc.competencia }}
+            <th colspan="{{ cc.descriptoroperativo_set.all|length }}">
+                <span class="nombre_competencia_clave">{{ cc.competencia }}</span>
                 <span class="tex_cal" id="{{ cc.siglas }}"></span>
             </th>
         {% endfor %}
@@ -130,3 +136,53 @@
     {% endfor %}
     </tbody>
 </table>
+
+<div id="tabla_generar_informe">
+<table style="width: 100%;">
+    <thead>
+    <tr>
+        <th colspan="2" style="text-align: center;">Informe de aquisición de competencias clave</th>
+    </tr>
+    <tr>
+        <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>
+        <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>
+    </tr>
+    <tr>
+        <th>Competencia Clave</th>
+        <th style="text-align: center;">Calificación</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for cc in ps.competenciaclave_set.all %}
+        <tr>
+            <td>
+                {{ cc.competencia }}
+            </td>
+            <td id="cal_{{ cc.siglas }}" style="font-weight: bold;"></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+<tfoot>
+<tr>
+    <td colspan="2">
+        A: Ha alcanzado en grado alto, de forma destacada, la adquisición de la competencia.
+    </td>
+</tr>
+<tr>
+    <td colspan="2">
+        B: Ha alcanzado un nivel suficiente, en grado medio,de adquisición de la competencia.
+    </td>
+</tr>
+<tr>
+    <td colspan="2">
+        C: Ha logrado, en grado bajo, o está en proceso de alcanzar la competencia correspondiente.
+    </td>
+</tr>
+<tr>
+    <td colspan="2">
+        D: No ha alcanzado el grado esperado de la competencia.
+    </td>
+</tr>
+</tfoot>
+</table>
+</div>

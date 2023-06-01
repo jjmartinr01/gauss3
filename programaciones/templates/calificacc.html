@@ -15,6 +15,7 @@
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="id_grupo" name="id_grupo" value="">
         <input type="hidden" id="id_ps" name="id_ps" value="">
         <input type="hidden" id="curso" name="curso" value="">
@@ -37,6 +38,7 @@
         <br>
         <div id="contenido_competencias_clave">
         </div>
+    <textarea style="display: none;" id="textarea_tabla_generar_informe" name="textarea_tabla_generar_informe"></textarea>
     </form>
 {% endblock %}
 
@@ -77,6 +79,11 @@
             $.post('/calificacc/', {'action': 'carga_alumnocc', alumno: alumno, 'ps': $('#id_ps').val()},
                 function (data) {
                     if (data.ok) {
+                        {# Instrucciones para rellenar tabla que genera el informe de CC: #}
+                        $('#nombre_alumno_informe_cc').html(data.nombre_alumno);
+                        $('#boton_informe_cc_pdf').show();
+                        $('#nombre_grupo_informe_cc').html(data.grupo);
+                        {# Fin de las instrucciones #}
                         var el = $('#nombre_alumno');
                         el.html(data.nombre_alumno);
                         $('#info_cuadernos_alumno').html(data.html);
@@ -101,6 +108,23 @@
                                     } else {
                                         $('#' + clave).html((cal_do / num_cal_do).toFixed(2));
                                     }
+
+                                    {# Instrucciones para rellenar tabla que genera el informe de CC: #}
+                                    if (num_cal_do === 0) {
+                                        $('#cal_' + clave).html('D');
+                                    } else {
+                                        var calificacion = (cal_do / num_cal_do);
+                                        if (calificacion <= 4) {
+                                            $('#cal_' + clave).html('D');
+                                        } else if (calificacion <= 6) {
+                                            $('#cal_' + clave).html('C');
+                                        } else if (calificacion <= 8) {
+                                            $('#cal_' + clave).html('B');
+                                        } else {
+                                            $('#cal_' + clave).html('A');
+                                        }
+                                    }
+                                    {# Fin de las instrucciones #}
                                 });
                             }
                         }, 500);
@@ -130,6 +154,16 @@
                     }
                 });
         });
+
+        $('body').on('click', '#boton_informe_cc_pdf', function (e) {
+                e.preventDefault();
+                var style = '<style>table, td, th{border:1px}</style>';
+                var html = $('#tabla_generar_informe').html();
+                $('#textarea_tabla_generar_informe').val(style + html);
+                $('#action').val('genera_pdf');
+                document.getElementById('{{ formname }}').submit();
+            });
+
 
         {##}
         {#$('#Contenido').on('click', '.grupo_copy_identificador', function () {#}
