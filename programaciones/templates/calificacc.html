@@ -83,6 +83,7 @@
                         $('#nombre_alumno_informe_cc').html(data.nombre_alumno);
                         $('#boton_informe_cc_pdf').show();
                         $('#nombre_grupo_informe_cc').html(data.grupo);
+                        $('#nombre_curso_informe_cc').html(data.cursos.toString());
                         {# Fin de las instrucciones #}
                         var el = $('#nombre_alumno');
                         el.html(data.nombre_alumno);
@@ -174,6 +175,25 @@
                 $('#textarea_tabla_generar_informe').val(style + html);
                 $('#action').val('genera_pdf');
                 document.getElementById('{{ formname }}').submit();
+            });
+
+        $('body').on('click', '.actualizar_datos', function (e) {
+                e.preventDefault();
+                var grupo = $(this).data('grupo');
+                $.post("/calificacc/", {
+                    action: 'actualizar_datos',
+                    grupo: grupo
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#id_ps').val(data.ps);
+                        $('#curso').val(data.curso);
+                        $('#contenido_competencias_clave').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
             });
 
 

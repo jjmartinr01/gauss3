@@ -344,3 +344,12 @@ class CriterioEvaluacion(models.Model):
             return '%s (%s) - %s: %s' % (self.ce, self.get_ciclo_display(), self.materia, self.texto[:50])
         else:
             return '%s (%s) - %s' % (self.ce, self.get_ciclo_display(), self.texto[:50])
+
+class TablaCompetenciasClave(models.Model):
+    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.SET_NULL)
+    tabla = models.TextField('Tabla de competencias clave', blank=True, null=True, default='')
+    ps = models.ForeignKey(PerfilSalida, blank=True, null=True, on_delete=models.SET_NULL)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    def __str__(self):
+        return 'Tabla de competencias clave para el grupo: %s' % self.grupo

@@ -34,7 +34,7 @@ from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
-from estudios.models import ETAPAS, Gauser_extra_estudios, PerfilSalida, DescriptorOperativo
+from estudios.models import ETAPAS, Gauser_extra_estudios, PerfilSalida, DescriptorOperativo, TablaCompetenciasClave
 
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 
@@ -3881,18 +3881,40 @@ def calificacc(request):
         if action == 'select_grupo':
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
+                try:
+                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo)
+                    ps = tabla_cc.ps
+                    html = tabla_cc.tabla
+                except:
+                    alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
+                    cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
+                    am = cuadernos[0].psec.areamateria
+                    ps = am.ps
+                    ams = AreaMateria.objects.filter(curso=am.curso)
+                    alum_order = alumnos.order_by('gauser__last_name')
+                    html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
+                                                                      'curso': am.curso, 'cuadernos': cuadernos,
+                                                                      'fecha_hora': datetime.now(), 'grupo': grupo})
+                    TablaCompetenciasClave.objects.create(grupo=grupo, ps=ps, tabla=html)
+                return JsonResponse({'ok': True, 'html': html, 'ps': ps.id})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'actualizar_datos':
+            try:
+                grupo = Grupo.objects.get(id=request.POST['grupo'])
+                tabla_cc = TablaCompetenciasClave.objects.create(grupo=grupo)
                 alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
                 cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
-                # cuadernos = CuadernoProf.objects.filter(grupo=grupo, borrado=False)
                 am = cuadernos[0].psec.areamateria
                 ps = am.ps
                 ams = AreaMateria.objects.filter(curso=am.curso)
-                # alumnos = Gauser_extra_estudios.objects.filter(grupo=grupo).order_by('ge__gauser__last_name')
-                # html = render_to_string('calificacc_tabla.html', {'alumnos': alumnos, 'ps': ps, 'ams': ams,
-                #                                                   'curso': am.curso, 'cuadernos': cuadernos})
                 alum_order = alumnos.order_by('gauser__last_name')
                 html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
-                                                                  'curso': am.curso, 'cuadernos': cuadernos})
+                                                                  'curso': am.curso, 'cuadernos': cuadernos,
+                                                                  'fecha_hora': datetime.now(), 'grupo': grupo})
+                tabla_cc.ps = ps
+                tabla_cc.tabla = html
+                tabla_cc.save()
                 return JsonResponse({'ok': True, 'html': html, 'ps': ps.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -3900,10 +3922,13 @@ def calificacc(request):
             try:
                 cal_dos = {}
                 cal_ces = {}
-                # alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
-                # cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno.ge], borrado=False)
                 alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
                 cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
+                cursos = []
+                for cuaderno in cuadernos:
+                    curso = cuaderno.psec.areamateria.get_curso_display()
+                    if curso not in cursos:
+                        cursos.append(curso)
                 html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
@@ -3912,7 +3937,6 @@ def calificacc(request):
                     cc_siglas.append(cc.siglas)
                     for do in DescriptorOperativo.objects.filter(cc=cc):
                         dos_claves.append(do.clave)
-                # cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno.ge, cp__borrado=False)
                 cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
                 for cal_ce_alumno in cals_ces_alumnos:
                     ce = cal_ce_alumno.cep.ce
@@ -3922,17 +3946,8 @@ def calificacc(request):
                         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                                     'nombre_alumno': alumno.gauser.get_full_name(), 'html': html,
+                                     'nombre_alumno': alumno.gauser.get_full_name(), 'html': html, 'cursos': cursos,
                                      'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cal_ces': cal_ces})
-                # cals_alumno = CalAlum.objects.filter(alumno=alumno.ge)
-                # for cal_alumno in cals_alumno:
-                #     ce = cal_alumno.cie.cevps.cepsec.ce
-                #     cal_ce = cal_alumno.cp.calificacion_alumno_ce(alumno.ge, ce)
-                #     for do in ce.dos.all():
-                #         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
-                #         cal_dos[key] = cal_ce
-                # return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                #                      'nombre_alumno': alumno.ge.gauser.get_full_name(), 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':

@@ -38,6 +38,18 @@
     {#    z-index: 2;#}
     {# }#}
 </style>
+<div class="row panel callout">
+<div class="columns large-9">
+    <p>Fecha y hora de la última actualización: <b>{{ fecha_hora|date:'d-m-Y \a \l\a\s H:i' }}</b></p>
+    <p>Si observa que la información y tablas mostradas a continuación son incompletas, pulse
+    en el botón "Actualizar" para recargar los datos almacenados en el sistema.</p>
+    <p>En general, la actualización sólo es necesaria cuando se ha modificado el listado de alumnos
+    o se ha creado o borrado un cuaderno docente en una fecha y hora posterior a la indicada.</p>
+</div>
+    <div class="columns large-3">
+        <a class="button actualizar_datos" data-grupo="{{ grupo.id }}">Actualizar</a>
+    </div>
+</div>
 <div class="row">
     <div class="columns large-12">
         <label><b>Este grupo está siendo evaluado a través de los siguientes cuadernos:</b></label>
@@ -138,15 +150,22 @@
 </table>
 
 <div id="tabla_generar_informe">
+    <p style="font-weight: bold;font-size: large;">Alumno: <span id="nombre_alumno_informe_cc"></span></p>
+    <p style="font-weight: bold;" id="nombre_centro_alumno"></p>
+    <p>
+        Curso: <span style="font-weight: bold;" id="nombre_curso_informe_cc"></span>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Grupo: <span style="font-weight: bold;" id="nombre_grupo_informe_cc"></span>
+    </p>
     <table style="width: 100%;">
         <thead>
         <tr>
-            <th colspan="2" style="text-align: center;">Informe de aquisición de competencias clave</th>
+            <th colspan="2" style="text-align: center;">Grado de adquisición de las competencias clave</th>
         </tr>
-        <tr>
-            <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>
-            <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>
-        </tr>
+{#        <tr>#}
+{#            <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>#}
+{#            <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>#}
+{#        </tr>#}
         <tr>
             <th>Competencia Clave</th>
             <th style="text-align: center;">Calificación</th>
@@ -200,7 +219,7 @@
                         </td>
                     {% endif %}
                     <td title="{{ do.clave }}" class="fixed_column2">
-                        CE{{ do.texto }}
+                        {{ do.texto }}
                     </td>
                     <td id="cal_do{{ do.clave }}"></td>
                 </tr>

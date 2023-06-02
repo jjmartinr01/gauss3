@@ -3,12 +3,12 @@
 
 
 <div class="row">
-    <div class="columns large-5">
+    <div class="columns large-8">
         <label>Selecciona el centro educativo:
             <select id="select_entidad{{ curso_escolar.id }}" class="select_entidad">
                 <option value="">-------</option>
                 {% for entidad in entidades %}
-                    <option value="{{ entidad.id }}">{{ entidad.name }}</option>
+                    <option value="{{ entidad.id }}">{{ entidad.name }} ({{ entidad.localidad }})</option>
                 {% endfor %}
             </select>
         </label>
