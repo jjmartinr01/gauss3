@@ -31,6 +31,9 @@
         z-index: 5 !important;
         background: #F5F5F5;
     }
+    .pagebreak{
+            page-break-before: always;
+        }
 
     {#.tabla_cc tbody td:first-child {#}
     {#    position: sticky;#}
@@ -150,12 +153,14 @@
 </table>
 
 <div id="tabla_generar_informe">
-    <p style="font-weight: bold;font-size: large;">Alumno: <span id="nombre_alumno_informe_cc"></span></p>
+    <p style="font-weight: bold;font-size: large;">
+        Alumno: <span class="nombre_alumno_informe_cc"></span>
+    </p>
     <p style="font-weight: bold;" id="nombre_centro_alumno"></p>
     <p>
-        Curso: <span style="font-weight: bold;" id="nombre_curso_informe_cc"></span>
+        Curso: <span style="font-weight: bold;" class="nombre_curso_informe_cc"></span>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Grupo: <span style="font-weight: bold;" id="nombre_grupo_informe_cc"></span>
+        Grupo: <span style="font-weight: bold;" class="nombre_grupo_informe_cc"></span>
     </p>
     <table style="width: 100%;">
         <thead>
@@ -177,14 +182,13 @@
                 <td>
                     {{ cc.competencia }}
                 </td>
-                <td id="cal_{{ cc.siglas }}" style="font-weight: bold;text-align: center;"></td>
+                <td id="cal_{{ cc.siglas }}" style="font-weight: bold;text-align: center;" contenteditable="true"></td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
     <p>La notación sobre el grado de adquisición de las competencias clave se ha realizado utilizando la nomenclatura A,
-        B,
-        C, D con el siguiente significado:</p>
+        B, C, D con el siguiente significado:</p>
     <p>
         A: Ha alcanzado en grado alto, de forma destacada, la adquisición de la competencia.
     </p>
@@ -198,6 +202,14 @@
         D: No ha alcanzado el grado esperado de la competencia.
     </p>
 
+    <p style="font-weight: bold;font-size: large;" class="pagebreak">
+        Alumno: <span class="nombre_alumno_informe_cc"></span>
+    </p>
+    <p>
+        Curso: <span style="font-weight: bold;" class="nombre_curso_informe_cc"></span>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Grupo: <span style="font-weight: bold;" class="nombre_grupo_informe_cc"></span>
+    </p>
     <table style="width: 100%;">
         <thead>
         <tr>
@@ -214,20 +226,28 @@
             {% for do in cc.descriptoroperativo_set.all %}
                 <tr>
                     {% if forloop.first %}
-                        <td rowspan="{{ cc.descriptoroperativo_set.all|length }}" class="fixed_column">
-                            <span class="verticalText">{{ cc.competencia }}</span>
+                        <td rowspan="{{ cc.descriptoroperativo_set.all|length }}">
+                            {{ cc.competencia }}
                         </td>
                     {% endif %}
                     <td title="{{ do.clave }}" class="fixed_column2">
                         {{ do.texto }}
                     </td>
-                    <td id="cal_do{{ do.clave }}"></td>
+                    <td id="cal_do{{ do.clave }}" contenteditable="true"></td>
                 </tr>
             {% endfor %}
         {% endfor %}
         </tbody>
     </table>
 
+    <p style="font-weight: bold;font-size: large;" class="pagebreak">
+        Alumno: <span class="nombre_alumno_informe_cc"></span>
+    </p>
+    <p>
+        Curso: <span style="font-weight: bold;" class="nombre_curso_informe_cc"></span>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Grupo: <span style="font-weight: bold;" class="nombre_grupo_informe_cc"></span>
+    </p>
     <table style="width: 100%;">
         <thead>
         <tr>
@@ -246,14 +266,14 @@
             {% for ce in am.competenciaespecifica_set.all %}
                 <tr>
                     {% if forloop.first %}
-                        <td rowspan="{{ am.competenciaespecifica_set.all|length }}" class="fixed_column nombre_materia">
-                            <span class="verticalText">{{ am.nombre }}</span>
+                        <td rowspan="{{ am.competenciaespecifica_set.all|length }}">
+                            {{ am.nombre }}
                         </td>
                     {% endif %}
                     <td title="CE{{ ce.orden }}" class="fixed_column2">
                         {{ ce.nombre }}
                     </td>
-                    <td id="cal_ce_informe{{ ce.id }}"></td>
+                    <td id="cal_ce_informe{{ ce.id }}" contenteditable="true"></td>
                 </tr>
             {% endfor %}
         {% endfor %}

@@ -80,10 +80,10 @@
                 function (data) {
                     if (data.ok) {
                         {# Instrucciones para rellenar tabla que genera el informe de CC: #}
-                        $('#nombre_alumno_informe_cc').html(data.nombre_alumno);
+                        $('.nombre_alumno_informe_cc').html(data.nombre_alumno);
                         $('#boton_informe_cc_pdf').show();
-                        $('#nombre_grupo_informe_cc').html(data.grupo);
-                        $('#nombre_curso_informe_cc').html(data.cursos.toString());
+                        $('.nombre_grupo_informe_cc').html(data.grupo);
+                        $('.nombre_curso_informe_cc').html(data.cursos.toString());
                         {# Fin de las instrucciones #}
                         var el = $('#nombre_alumno');
                         el.html(data.nombre_alumno);
