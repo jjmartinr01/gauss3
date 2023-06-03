@@ -100,7 +100,8 @@
                         $('.tbody_am').hide();
                         setTimeout(function () {
                             for (var idx in data.ams) {
-                                $('#tbody_am' + idx).show();
+                                $('#tbody_am' + data.ams[idx]).show();
+                                console.log('#tbody_am' + data.ams[idx]);
                             }
                         }, 200);
                         {# Fin de las instrucciones #}
