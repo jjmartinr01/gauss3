@@ -34,4 +34,5 @@ urlpatterns = [
     path('crea_calalumce_cev/', views.crea_calalumce_cev),
     path('arregla_instrevals/', views.arregla_instrevals),
     path('estadistica_prog/', views.estadistica_prog),
+    path('arregla_cuaderno/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno),
 ]
