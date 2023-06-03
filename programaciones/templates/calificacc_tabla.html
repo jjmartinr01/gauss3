@@ -34,6 +34,9 @@
     .pagebreak{
             page-break-before: always;
         }
+    .no_visible{
+            display: none;
+        }
 
     {#.tabla_cc tbody td:first-child {#}
     {#    position: sticky;#}
@@ -202,10 +205,10 @@
         D: No ha alcanzado el grado esperado de la competencia.
     </p>
 
-    <p style="font-weight: bold;font-size: large;" class="pagebreak">
+    <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
         Alumno: <span class="nombre_alumno_informe_cc"></span>
     </p>
-    <p>
+    <p class="no_visible">
         Curso: <span style="font-weight: bold;" class="nombre_curso_informe_cc"></span>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Grupo: <span style="font-weight: bold;" class="nombre_grupo_informe_cc"></span>
@@ -240,10 +243,10 @@
         </tbody>
     </table>
 
-    <p style="font-weight: bold;font-size: large;" class="pagebreak">
+    <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
         Alumno: <span class="nombre_alumno_informe_cc"></span>
     </p>
-    <p>
+    <p class="no_visible">
         Curso: <span style="font-weight: bold;" class="nombre_curso_informe_cc"></span>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Grupo: <span style="font-weight: bold;" class="nombre_grupo_informe_cc"></span>
