@@ -38,7 +38,8 @@
         <br>
         <div id="contenido_competencias_clave">
         </div>
-    <textarea style="display: none;" id="textarea_tabla_generar_informe" name="textarea_tabla_generar_informe"></textarea>
+        <textarea style="display: none;" id="textarea_tabla_generar_informe"
+                  name="textarea_tabla_generar_informe"></textarea>
     </form>
 {% endblock %}
 
@@ -95,13 +96,17 @@
                         });
                         {# Instrucciones para rellenar tabla que genera el informe de CC: #}
                         $.each(data.cal_ces, function (id, value) {
-                            $('#' + id).html(value);
+                            if (value === 0) {
+                                $('#' + id).html('-');
+                            } else {
+                                $('#' + id).html(value);
+                            }
                         });
                         $('.tbody_am').hide();
                         setTimeout(function () {
                             for (var idx in data.ams) {
                                 $('#tbody_am' + data.ams[idx]).show();
-                                console.log('#tbody_am' + data.ams[idx]);
+                                {#console.log('#tbody_am' + data.ams[idx]);#}
                             }
                         }, 200);
                         {# Fin de las instrucciones #}
@@ -175,18 +180,18 @@
         });
 
         $('body').on('click', '#boton_informe_cc_pdf', function (e) {
-                e.preventDefault();
-                var style = '<style>table, td, th{border:1px}</style>';
-                var html = $('#tabla_generar_informe').html();
-                $('#textarea_tabla_generar_informe').val(style + html);
-                $('#action').val('genera_pdf');
-                document.getElementById('{{ formname }}').submit();
-            });
+            e.preventDefault();
+            var style = '<style>table, td, th{border:1px}</style>';
+            var html = $('#tabla_generar_informe').html();
+            $('#textarea_tabla_generar_informe').val(style + html);
+            $('#action').val('genera_pdf');
+            document.getElementById('{{ formname }}').submit();
+        });
 
         $('body').on('click', '.actualizar_datos', function (e) {
-                e.preventDefault();
-                var grupo = $(this).data('grupo');
-                $.post("/calificacc/", {
+            e.preventDefault();
+            var grupo = $(this).data('grupo');
+            $.post("/calificacc/", {
                     action: 'actualizar_datos',
                     grupo: grupo
                 },
@@ -200,7 +205,7 @@
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
-            });
+        });
 
 
         {##}
