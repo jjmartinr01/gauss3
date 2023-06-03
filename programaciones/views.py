@@ -3925,10 +3925,14 @@ def calificacc(request):
                 alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
                 cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
                 cursos = []
+                ams = []
                 for cuaderno in cuadernos:
                     curso = cuaderno.psec.areamateria.get_curso_display()
+                    am = cuaderno.psec.areamateria.id
                     if curso not in cursos:
                         cursos.append(curso)
+                    if am not in ams:
+                        ams.append(am)
                 html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
@@ -3946,8 +3950,8 @@ def calificacc(request):
                         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                                     'nombre_alumno': alumno.gauser.get_full_name(), 'html': html, 'cursos': cursos,
-                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cal_ces': cal_ces})
+                                     'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
+                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':

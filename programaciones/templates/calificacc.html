@@ -157,9 +157,14 @@
                                     }
                                     {# Fin de las instrucciones #}
                                 });
-
                             }
                         }, 1000);
+                        setTimeout(function () {
+                            $('.tbody_am').hide();
+                            for (var idx in data.ams) {
+                                $('#tbody_am' + idx).show();
+                            }
+                        }, 1200);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})

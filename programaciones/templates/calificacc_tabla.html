@@ -236,7 +236,7 @@
                     <td title="{{ do.clave }}" class="fixed_column2">
                         {{ do.texto }}
                     </td>
-                    <td id="cal_do{{ do.clave }}" contenteditable="true"></td>
+                    <td id="cal_do{{ do.clave }}" style="text-align: center;" contenteditable="true"></td>
                 </tr>
             {% endfor %}
         {% endfor %}
@@ -264,8 +264,8 @@
             <th>Calificación</th>
         </tr>
         </thead>
-        <tbody>
         {% for am in ams %}
+            <tbody class="tbody_am" id="tbody_am{{ am.id }}">
             {% for ce in am.competenciaespecifica_set.all %}
                 <tr>
                     {% if forloop.first %}
@@ -276,10 +276,10 @@
                     <td title="CE{{ ce.orden }}" class="fixed_column2">
                         {{ ce.nombre }}
                     </td>
-                    <td id="cal_ce_informe{{ ce.id }}" contenteditable="true"></td>
+                    <td id="cal_ce_informe{{ ce.id }}" style="text-align: center;" contenteditable="true"></td>
                 </tr>
             {% endfor %}
+            </tbody>
         {% endfor %}
-        </tbody>
     </table>
 </div>
