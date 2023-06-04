@@ -4029,8 +4029,9 @@ def arregla_cuaderno(request, cuaderno_id, max_cal):
         cuaderno = CuadernoProf.objects.get(id=cuaderno_id)
         ecpvs = EscalaCPvalor.objects.filter(ecp__cp=cuaderno)
         for ecpv in ecpvs:
-            ecpv.valor = ecpv.valor / max_cal * 10
-            ecpv.save()
+            if ecpv.valor > 10:
+                ecpv.valor = ecpv.valor / max_cal * 10
+                ecpv.save()
         cavs = CalAlumValor.objects.filter(ca__cp=cuaderno)
         for cav in cavs:
             # Provoco que la señal de cálculo de 'update_calalumcev' se ejecute:
@@ -4039,6 +4040,21 @@ def arregla_cuaderno(request, cuaderno_id, max_cal):
     except Exception as msg:
         return HttpResponse(str(msg))
 
+@gauss_required
+def arregla_cuaderno2(request, cuaderno_id, max_cal):
+    # La siguiente llamada https://gauss.larioja.org/456/100  significaría:
+    # Arreglar el cuaderno con id=456
+    # Coger todas las calificaciones del cuaderno y hacer la operación: cal/100*10
+    # La operación en realidad es: cal/max_cal*10 para normalizar la calificación entre 0 y 10
+    try:
+        cuaderno = CuadernoProf.objects.get(id=cuaderno_id)
+        cavs = CalAlumValor.objects.filter(ca__cp=cuaderno)
+        for cav in cavs:
+            # Provoco que la señal de cálculo de 'update_calalumcev' se ejecute:
+            cav.save()
+        return HttpResponse('Operación de ajuste de calificaciones realizada 2.')
+    except Exception as msg:
+        return HttpResponse(str(msg))
 
 #########################################################
 ################### Crear los nuevos CalAlumCE y CalAlumCEv asociados a las CalAlumValor ya existentes
