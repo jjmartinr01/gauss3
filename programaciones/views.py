@@ -4048,8 +4048,11 @@ def arregla_cuaderno2(request, cuaderno_id, max_cal):
     # La operación en realidad es: cal/max_cal*10 para normalizar la calificación entre 0 y 10
     try:
         cuaderno = CuadernoProf.objects.get(id=cuaderno_id)
-        cavs = CalAlumValor.objects.filter(ca__cp=cuaderno)
-        for cav in cavs:
+        cavs = CalAlumValor.objects.filter(ca__cp=cuaderno).order_by('id')
+        partes = int(str(max_cal)[0])
+        parte = int(str(max_cal)[1])
+        paginator = Paginator(cavs, int(cavs.count() / partes))
+        for cav in paginator.get_page(parte):
             # Provoco que la señal de cálculo de 'update_calalumcev' se ejecute:
             cav.save()
         return HttpResponse('Operación de ajuste de calificaciones realizada 2.')
@@ -4068,6 +4071,7 @@ def arregla_cuaderno3(request, cuaderno_id, max_cal):
         for ecpv in ecpvs:
             ecpv.valor = ecpv.valor / max_cal * 10
             ecpv.save()
+        return HttpResponse('Operación de ajuste de calificaciones realizada 3.')
     except Exception as msg:
         return HttpResponse(str(msg))
 
