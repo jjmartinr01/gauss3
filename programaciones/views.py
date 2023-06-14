@@ -3911,12 +3911,19 @@ def calificacc(request):
                 tabla_cc = TablaCompetenciasClave.objects.create(grupo=grupo)
                 alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
                 cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
-                am = cuadernos[0].psec.areamateria
-                ps = am.ps
-                ams = AreaMateria.objects.filter(curso=am.curso)
+                am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
+                ams = AreaMateria.objects.filter(id__in=am_ids)
+                ps = ams[0].ps
+                # cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
+                # am = cuadernos[0].psec.areamateria
+                # ps = am.ps
+                # ams = AreaMateria.objects.filter(curso=am.curso)
                 alum_order = alumnos.order_by('gauser__last_name')
+                # html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
+                #                                                   'curso': am.curso, 'cuadernos': cuadernos,
+                #                                                   'fecha_hora': datetime.now(), 'grupo': grupo})
                 html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
-                                                                  'curso': am.curso, 'cuadernos': cuadernos,
+                                                                  'cuadernos': cuadernos,
                                                                   'fecha_hora': datetime.now(), 'grupo': grupo})
                 tabla_cc.ps = ps
                 tabla_cc.tabla = html

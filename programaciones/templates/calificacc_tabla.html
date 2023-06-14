@@ -63,7 +63,7 @@
             <thead>
             <tr>
                 <th>Propietario del cuaderno</th>
-                <th>Materia</th>
+                <th>Asignatura</th>
                 <th>Curso</th>
                 <th>Basado en la programación</th>
             </tr>
@@ -220,7 +220,8 @@
             </th>
         </tr>
         <tr>
-            <th colspan="2">Competencia Clave y Descriptores Operativos asociados</th>
+            <th style="text-align: center;">Competencia Clave</th>
+            <th style="text-align: center;">Descriptores Operativos</th>
             <th style="text-align: center;">Calificación</th>
         </tr>
         </thead>
@@ -233,7 +234,7 @@
                             {{ cc.competencia }}
                         </td>
                     {% endif %}
-                    <td title="{{ do.clave }}" class="fixed_column2">
+                    <td title="{{ do.clave }}">
                         {{ do.texto }}
                     </td>
                     <td id="cal_do{{ do.clave }}" style="text-align: center;" contenteditable="true"></td>
@@ -259,9 +260,9 @@
             </th>
         </tr>
         <tr>
-            <th>Asignatura</th>
-            <th>Competencia Específica</th>
-            <th>Calificación</th>
+            <th style="text-align: center;">Asignatura</th>
+            <th style="text-align: center;">Competencia Específica</th>
+            <th style="text-align: center;">Calificación</th>
         </tr>
         </thead>
         {% for am in ams %}
@@ -273,7 +274,7 @@
                             {{ am.nombre }}
                         </td>
                     {% endif %}
-                    <td title="CE{{ ce.orden }}" class="fixed_column2">
+                    <td title="CE{{ ce.orden }}">
                         {{ ce.nombre }}
                     </td>
                     <td id="cal_ce_informe{{ ce.id }}" style="text-align: center;" contenteditable="true"></td>
