@@ -3882,7 +3882,8 @@ def calificacc(request):
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
                 try:
-                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo)
+                    min_datetime = datetime.strptime('15/06/2023 15:05', '%d/%m/%Y %H:%M')
+                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado_gt=min_datetime)
                     ps = tabla_cc.ps
                     html = tabla_cc.tabla
                 except:
@@ -3939,6 +3940,8 @@ def calificacc(request):
                 cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
                 cursos = []
                 ams = []
+                # Cada AreaMateria debería estar evaluada en un solo cuaderno. Registro de cuadernos múltiples:
+                ams_multiples = {}
                 for cuaderno in cuadernos:
                     curso = cuaderno.psec.areamateria.get_curso_display()
                     am = cuaderno.psec.areamateria.id
@@ -3946,6 +3949,14 @@ def calificacc(request):
                         cursos.append(curso)
                     if am not in ams:
                         ams.append(am)
+                        ams_multiples[am] = 1
+                    else:
+                        ams_multiples[am] += 1
+                msg_ams_multiples = ''
+                for k, v in ams_multiples.items():
+                    if v > 1:
+                        am = AreaMateria.objects.get(id=k).nombre
+                        msg_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
                 html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
@@ -3964,7 +3975,8 @@ def calificacc(request):
                         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
                                      'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
-                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams})
+                                     'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams,
+                                     'msg_ams_multiples': msg_ams_multiples})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':
@@ -4032,6 +4044,7 @@ def configurar_cargos_permisos(request):
             mensaje += '<br>%s -- %s' % (e, str(msg))
     return HttpResponse(mensaje)
 
+
 @gauss_required
 def arregla_cuaderno(request, cuaderno_id, max_cal):
     # La siguiente llamada https://gauss.larioja.org/456/100  significaría:
@@ -4053,6 +4066,7 @@ def arregla_cuaderno(request, cuaderno_id, max_cal):
     except Exception as msg:
         return HttpResponse(str(msg))
 
+
 @gauss_required
 def arregla_cuaderno2(request, cuaderno_id, max_cal):
     # La siguiente llamada https://gauss.larioja.org/456/100  significaría:
@@ -4072,6 +4086,7 @@ def arregla_cuaderno2(request, cuaderno_id, max_cal):
     except Exception as msg:
         return HttpResponse(str(msg))
 
+
 @gauss_required
 def arregla_cuaderno3(request, cuaderno_id, max_cal):
     # La siguiente llamada https://gauss.larioja.org/456/100  significaría:
@@ -4087,6 +4102,7 @@ def arregla_cuaderno3(request, cuaderno_id, max_cal):
         return HttpResponse('Operación de ajuste de calificaciones realizada 3.')
     except Exception as msg:
         return HttpResponse(str(msg))
+
 
 #########################################################
 ################### Crear los nuevos CalAlumCE y CalAlumCEv asociados a las CalAlumValor ya existentes

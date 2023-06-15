@@ -31,12 +31,14 @@
         z-index: 5 !important;
         background: #F5F5F5;
     }
-    .pagebreak{
-            page-break-before: always;
-        }
-    .no_visible{
-            display: none;
-        }
+
+    .pagebreak {
+        page-break-before: always;
+    }
+
+    .no_visible {
+        display: none;
+    }
 
     {#.tabla_cc tbody td:first-child {#}
     {#    position: sticky;#}
@@ -45,13 +47,13 @@
     {# }#}
 </style>
 <div class="row panel callout">
-<div class="columns large-9">
-    <p>Fecha y hora de la última actualización: <b>{{ fecha_hora|date:'d-m-Y \a \l\a\s H:i' }}</b></p>
-    <p>Si observa que la información y tablas mostradas a continuación son incompletas, pulse
-    en el botón "Actualizar" para recargar los datos almacenados en el sistema.</p>
-    <p>En general, la actualización sólo es necesaria cuando se ha modificado el listado de alumnos
-    o se ha creado o borrado un cuaderno docente en una fecha y hora posterior a la indicada.</p>
-</div>
+    <div class="columns large-9">
+        <p>Fecha y hora de la última actualización: <b>{{ fecha_hora|date:'d-m-Y \a \l\a\s H:i' }}</b></p>
+        <p>Si observa que la información y tablas mostradas a continuación son incompletas, pulse
+            en el botón "Actualizar" para recargar los datos almacenados en el sistema.</p>
+        <p>En general, la actualización sólo es necesaria cuando se ha modificado el listado de alumnos
+            o se ha creado o borrado un cuaderno docente en una fecha y hora posterior a la indicada.</p>
+    </div>
     <div class="columns large-3">
         <a class="button actualizar_datos" data-grupo="{{ grupo.id }}">Actualizar</a>
     </div>
@@ -95,6 +97,15 @@
             </a>
         {% endfor %}
     </div>
+</div>
+<div id="info_cuadernos_multiples" style="display: none;" data-alert class="alert-box alert radius row">
+    <h3 style="font-weight: bold;color:white;">
+        <i class="fa fa-warning"></i> Se han detectado varios cuadernos para la misma asignatura:
+    </h3>
+    <ul id="info_cuadernos_multiples_lis"></ul>
+    <p><b>Es necesario que, en cada asignatura, el alumnado sea evaluado únicamente a través de un cuaderno. Por tanto,
+        se debe proceder al borrado de aquellos cuadernos que no sean necesarios; en otro caso se pueden producir
+        errores, tanto en la emisión de informes, como en el cálculo de calificaciones.</b></p>
 </div>
 <div id="info_cuadernos_alumno"></div>
 <table class="tabla_cc">
@@ -170,10 +181,10 @@
         <tr>
             <th colspan="2" style="text-align: center;">Grado de adquisición de las competencias clave</th>
         </tr>
-{#        <tr>#}
-{#            <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>#}
-{#            <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>#}
-{#        </tr>#}
+        {#        <tr>#}
+        {#            <th>Alumno: <span id="nombre_alumno_informe_cc"></span></th>#}
+        {#            <th>Grupo: <span id="nombre_grupo_informe_cc"></span></th>#}
+        {#        </tr>#}
         <tr>
             <th>Competencia Clave</th>
             <th style="text-align: center;">Calificación</th>

@@ -86,6 +86,14 @@
                         $('.nombre_grupo_informe_cc').html(data.grupo);
                         $('.nombre_curso_informe_cc').html(data.cursos.toString());
                         {# Fin de las instrucciones #}
+                        {# Mostrar alerta en caso de cuadernos múltiples para la misma asignatura #}
+                        if (data.msg_ams_multiples){
+                            $('#info_cuadernos_multiples_lis').html(data.msg_ams_multiples);
+                            $('#info_cuadernos_multiples').show();
+                        } else{
+                            $('#info_cuadernos_multiples').hide();
+                        }
+                        {# Fin mostrar alerta #}
                         var el = $('#nombre_alumno');
                         el.html(data.nombre_alumno);
                         $('#info_cuadernos_alumno').html(data.html);
