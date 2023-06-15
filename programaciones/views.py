@@ -3910,6 +3910,7 @@ def calificacc(request):
         elif action == 'actualizar_datos':
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
+                TablaCompetenciasClave.objects.filter(grupo=grupo).delete()
                 tabla_cc = TablaCompetenciasClave.objects.create(grupo=grupo)
                 alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
                 cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
