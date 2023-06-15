@@ -3887,6 +3887,7 @@ def calificacc(request):
                     ps = tabla_cc.ps
                     html = tabla_cc.tabla
                 except:
+                    TablaCompetenciasClave.objects.filter(grupo=grupo).delete()
                     alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
                     cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
                     am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
