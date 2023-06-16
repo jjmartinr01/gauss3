@@ -3883,7 +3883,7 @@ def calificacc(request):
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
                 try:
                     min_datetime = datetime.strptime('15/06/2023 15:05', '%d/%m/%Y %H:%M')
-                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado_gt=min_datetime)
+                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado__gt=min_datetime)
                     ps = tabla_cc.ps
                     html = tabla_cc.tabla
                 except:
