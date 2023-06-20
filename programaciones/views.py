@@ -3883,7 +3883,7 @@ def calificacc(request):
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
                 try:
-                    min_datetime = datetime.strptime('15/06/2023 15:05', '%d/%m/%Y %H:%M')
+                    min_datetime = datetime.strptime('20/06/2023 23:05', '%d/%m/%Y %H:%M')
                     madrid_timezone = pytz.timezone('Europe/Madrid')
                     min_datetime_timezone = madrid_timezone.localize(min_datetime)
                     tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado__gt=min_datetime_timezone)
