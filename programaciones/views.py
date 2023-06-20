@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import pytz
 from datetime import date, datetime
 import simplejson as json
 import unicodedata
@@ -3883,7 +3884,9 @@ def calificacc(request):
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
                 try:
                     min_datetime = datetime.strptime('15/06/2023 15:05', '%d/%m/%Y %H:%M')
-                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado__gt=min_datetime)
+                    madrid_timezone = pytz.timezone('Europe/Madrid')
+                    min_datetime_timezone = madrid_timezone.localize(min_datetime)
+                    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado__gt=min_datetime_timezone)
                     ps = tabla_cc.ps
                     html = tabla_cc.tabla
                 except:
@@ -4006,8 +4009,11 @@ def calificacc(request):
         nombre = slugify('Informe_competencias_clave')
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
                             content_type='application/pdf')
-    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
-                                         borrado=False).values_list('grupo__id', 'grupo__nombre')
+    # grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
+    #                                      borrado=False).values_list('grupo__id', 'grupo__nombre')
+    alumnos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
+    alumnos_grupo = Gauser_extra.objects.filter(id__in=alumnos, gauser_extra_estudios__grupo__isnull=False)
+    grupos = set(alumnos_grupo.values_list('gauser_extra_estudios__grupo__id', 'gauser_extra_estudios__grupo__nombre'))
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',

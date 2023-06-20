@@ -45,6 +45,7 @@
 
 {% block final %}
     <script>
+        $('#select_grupo').select2();
         {#habilita(['s_plus', 's_info-circle']);#}
         {#$('#plus_sign').click(function (event) {#}
         {#    event.preventDefault();#}
@@ -80,6 +81,8 @@
             $.post('/calificacc/', {'action': 'carga_alumnocc', alumno: alumno, 'ps': $('#id_ps').val()},
                 function (data) {
                     if (data.ok) {
+                        {# Borrar todas las calificaciones que pudieran estar ya mostradas en cada DO #}
+                        $('.span_cal_do').html('');
                         {# Instrucciones para rellenar tabla que genera el informe de CC: #}
                         $('.nombre_alumno_informe_cc').html(data.nombre_alumno);
                         $('#boton_informe_cc_pdf').show();

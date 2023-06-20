@@ -496,9 +496,11 @@ def configura_competencias(request):
                     ces = list(am1.competenciaespecifica_set.all()) + list(am2.competenciaespecifica_set.all())
                     for ce in ces:
                         antigua_ce = CompetenciaEspecifica.objects.get(id=ce.id)
+                        dos_antigua_ce = antigua_ce.dos.all()
                         nueva_ce = ce
                         nueva_ce.pk = None
                         nueva_ce.am = am
+                        nueva_ce.dos.add(*dos_antigua_ce)
                         if not nueva_ce.asignatura:
                             nueva_ce.asignatura = antigua_ce.am.nombre
                         nueva_ce.save()
