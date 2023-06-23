@@ -39,7 +39,9 @@ class Cupo(models.Model):
         try:
             msg = ''
             cargo_inspector = Cargo.objects.get(entidad=self.ronda.entidad, clave_cargo='g_inspector_educacion')
-            gauser_inspectores = usuarios_ronda(self.ronda, cargos=[cargo_inspector]).values_list('gauser__id', flat=True)
+            # gauser_inspectores = usuarios_ronda(self.ronda, cargos=[cargo_inspector]).values_list('gauser__id', flat=True)
+            ges_inspectores = Gauser_extra.objects.filter(ronda=self.ronda, cargos__in=[cargo_inspector])
+            gauser_inspectores = ges_inspectores.values_list('gauser__id', flat=True)
             con1 = g_e.gauser.id in gauser_inspectores
             con2 = (self.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('publica_cupo_para_rrhh')
             if con1 or con2:
@@ -53,13 +55,17 @@ class Cupo(models.Model):
                     else:
                         return False, 'El cupo debe estar bloqueado para activar la publicación.'
                 else:
-                    msg += 'Existen interinos sin código de especialidad y/o cuerpo.'
+                    msg += 'Existen interinos sin código de especialidad y/o cuerpo: '
+                    especialidades = []
                     for ic in interinos_condiciones:
-                        msg += ' %s - %s.' %(ic.profesorado.especialidad.nombre, ic.nombre)
-                    msg += 'No es posible la publicación.'
+                        if ic.profesorado.especialidad.nombre not in especialidades:
+                            especialidades.append(ic.profesorado.especialidad.nombre)
+                            # msg += ' %s - %s.' % (ic.profesorado.especialidad.nombre, ic.nombre)
+                    msg += ' - '.join(especialidades)
+                    # msg += '. No es posible la publicación.'
                     return False, msg
             else:
-                msg = 'gauser: %s - inspectores: %s' %(g_e.gauser.id, ', '.join(gauser_inspectores))
+                msg = 'gauser: %s - inspectores: %s' % (g_e.gauser.id, ', '.join([str(i) for i in gauser_inspectores]))
                 return False, 'No tiene permisos suficientes. con1: %s, con2: %s. %s' % (con1, con2, msg)
         except Exception as msg:
             return False, 'Error en la comprobación de permisos: %s' % str(msg)
