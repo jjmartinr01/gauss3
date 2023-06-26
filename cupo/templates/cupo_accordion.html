@@ -7,9 +7,9 @@
         {% else %}
             <i id="bloqueado{{ cupo.id }}" class="fa fa-unlock"></i>
         {% endif %}
-{#    <span class="right" id="span_ronda" style="color: grey;font-size: small;">#}
-{#        {{ cupo.ronda.entidad.name }} ({{ cupo.ronda.nombre }})#}
-{#    </span>#}
+    <span class="right" id="span_ronda" style="color: grey;font-size: small;" title="{{ cupo.ronda.entidad.name }}">
+         {{ cupo.ronda.nombre }}
+    </span>
     </a>
     {# Para comparar de manera segura cupo.id con cupo_selected convertimos el intero a cadena. Puede ser #}
     {# con stringformat:'d' o stringformat:'d' o con slugify #}

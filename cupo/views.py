@@ -504,7 +504,8 @@ def ajax_cupo(request):
                 orig = Cupo.objects.get(id=request.POST['cupo'])
                 if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
-                cupo = Cupo.objects.create(ronda=orig.ronda, nombre='(copia) %s' % (orig.nombre))
+                #La ronda copiada no tiene por qué coincidir con la ronda actual del centro educativo:
+                cupo = Cupo.objects.create(ronda=orig.ronda.entidad.ronda, nombre='(copia) %s' % (orig.nombre))
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # crea_departamentos(g_e.ronda)
                 for e in orig.especialidadcupo_set.all():

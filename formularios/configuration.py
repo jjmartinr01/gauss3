@@ -56,6 +56,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 1,
      'parent': 'acceso_funcionarios_practicas'
+     },
+    {'code_menu': 'acceso_evaluacion_funcpract',
+     'texto_menu': 'Cuestionarios evaluación',
+     'href': 'evaluacion_funcpract',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 1,
+     'parent': 'acceso_funcionarios_practicas'
      }
 ]
 # Se añaden otros permisos para el usuario
@@ -76,4 +84,16 @@ PERMISOS = [{'code_nombre': 'crea_formularios',
              'nombre': 'Tiene permiso para ver todas las evaluaciones de funcionarios en prácticas',
              'menu': 'acceso_funcionarios_practicas'
              },
+            {'code_nombre': 'borra_pefps',
+             'nombre': 'Tiene permiso para borrar cualquier proceso de evaluación de funcionarios en prácticas',
+             'menu': 'acceso_procesos_evalpract'
+             },
+            {'code_nombre': 'crea_evaluacion_funcpract',
+             'nombre': 'Tiene permiso para crear cuestionarios de evaluación de funcionarios en prácticas',
+             'menu': 'acceso_evaluacion_funcpract'
+             },
+            {'code_nombre': 'borra_efps',
+             'nombre': 'Tiene permiso para borrar cualquier cuestionario de evaluación de funcionarios en prácticas',
+             'menu': 'acceso_evaluacion_funcpract'
+             }
             ]

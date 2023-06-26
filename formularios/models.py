@@ -145,7 +145,7 @@ GSITIPOS = (('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elecci
 
 class GformSectionInput(models.Model):
     gformsection = models.ForeignKey(GformSection, blank=True, null=True, on_delete=models.CASCADE)
-    orden = models.IntegerField("Orden dentro de la sección", blank=True, null=True)
+    orden = models.IntegerField('Orden dentro de la sección', blank=True, null=True)
     rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='rellenador')
     creador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
     tipo = models.CharField('Tipo de entrada', max_length=3, choices=GSITIPOS, default='RC')
@@ -186,7 +186,7 @@ class GformSectionInput(models.Model):
 
 class GformSectionInputOps(models.Model):
     gformsectioninput = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
-    orden = models.IntegerField("Orden dentro de las posibles opciones", blank=True, null=True)
+    orden = models.IntegerField('Orden dentro de las posibles opciones', blank=True, null=True)
     opcion = models.CharField('Opción', blank=True, null=True, max_length=150, default='Esta es una opción')
     puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
 
@@ -207,7 +207,7 @@ class GformResponde(models.Model):
     identificador = models.CharField('Identificador del destinatario', max_length=21, default=genera_identificador)
     respondido = models.BooleanField('¿Este cuestionario está respondido?', default=False)
     # borrado = models.BooleanField('¿Este cuestionario está borrado?', default=False)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     class Meta:
         ordering = ['gform', 'g_e']
@@ -248,11 +248,11 @@ class GformRespondeInput(models.Model):
     rfirma_cargo = models.CharField('Cargo del firmante', blank=True, null=True, default='', max_length=100)
     rentero = models.IntegerField('Respuesta número entero', blank=True, null=True)
     rarchivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
-    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    content_type = models.CharField('Tipo de archivo', max_length=200, blank=True, null=True)
     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
-    creado = models.DateField("Fecha de creación", auto_now_add=True)
-    modificado = models.DateField("Fecha de modificación", auto_now=True)
+    creado = models.DateField('Fecha de creación', auto_now_add=True)
+    modificado = models.DateField('Fecha de modificación', auto_now=True)
 
     class Meta:
         ordering = ['gformresponde__identificador', 'gfsi__orden']
@@ -409,8 +409,12 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     observaciones_doc = models.TextField('Observaciones para el docente', blank=True, null=True, default='')
     observaciones_tut = models.TextField('Observaciones para el tutor', blank=True, null=True, default='')
     observaciones_dir = models.TextField('Observaciones para el director', blank=True, null=True, default='')
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+    borrado = models.BooleanField('Proceso de evaluación de funcionarios en prácticas bloqueado', default=False)
 
+    @property
+    def num_usos(self):
+        return ProcesoEvalFunPract.objects.filter(evalfunpract=self).count()
     @property
     def cuestiones(self):
         return EvalFunPractDimSubCue.objects.filter(evalfunpractdimsub__evalfunpractdim__evalfunpract=self)
@@ -432,16 +436,22 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
         return EvalFunPractDimSubCue.objects.filter(evalfunpractdimsub__evalfunpractdim__evalfunpract=self).count()
 
     class Meta:
-        ordering = ['pk', ]
+        ordering = ['-modificado', ]
 
     def __str__(self):
         return 'Cuestionario de Evaluación de Funcionarios en Prácticas - %s' % (self.pk)
 
+class EvalFunPractInteresado(models.Model):  # Evaluación Funcionarios en Prácticas Interesado
+    efp = models.ForeignKey(EvalFunPract, on_delete=models.CASCADE)
+    interesado = models.CharField('Texto: Inspector, Director, Docente, ...', max_length=100)
+    instrucciones = models.TextField('Instrucciones para el interesado', blank=True, null=True, default='')
+    def __str__(self):
+        return 'Interesado: %s - %s' % (self.interesado, self.instrucciones[:100])
 
 class EvalFunPractDim(models.Model):  # Dimensión
     evalfunpract = models.ForeignKey(EvalFunPract, on_delete=models.CASCADE)
     dimension = models.TextField('Dimensión a evaluar')
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
     def valor(self):
@@ -458,7 +468,7 @@ class EvalFunPractDimSub(models.Model):  # Subdimension
     evalfunpractdim = models.ForeignKey(EvalFunPractDim, on_delete=models.CASCADE)
     subdimension = models.TextField('Subdimensión a evaluar')
     valor = models.IntegerField('Valor total de esta subdimensión', default=10)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     class Meta:
         ordering = ['evalfunpractdim', ]
@@ -470,6 +480,7 @@ class EvalFunPractDimSub(models.Model):  # Subdimension
 class EvalFunPractDimSubCue(models.Model):  # Cuestion
     evalfunpractdimsub = models.ForeignKey(EvalFunPractDimSub, on_delete=models.CASCADE)
     pregunta = models.TextField('Texto de la pregunta a responder')
+    responden = models.ManyToManyField(EvalFunPractInteresado, blank=True)
     responde_ins = models.BooleanField('¿Esta cuestión la responde el inspector?', default=False)
     responde_doc = models.BooleanField('¿Esta cuestión la responde el docente?', default=True)
     responde_doc_jefe = models.BooleanField('¿La responde el docente si es jefe de departamento?', default=True)
@@ -477,7 +488,7 @@ class EvalFunPractDimSubCue(models.Model):  # Cuestion
     responde_doc_orientador = models.BooleanField('¿La responde el docente si es orientador?', default=True)
     responde_tut = models.BooleanField('¿Esta cuestión la responde el tutor?', default=True)
     responde_dir = models.BooleanField('¿Esta cuestión la responde el director?', default=True)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     class Meta:
         ordering = ['evalfunpractdimsub', 'pk']
@@ -494,7 +505,8 @@ class ProcesoEvalFunPract(models.Model):
     identificador = models.CharField('Identificador del Cuestionario', max_length=21, default=genera_identificador)
     fecha_min = models.DateField('Fecha inicio para rellenar', null=True, blank=True)
     fecha_max = models.DateField('Fecha final para rellenar', null=True, blank=True)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+    bloqueado = models.BooleanField('Proceso de evaluación de funcionarios en prácticas bloqueado', default=True)
 
     @property
     def is_activo(self):
@@ -524,7 +536,7 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
     fecha_min = models.DateField('Fecha inicio para rellenar', null=True, blank=True)
     fecha_max = models.DateField('Fecha final para rellenar', null=True, blank=True)
     actualiza_efprs = models.BooleanField('¿Se deben actualizar las efprs?', default=False)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
     def is_activo(self):
@@ -653,7 +665,7 @@ class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas R
     obsdirector = models.TextField('Observaciones del director', null=True, blank=True, default='')
     obstutor = models.TextField('Observaciones del tutor', null=True, blank=True, default='')
     obsinspector = models.TextField('Observaciones del inspector', null=True, blank=True, default='')
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
     def num_cues_subdim(self):

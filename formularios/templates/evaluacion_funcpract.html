@@ -1,0 +1,475 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .respuesta_booleana {
+            font-weight: bold;
+        }
+
+        .gtext {
+            min-height: 100px;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        .ckeditorpregunta {
+            border: none !important;
+            min-height: 10px !important;
+        }
+
+        .disabled {
+            opacity: 0.4;
+        }
+
+        .span_nombres {
+            font-size: small;
+            color: grey;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="efp" id="efp" value="">
+
+        <div class="">
+            <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
+                Cuestionarios de evaluación</strong></h4>
+        </div>
+
+        <div id="listado_efps">
+            {% include 'evaluacion_funcpract_accordion.html' %}
+        </div>
+    </form>
+
+    <div id="reveal_carga_manual_efp_destinatario" class="reveal-modal" data-reveal>
+        <div class="row">
+            <div class="columns large-12"><h3>Carga manual de funcionario/a en prácticas</h3></div>
+        </div>
+        <div class="row">
+            <div class="columns large-3"><label>Nombre del docente
+                <select id="nombre_docente_efpa">
+                    <option value="">------</option>
+                </select></label>
+            </div>
+            <div class="columns large-3"><label>Nombre del tutor/a
+                <select id="nombre_tutor_efpa">
+                    <option value="">------</option>
+                </select></label>
+            </div>
+            <div class="columns large-3"><label>Nombre del director/a
+                <select id="nombre_director_efpa">
+                    <option value="">------</option>
+                </select></label>
+            </div>
+            <div class="columns large-3"><label>Nombre del inspector/a
+                <select id="nombre_inspector_efpa">
+                    <option value="">------</option>
+                    {% for inspector in inspectores %}
+                        <option value="{{ inspector.id }}">{{ inspector.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select></label>
+            </div>
+        </div>
+        <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>
+        <div class="row">
+            <br>
+            <div class="columns large-12"><a id="aceptar_reveal_carga_manual_efp_destinatario"
+                                             class="button secondary">Aceptar</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('body').on('click', '.carga_manual_efp_destinatario', function () {
+            setTimeout(function () {
+                $('#nombre_docente_efpa').select2(
+                    conf_select2({
+                        'gcs': 'g',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
+                        'cars':['g_docente',],
+                        'placeholder': 'Escribe parte del nombre del docente para buscarlo',
+                        'url': '/selectgcs/'
+                    })
+                );
+                $('#nombre_tutor_efpa').select2(
+                    conf_select2({
+                        {#'url': '/selectgcs_organization/',#}
+                        {#'gcs': 'gcs',#}
+                        {#'format_g': '{0}, {1}',#}
+                        {#'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
+                        'gcs': 'g',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
+                        'cars':['g_docente',],
+                        'placeholder': 'Escribe parte del nombre del tutor para buscarlo',
+                        'url': '/selectgcs/'
+                    })
+                );
+                $('#nombre_director_efpa').select2(
+                    conf_select2({
+                        {#'url': '/selectgcs_organization/',#}
+                        {#'gcs': 'gcs',#}
+                        {#'format_g': '{0}, {1}',#}
+                        {#'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
+                        'gcs': 'g',
+                        'format_g': '{0}, {1} ({5})',
+                        'scope': 'rondas',
+                        'cars':['g_docente',],
+                        'placeholder': 'Escribe parte del nombre del director/a para buscarlo',
+                        'url': '/selectgcs/'
+                    })
+                );
+                $('#nombre_inspector_efpa').select2();
+            }, 200);
+        });
+
+        $('body').on('click', '#aceptar_reveal_carga_manual_efp_destinatario', function (e) {
+            e.preventDefault();
+            var docente = $('#nombre_docente_efpa').val().substring(1, 10);
+            var tutor = $('#nombre_tutor_efpa').val().substring(1, 10);
+            var director = $('#nombre_director_efpa').val().substring(1, 10);
+            var inspector = $('#nombre_inspector_efpa').val()
+            if (docente && tutor && director && inspector) {
+                $.post("/evaluacion_funcpract/", {
+                        action: 'update_destinatarios_carga_manual',
+                        docente: docente,
+                        tutor: tutor,
+                        director: director,
+                        inspector: inspector,
+                        efp: $('#efp').val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#div_usuarios_destinatarios' + data.efp).html(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            } else {
+                var texto = 'Todos los usuarios deben estar seleccionados: docente, tutor, director e inspector.'
+                show_mensajes({title: '<i class="fa fa-warning"></i> No es posible la carga', texto: texto})
+            }
+        });
+
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con la plantilla del PDF a generar con las respuestas: #}
+        {# constructInlineEditorInstances,   #}
+        {# ########################################################################################### #}
+
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About', 'generapdfbutton']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                var editor = CKEDITOR.inline(id, config);
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px');
+                    {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
+        }
+
+        $('body').on('keyup', '.update_observaciones', function () {
+            var element = $(this);
+            var efp = element.data('efp');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/evaluacion_funcpract/", {
+                            action: 'update_observaciones',
+                            efp: efp,
+                            texto: nuevo_texto
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('keyup', '.update_template', function () {
+            var element = $(this);
+            var efp = element.data('efp');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/evaluacion_funcpract/", {
+                            action: 'update_template',
+                            efp: efp,
+                            texto: nuevo_texto
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+
+        {# ########################################################################################### #}
+        {#  #}
+        {# crea_efp, open_accordion, update_nombre  #}
+        {# ########################################################################################### #}
+
+        {% if request.session.gauser_extra|has_permiso:'acceso_procesos_evalpract' %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/evaluacion_funcpract/", {action: 'crea_efp'}, function (data) {
+                    if (data.ok) {
+                        $('#listado_efps').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                });
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-efp')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/evaluacion_funcpract/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $('#efp').val(id);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.del_efp', function (e) {
+            e.preventDefault();
+            $('#efp').val($(this).data('efp'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar el proceso de evaluación de funcionarios en prácticas?',
+                texto: 'Si eliminas el proceso, también se borrarán todas las respuestas de los usuarios.',
+                buttons: {
+                    "Eliminar": function () {
+                        hide_mensajes();
+                        var efp = $('#efp').val();
+                        $.post("/evaluacion_funcpract/", {action: 'del_efp', efp: efp}, function (data) {
+                            if (data.ok) {
+                                $('#accordion' + efp).remove();
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
+
+        {#$('body').on('click', '.copy_gform', function () {#}
+        {#    var efp = $(this).data('efp');#}
+        {#    $.post("/evaluacion_funcpract/", {action: 'copy_gform', efp: efp},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                $('#listado_efps').prepend(data.html);#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+
+        {#$('body').on('click', '.excel_gform', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('excel_gform');#}
+        {#    document.getElementById("{{ formname }}").submit();#}
+        {# });#}
+
+        {#$('body').on('click', '.pdf_gform', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('pdf_gform');#}
+        {#    document.getElementById("{{ formname }}").submit();#}
+        {# });#}
+
+        $('body').on('keyup', '.update_nombre', function () {
+            var element = $(this);
+            var efp = element.data('efp');
+            var antiguo_texto = element.val();
+            $('#nombre' + efp).html(antiguo_texto);
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/evaluacion_funcpract/", {action: 'update_nombre', efp: efp, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('change', '.update_fecha_limite', function (e) {
+            e.preventDefault();
+            console.log('fecha')
+            var efp = $(this).data('efp');
+            var campo = $(this).data('campo');
+            var fecha = $(this).val();
+            $.post("/evaluacion_funcpract/",
+                {action: 'update_fecha_limite', efp: efp, fecha: fecha, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.update_efp', function (e) {
+            e.preventDefault();
+            var efp = $(this).val();
+            var efp = $(this).data('efp');
+            $.post("/evaluacion_funcpract/",
+                {action: 'update_efp', efp: efp, efp: efp},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_efp_destinatario', function (e) {
+            var efpa = $(this).data('efpa');
+            $.post("/evaluacion_funcpract/", {
+                    action: 'del_efp_destinatario',
+                    efpa: efpa
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#efpdestinatario" + data.efpa).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.ver_cargar_efp_destinatarios', function (e) {
+            e.preventDefault();
+            var efp = $(this).data('efp');
+            $('#div_carga_archivo_destinatarios' + efp).toggle();
+        });
+
+        $('body').on('click', '.subir_gauss_file', function () {
+            var id = $(this).data('id');
+            var input_files = document.getElementById('input_gauss_file' + id).files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('efp', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            $('#ajax-loader').show();
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        {#var b = xhr.responseText;#}
+                        var data = JSON.parse(xhr.responseText);
+                        $('#div_usuarios_destinatarios' + data.efp).html(data.html);
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                        $('#ajax-loader').hide();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#ajax-loader').hide();
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }
+            };
+            xhr.open('POST', "/evaluacion_funcpract/", true);
+            xhr.send(formData);
+        });
+
+
+    </script>
+
+{% endblock %}

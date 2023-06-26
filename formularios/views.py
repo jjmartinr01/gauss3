@@ -1225,8 +1225,63 @@ def activa_cuestiones(efpa):
     for c in cs_totales:
         EvalFunPractRes.objects.get_or_create(evalfunpractact=efpa, evalfunpractdimsubcue=c)
 
+# @permiso_required('acceso_evaluacion_funcpract')
+def evaluacion_funcpract(request):  # Creación y edición de cuestionarios de evaluación de funcionarios en prácticas
+    g_e = request.session["gauser_extra"]
+    efps = EvalFunPract.objects.filter(entidad=g_e.ronda.entidad, borrado=False)
 
-# @permiso_required('acceso_procesos_evalpract')
+    if request.method == 'POST':
+        if request.POST['action'] == 'crea_efp':
+            if g_e.has_permiso('crea_evaluacion_funcpract'):
+                nombre = 'Evaluación funcionarios en prácticas - %s' % datetime.today().strftime('%Y%m%d-%H%M')
+                efp = EvalFunPract.objects.create(nombre=nombre, entidad=g_e.ronda.entidad)
+                html = render_to_string('evaluacion_funcpract_accordion.html',
+                                        {'buscadas': False, 'efps': [efp], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'open_accordion':
+            try:
+                efp = EvalFunPract.objects.get(id=request.POST['id'], borrado=False)
+                html = render_to_string('evaluacion_funcpract_accordion_content.html',
+                                        {'efp': efp, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'del_efp':
+            try:
+                pefp = EvalFunPract.objects.get(id=request.POST['efp'])
+                if g_e.has_permiso('borra_efps') or pefp.g_e.gauser == g_e.gauser:
+                    pefp.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar el proceso de evaluación'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_nombre':
+            try:
+                pefp = ProcesoEvalFunPract.objects.get(id=request.POST['pefp'])
+                if pefp.g_e.gauser == g_e.gauser:
+                    pefp.nombre = request.POST['texto']
+                    pefp.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'El nombre solo puede ser cambiado por el propietario'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+    return render(request, "evaluacion_funcpract.html",
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'crea_evaluacion_funcpract',
+                            'title': 'Crear un nuevo cuestionario de evaluación'},
+                           ),
+                      'formname': 'procesos_evaluacion_funcpract',
+                      'efps': efps,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+@permiso_required('acceso_procesos_evalpract')
 def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_en_prácticas
     g_e = request.session["gauser_extra"]
     pefps = ProcesoEvalFunPract.objects.filter(g_e__ronda__entidad=g_e.ronda.entidad, g_e__gauser=g_e.gauser)
