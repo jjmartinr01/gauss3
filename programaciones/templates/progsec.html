@@ -337,11 +337,13 @@
                     callback: function (accordion) {
                         if (accordion.hasClass('accordion-progsec')) {
                             var id = accordion.data('id');
+                            var identificador = accordion.data('identificador');
                             if ($('#circle' + id).hasClass('fa-plus-circle')) {
                                 $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                                 $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                                 window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                                $.post("/progsecundaria/", {action: 'open_accordion', id: id},
+                                $.post("/progsecundaria/", {
+                                    'action': 'open_accordion', 'id': id, 'identificador': identificador},
                                     function (data) {
                                         if (data.ok) {
                                             $('#panel' + id).html(data.html);

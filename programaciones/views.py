@@ -2051,8 +2051,7 @@ def progsecundaria(request):
 
         elif action == 'open_accordion':
             try:
-                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
-                                              id=request.POST['id'])
+                progsec = ProgSec.objects.get(id=request.POST['id'], identificador=request.POST['identificador'])
                 docentes_id = DocProgSec.objects.filter(psec=progsec).values_list('gep__ge', flat=True)
                 departamentos = Departamento.objects.filter(ronda=g_e.ronda)
                 # if departamentos.count() == 0:
