@@ -1248,6 +1248,15 @@ def evaluacion_funcpract(request):  # Creación y edición de cuestionarios de e
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        elif request.POST['action'] == 'add_interesado':
+            try:
+                efp = EvalFunPract.objects.get(id=request.POST['efp'], entidad=g_e.ronda.entidad)
+                i = EvalFunPractInteresado.objects.create(efp=efp, interesado='Persona interesada')
+                html = render_to_string("evaluacion_funcpract_accordion_content_interesado.html", {'interesado': i})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'del_efp':
             try:
                 pefp = EvalFunPract.objects.get(id=request.POST['efp'])

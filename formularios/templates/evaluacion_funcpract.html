@@ -90,48 +90,22 @@
 
 {% block final %}
     <script>
-        $('body').on('click', '.carga_manual_efp_destinatario', function () {
-            setTimeout(function () {
-                $('#nombre_docente_efpa').select2(
-                    conf_select2({
-                        'gcs': 'g',
-                        'format_g': '{0}, {1} ({5})',
-                        'scope': 'rondas',
-                        'cars':['g_docente',],
-                        'placeholder': 'Escribe parte del nombre del docente para buscarlo',
-                        'url': '/selectgcs/'
-                    })
-                );
-                $('#nombre_tutor_efpa').select2(
-                    conf_select2({
-                        {#'url': '/selectgcs_organization/',#}
-                        {#'gcs': 'gcs',#}
-                        {#'format_g': '{0}, {1}',#}
-                        {#'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
-                        'gcs': 'g',
-                        'format_g': '{0}, {1} ({5})',
-                        'scope': 'rondas',
-                        'cars':['g_docente',],
-                        'placeholder': 'Escribe parte del nombre del tutor para buscarlo',
-                        'url': '/selectgcs/'
-                    })
-                );
-                $('#nombre_director_efpa').select2(
-                    conf_select2({
-                        {#'url': '/selectgcs_organization/',#}
-                        {#'gcs': 'gcs',#}
-                        {#'format_g': '{0}, {1}',#}
-                        {#'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
-                        'gcs': 'g',
-                        'format_g': '{0}, {1} ({5})',
-                        'scope': 'rondas',
-                        'cars':['g_docente',],
-                        'placeholder': 'Escribe parte del nombre del director/a para buscarlo',
-                        'url': '/selectgcs/'
-                    })
-                );
-                $('#nombre_inspector_efpa').select2();
-            }, 200);
+
+
+        $('body').on('click', '.add_interesado', function (e) {
+            var efp = $(this).data('efp');
+            $.post("/evaluacion_funcpract/", {
+                    'action': 'add_interesado',
+                    'efp': efp
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_interesados").prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('click', '#aceptar_reveal_carga_manual_efp_destinatario', function (e) {
@@ -427,47 +401,7 @@
             $('#div_carga_archivo_destinatarios' + efp).toggle();
         });
 
-        $('body').on('click', '.subir_gauss_file', function () {
-            var id = $(this).data('id');
-            var input_files = document.getElementById('input_gauss_file' + id).files;
-            $('#span_spin').show();
-            $('.span_porcentage').show();
 
-            for (var i = 0; i < input_files.length; i++) {
-                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-            }
-
-            var formData = new FormData();
-            for (var i = 0; i < input_files.length; i++) {
-                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
-            }
-            formData.append('n_files', input_files.length);
-            formData.append('action', 'upload_archivo_xhr');
-            formData.append('efp', id);
-            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-            $('#ajax-loader').show();
-            var xhr = new XMLHttpRequest();
-            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-            xhr.onload = function () {
-                if (xhr.readyState === xhr.DONE) {
-                    if (xhr.status === 200) {
-                        console.log(xhr.responseText);
-                        {#var b = xhr.responseText;#}
-                        var data = JSON.parse(xhr.responseText);
-                        $('#div_usuarios_destinatarios' + data.efp).html(data.html);
-                        $('#span_spin').hide();
-                        $('#span_porcentage').hide();
-                        $('#ajax-loader').hide();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#ajax-loader').hide();
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                }
-            };
-            xhr.open('POST', "/evaluacion_funcpract/", true);
-            xhr.send(formData);
-        });
 
 
     </script>

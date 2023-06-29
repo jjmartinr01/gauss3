@@ -1,0 +1,35 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+
+<fieldset>
+    <legend>
+        Persona que responderá este cuestionario: <span id="span_interesado">{{ interesado.interesado }}</span>
+    </legend>
+
+<div class="row">
+    <div class="columns large-10">
+        <label><b>Nombre/Título del cuestionario:</b>
+            <input type="text" class="update_nombre" data-campo="nombre"
+                   data-efp="{{ interesado.id }}" value="{{ interesado.interesado }}"
+                   placeholder="Nombre dado al tipo de persona que responderá al cuestionario"></label>
+    </div>
+    <div class="columns large-2">
+        <a class="alert button radius add_interesado" data-efp="{{ efp.id }}">
+            <i class="fa fa-trash"></i> <b>Borrar</b>
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Instrucciones que recibirá el interesado al rellenar el cuestionario:</b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <div contenteditable="true" class="ckeditor update_instrucciones" data-interesado="{{ interesado.id }}"
+             data-campo="instrucciones" id="instrucciones{{ interesado.id }}"
+        >{% autoescape off %}{{ interesado.instrucciones }}{% endautoescape %}</div>
+    </div>
+</div>
+    </fieldset>

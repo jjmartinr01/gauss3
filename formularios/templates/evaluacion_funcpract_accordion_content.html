@@ -23,6 +23,11 @@
         </ul>
     </div>
 </div>
+{#<fieldset>#}
+{#    <legend>Primera parte del cuestionario</legend>#}
+<div class="panel callout">
+<h2 style="font-weight: bold;text-align: center;">Primera parte del cuestionario</h2>
+
 <div class="row">
     <div class="columns large-12">
         <label><b>Nombre/Título del cuestionario:</b>
@@ -34,125 +39,20 @@
 
 <div class="row">
     <div class="columns large-12">
-        <label><b>Notas aclaratorias acerca de este formulario:</b></label>
+        <a class="small button radius add_interesado" data-efp="{{ efp.id }}">
+            <i class="fa fa-plus"></i>
+            <b>Haga click aquí para añadir tipos de persona que rellenarán el cuestionario</b>
+        </a>
     </div>
 </div>
-<div class="row">
-    <div class="columns large-12">
-        <div contenteditable="true" class="ckeditor update_observaciones" data-efp="{{ efp.id }}"
-             data-campo="observaciones" id="observaciones{{ efp.id }}"
-        >{% autoescape off %}{{ efp.observaciones }}{% endautoescape %}</div>
-    </div>
+<div id="list_interesados">
+{% for interesado in efp.evalfunpractinteresado_set.all %}
+    {% include "evaluacion_funcpract_accordion_content_interesado.html" %}
+{% endfor %}
 </div>
-
-<br>
-<div class="row">
-    <div class="columns large-2">
-        <label title="Fecha de inicio para rellenar el cuestionario"><b>Fecha inicio:</b>
-            <input value="{{ efp.fecha_min|date:'Y-m-d' }}" type="date" name="fecha_min"
-                   class="update_fecha_limite" data-efp="{{ efp.id }}" data-campo="fecha_min"></label>
-    </div>
-    <div class="columns large-2">
-        <label title="Fecha límite para rellenar el formulario"><b>Fecha límite:</b>
-            <input value="{{ efp.fecha_max|date:'Y-m-d' }}" type="date" name="fecha_max"
-                   class="update_fecha_limite" data-efp="{{ efp.id }}" data-campo="fecha_max"></label>
-    </div>
-    <div class="columns large-8">
-        <label title="Selecciona el cuestionario de preguntas que se aplicará"><b>Cuestionario:</b>
-            <select data-efp="{{ efp.id }}" class="update_efp">
-                <option value="">---------</option>
-                {% for efp in efp|get_efps %}
-                    <option value="{{ efp.id }}" {% if efp.evalfunpract == efp %}selected{% endif %}>
-                        {{ efp.nombre }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label>
-    </div>
-
-    {#    <div class="columns large-1">#}
-    {#        <label><b>Ver</b><br>#}
-    {#            <a href="/ver_efp/{{ efp.id }}/{{ efp.identificador }}/" target="_blank"#}
-    {#            ><i class="fa fa-eye fa-2x"></i></a>#}
-    {#        </label>#}
-    {#    </div>#}
-    {#    <div class="columns large-3">#}
-    {#        <label title="Haz click sobre el botón para copiar el enlace al formulario"><b>Copiar enlace</b><br>#}
-    {#            <a class="button tiny copy_url_efp" data-url="/rellena_efp/{{ efp.id }}/{{ efp.identificador }}/"#}
-    {#               style="font-weight: bold;">Haz click sobre este botón#}
-    {#            </a>#}
-    {#        </label>#}
-    {#    </div>#}
-</div>
-<p>&nbsp;</p>
-
-<div class="row">
-    <div class="columns large-8">
-        <label><b>Personas destinadas a rellenar este formulario:</b> <a class="ayuda_usuarios_destinatarios">
-            <i class="fa fa-question-circle"></i></a>
-
-        </label>
-    </div>
-    <div class="columns large-2">
-        <label title="Número total de docentes en prácticas que deben ser evaluados">
-            ({{ efp.evalfunpractact_set.all|length }} docentes)
-        </label>
-    </div>
-    <div class="columns large-2 text-right">
-        <a title="Cargar los destinatarios y correctores desde un archivo excel" class="ver_cargar_efp_destinatarios"
-           data-efp="{{ efp.id }}"><i class="fa fa-cloud-upload"></i></a>
-        <a title="Cargar de manera manual un/a destinatario/a y corrector/a" href="#"
-           data-reveal-id="reveal_carga_manual_efp_destinatario" class="carga_manual_efp_destinatario"
-           data-efp="{{ efp.id }}"><i class="fa fa-user-plus"></i></a>
-    </div>
-</div>
-<div id="div_carga_archivo_destinatarios{{ efp.id }}" class="panel callout" style="display: none;">
-    <div class="row" style="display: none;">
-        <p>Debe ser un archivo Excel con las siguientes columnas:</p>
-        <ol>
-            <li>Columna A: DNI del destinatario</li>
-            <li>Columna B: No se usa</li>
-            <li>Columna C: Apellidos del destinatario</li>
-            <li>Columna D: Nombre del destinatario</li>
-            <li>Columna E: No se usa</li>
-            <li>Columna F: No se usa</li>
-            <li>Columna G: No se usa</li>
-            <li>Columna H: No se usa</li>
-            <li>Columna I: Código de centro/entidad del destinatario</li>
-            <li>Columna J: No se usa</li>
-            <li>Columna K: DNI del evaluador</li>
-            <li>Columna L: Código de centro/entidad del evaluador</li>
-            <li>Columna M: Apellidos del evaluador</li>
-            <li>Columna N: Nombre del evaluador</li>
-        </ol>
-    </div>
-
-    <div class="row" style="padding-bottom: 2px;">
-        <div class="columns large-8">
-            <label><input type="file" id="input_gauss_file{{ efp.id }}"></label>
-        </div>
-        <div class="columns large-4">
-            <a class="button tiny subir_gauss_file" data-id="{{ efp.id }}"><i class="fa fa-cloud-upload"></i>
-                Cargar archivos</a>
-        </div>
-    </div>
 </div>
 
-<div class="row" style="padding-bottom: 2px;">
-    <div class="columns large-12" id="div_usuarios_destinatarios{{ efp.id }}">
-        {% include "procesos_evaluacion_funcpract_accordion_content_destinatarios.html" %}
-    </div>
+<div class="panel callout">
+    <p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p>
 </div>
-<p>&nbsp;</p>
-<div class="row">
-    <div class="columns large-12">
-        <label><b>Plantilla del documento PDF generado con las respuestas:</b></label>
-    </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <div contenteditable="true" class="ckeditor update_template" data-efp="{{ efp.id }}" data-campo="template"
-             id="template{{ efp.id }}">{% autoescape off %}{{ efp.template }}{% endautoescape %}
-        </div>
-    </div>
-</div>
+{#</fieldset>#}

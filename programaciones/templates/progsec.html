@@ -31,26 +31,31 @@
             <h4 id="title_page"><strong>Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
         </div>
         <div id="formulario_search" style="display: block;">
-            <div class="row">
-                <div class="columns large-6">
+            {% with rondas=request.session.gauser_extra|get_rondas_ge %}
+                {% if rondas|length > 0 %}
+                    <div class="row">
+                        <div class="columns large-6">
                     <span style="font-weight: bold;">
                         Puedes cargar tus programaciones de cursos anteriores
                         <a id="info_cargar_progsec"> <i class="fa fa-info-circle"></i></a> :
                     </span>
-                    {#                    <input type="text" name="busca_progsec_texto" id="busca_progsec_texto"#}
-                    {#                           placeholder="Escribe parte del texto incluido en la programación">#}
-                </div>
-                <div class="columns large-4">
-                    <select id="busca_progsec_ronda">
-                        {% for ronda in request.session.gauser_extra|get_rondas_ge %}
-                            <option value="{{ ronda.id }}">{{ ronda.nombre }} ({{ ronda.entidad.name }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="columns large-2">
-                    <a id="busca_progsec_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
-                </div>
-            </div>
+                            {#                    <input type="text" name="busca_progsec_texto" id="busca_progsec_texto"#}
+                            {#                           placeholder="Escribe parte del texto incluido en la programación">#}
+                        </div>
+                        <div class="columns large-4">
+                            <select id="busca_progsec_ronda">
+                                {% for ronda in request.session.gauser_extra|get_rondas_ge %}
+                                    <option value="{{ ronda.id }}">{{ ronda.nombre }} ({{ ronda.entidad.name }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="columns large-2">
+                            <a id="busca_progsec_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
         </div>
         <div id="info_web_link" style="display: block;">
             <fieldset>
