@@ -460,23 +460,23 @@
     {% endfor %}
 </div>
 
-<div class="row formulario_socio">
-    <div class="columns large-12">
-        <h5><i class="fa fa-hand-o-up"></i> <strong>Selecciona las secciones/departamentos a las
-            que pertenece este usuario</strong> <a href="/listados_usuarios_entidad/?tab=2"><i
-                class="fa fa-info-circle"></i></a></h5>
-    </div>
-</div>
+{#<div class="row formulario_socio">#}
+{#    <div class="columns large-12">#}
+{#        <h5><i class="fa fa-hand-o-up"></i> <strong>Selecciona las secciones/departamentos a las#}
+{#            que pertenece este usuario</strong> <a href="/listados_usuarios_entidad/?tab=2"><i#}
+{#                class="fa fa-info-circle"></i></a></h5>#}
+{#    </div>#}
+{#</div>#}
 
-<div class="row panel formulario_socio">
-    {% for subentidad in subentidades %}
-        <div class="large-3 columns" id="div_subentidades">
-            <input type="checkbox" class="subentidades" value="{{ subentidad.id }}"
-                    {% if subentidad in gauser_extra_selected.subentidades.all %}
-                   checked="checked" {% endif %}> {{ subentidad.nombre }}
-        </div>
-    {% endfor %}
-</div>
+{#<div class="row panel formulario_socio">#}
+{#    {% for subentidad in subentidades %}#}
+{#        <div class="large-3 columns" id="div_subentidades">#}
+{#            <input type="checkbox" class="subentidades" value="{{ subentidad.id }}"#}
+{#                    {% if subentidad in gauser_extra_selected.subentidades.all %}#}
+{#                   checked="checked" {% endif %}> {{ subentidad.nombre }}#}
+{#        </div>#}
+{#    {% endfor %}#}
+{#</div>#}
 
 
 {#{% if gauser_extra_selected|faltas_asistencia %}#}

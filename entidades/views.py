@@ -267,13 +267,13 @@ def usuarios_entidad_ajax(request):
                     prev = entidad_users_id[(entidad_users_id.index(g_e_selected.id) - 1) % len(entidad_users_id)]
                     prox = entidad_users_id[(entidad_users_id.index(g_e_selected.id) + 1) % len(entidad_users_id)]
                     cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad).order_by('nivel')
-                    subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad,
-                                                             fecha_expira__gt=datetime.now().date()).order_by('edad_min')
+                    # subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad,
+                    #                                          fecha_expira__gt=datetime.now().date()).order_by('edad_min')
                     # 'entidad_users_id': entidad_users_id
                     logincas = True if 'service' in request.session else False
                     html = render_to_string("usuarios_entidad_formulario.html", {'gauser_extra_selected': g_e_selected,
                                                                                  'cargos': cargos,
-                                                                                 'subentidades': subentidades,
+                                                                                 # 'subentidades': subentidades,
                                                                                  'prev_g_e_selected': prev,
                                                                                  'prox_g_e_selected': prox,
                                                                                  'g_e': g_e, 'logincas': logincas
