@@ -11,9 +11,9 @@
                 <li><a class="button secondary" title="No tienes permisos para borrar el cuestionario de evaluación">
                     <i class="fa fa-trash-o"></i> Borrar</a></li>
             {% endif %}
-                        <li><a class="button copy_efp" data-efp="{{ efp.id }}"
-                               title="Hacer una copia (un duplicado) de este proceso"><i class="fa fa-copy"></i> Copiar</a>
-                        </li>
+            <li><a class="button copy_efp" data-efp="{{ efp.id }}"
+                   title="Hacer una copia (un duplicado) de este proceso"><i class="fa fa-copy"></i> Copiar</a>
+            </li>
             <li><a class="button excel_efp" data-id="{{ efp.id }}"
                    title="EXCEL con los datos enviados por los usuarios"><i class="fa fa-file-excel-o"></i> Excel</a>
             </li>
@@ -23,36 +23,31 @@
         </ul>
     </div>
 </div>
-{#<fieldset>#}
-{#    <legend>Primera parte del cuestionario</legend>#}
-<div class="panel callout">
-<h2 style="font-weight: bold;text-align: center;">Primera parte del cuestionario</h2>
-
 <div class="row">
     <div class="columns large-12">
-        <label><b>Nombre/Título del cuestionario:</b>
-            <input type="text" class="update_nombre" data-campo="nombre"
-                   data-efp="{{ efp.id }}" value="{{ efp.nombre }}"
-                   placeholder="Nombre del cuestionario de evaluación de funcionarios en prácticas"></label>
+        <p>Los pasos para crear un cuestionario son:</p>
+        <ol>
+            <li>Definir la información general del cuestionario.</li>
+            <li>Determinar las dimensiones que analiza el cuestionario</li>
+            <li>Establecer las subdimensiones en las que se divide cada dimensión</li>
+            <li>Escribir las cuestiones de las que consta cada subdimensión</li>
+        </ol>
+        <p>Haz click en los siguientes botones para ir a cada una de las fases.</p>
     </div>
 </div>
-
-<div class="row">
-    <div class="columns large-12">
-        <a class="small button radius add_interesado" data-efp="{{ efp.id }}">
-            <i class="fa fa-plus"></i>
-            <b>Haga click aquí para añadir tipos de persona que rellenarán el cuestionario</b>
-        </a>
-    </div>
-</div>
-<div id="list_interesados">
-{% for interesado in efp.evalfunpractinteresado_set.all %}
-    {% include "evaluacion_funcpract_accordion_content_interesado.html" %}
-{% endfor %}
+<div style="width:100%; padding:10px;position: fixed;bottom: 0px;z-index: 1000;background-color: white;">
+    <div style="position: center;">
+    <a class="button radius info a_partes_cuestionario" data-parte="dg" style="font-weight: bold;" title="Definir la información general del cuestionario">Datos generales</a> <i class="fa fa-long-arrow-right"></i>
+     <a class="button radius success a_partes_cuestionario" data-parte="dims" style="font-weight: bold;" title="Determinar las dimensiones que analiza el cuestionario">Dimensiones</a> <i class="fa fa-long-arrow-right"></i>
+     <a class="button radius success a_partes_cuestionario" data-parte="subdims" style="font-weight: bold;" title="Establecer las subdimensiones en las que se divide cada dimensión">Subdimensiones</a> <i class="fa fa-long-arrow-right"></i>
+     <a class="button radius success a_partes_cuestionario" data-parte="cues" style="font-weight: bold;" title="Escribir las cuestiones de las que consta cada subdimensión">Cuestiones</a>
 </div>
 </div>
 
-<div class="panel callout">
-    <p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p><p>a</p>
+<div id="datos_generales_cuestionario{{ efp.id }}" class="div_parte_cuestionario">
+    {% include "evaluacion_funcpract_accordion_content_dg.html" %}
 </div>
-{#</fieldset>#}
+<div id="dimensiones_cuestionario{{ efp.id }}" class="div_parte_cuestionario"></div>
+<div id="subdimensiones_cuestionario{{ efp.id }}" class="div_parte_cuestionario"></div>
+<div id="cuestiones_cuestionario{{ efp.id }}" class="div_parte_cuestionario"></div>
+<div id="espacio_vacio_final_accordion_content{{ efp.id }}"><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p></div>

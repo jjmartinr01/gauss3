@@ -1,0 +1,18 @@
+{% for dimension in efp.evalfunpractdim_set.all %}
+<div class="panel callout">
+    <h2 style="font-weight: bold;text-align: center;">Sub-Dimensiones de:
+        {% autoescape off %}{{ dimension.dimension }}{% endautoescape %}</h2>
+
+    <div class="row">
+        <div class="columns large-12">
+            <a class="small button radius add_subdimension" data-dim="{{ dimension.id }}">
+                <i class="fa fa-plus"></i>
+                <b>Haga click aquí para añadir una sub-dimensión al cuestionario</b>
+            </a>
+        </div>
+    </div>
+    {% for subdimension in dimension.evalfunpractdimsub_set.all %}
+        {% include "evaluacion_funcpract_accordion_content_subdims_subdim.html" %}
+    {% endfor %}
+</div>
+{% endfor %}

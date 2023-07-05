@@ -1,0 +1,20 @@
+{% for dimension in efp.evalfunpractdim_set.all %}
+{% for subdimension in dimension.evalfunpractdimsub_set.all %}
+<div class="panel callout">
+    <h2 style="font-weight: bold;text-align: center;">Cuestiones de la Sub-Dimensión:
+        {% autoescape off %}{{ subdimension.subdimension }}{% endautoescape %}</h2>
+
+    <div class="row">
+        <div class="columns large-12">
+            <a class="small button radius add_subdimensioncue" data-subdim="{{ subdimension.id }}">
+                <i class="fa fa-plus"></i>
+                <b>Haga click aquí para añadir una cuestión a la sub-dimensión indicada</b>
+            </a>
+        </div>
+    </div>
+    {% for subdimensioncue in subdimension.evalfunpractdimsubcue_set.all %}
+        {% include "evaluacion_funcpract_accordion_content_cues_cue.html" %}
+    {% endfor %}
+</div>
+{% endfor %}
+{% endfor %}

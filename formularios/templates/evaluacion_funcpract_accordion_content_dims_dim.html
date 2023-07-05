@@ -1,0 +1,37 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+
+<fieldset id="fieldset_dimension{{ dimension.id }}" style="position: relative;">
+    <legend>
+        <label style="float: left"><b>Posición:</b> <input type="number" max=100 min=1 value="{{ dimension.orden }}"
+        class="update_input_text" data-campo="orden" data-tipo="input"
+                 data-id="{{ dimension.id }}" data-foreignkey_id="{{ dimension.evalfunpract.id }}"
+                 data-modelo="EvalFunPractDim" data-foreignkey_campo="evalfunpract">
+        </label>
+        <label style="padding-left:50px;float:right;"><b>Puntuación:</b> <input type="number" max=100 min=1 value="{{ dimension.valor }}"
+        class="update_input_text" data-campo="valor" data-tipo="input"
+                 data-id="{{ dimension.id }}" data-foreignkey_id="{{ dimension.evalfunpract.id }}"
+                 data-modelo="EvalFunPractDim" data-foreignkey_campo="evalfunpract">
+        </label>
+    </legend>
+    <span style="position: absolute; right: 20px; top: -65px;">
+        <a class="alert button radius del_dimension" data-efp="{{ dimension.efp.id }}"
+               data-dimension="{{ dimension.id }}">
+                <i class="fa fa-trash"></i> <b>Borrar</b>
+            </a>
+    </span>
+
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Texto descriptivo de la Dimensión:</b></label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <div contenteditable="true" class="ckeditor update_input_text" data-campo="dimension" data-tipo="div"
+                 data-id="{{ dimension.id }}" data-foreignkey_id="{{ dimension.evalfunpract.id }}"
+                 data-modelo="EvalFunPractDim"  id="dimension{{ dimension.id }}" data-foreignkey_campo="evalfunpract"
+            >{% autoescape off %}{{ dimension.dimension }}{% endautoescape %}</div>
+        </div>
+    </div>
+</fieldset>

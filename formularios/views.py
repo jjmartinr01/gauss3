@@ -1248,23 +1248,38 @@ def evaluacion_funcpract(request):  # Creación y edición de cuestionarios de e
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-
+        elif request.POST['action'] == 'del_efp':
+            try:
+                efp = EvalFunPract.objects.get(id=request.POST['efp'], borrado=False)
+                efp.borrado = True
+                efp.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'add_interesado':
             try:
                 efp = EvalFunPract.objects.get(id=request.POST['efp'], entidad=g_e.ronda.entidad)
-                i = EvalFunPractInteresado.objects.create(efp=efp, interesado='Persona interesada')
-                html = render_to_string("evaluacion_funcpract_accordion_content_interesado.html", {'interesado': i})
-                return JsonResponse({'ok': True, 'html': html})
+                efpi = EvalFunPractInteresado.objects.create(efp=efp, interesado='Persona interesada')
+                html = render_to_string("evaluacion_funcpract_accordion_content_dg_interesado.html", {'interesado': efpi})
+                return JsonResponse({'ok': True, 'html': html, 'efpi': efpi.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-        elif request.POST['action'] == 'del_efp':
+        elif request.POST['action'] == 'del_interesado':
             try:
-                pefp = EvalFunPract.objects.get(id=request.POST['efp'])
-                if g_e.has_permiso('borra_efps') or pefp.g_e.gauser == g_e.gauser:
-                    pefp.delete()
-                    return JsonResponse({'ok': True})
-                else:
-                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar el proceso de evaluación'})
+                efp = EvalFunPract.objects.get(id=request.POST['efp'], entidad=g_e.ronda.entidad)
+                EvalFunPractInteresado.objects.filter(efp=efp, id=request.POST['interesado']).delete()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_input_text':
+            try:
+                modelo_object = eval('%s.objects.get(%s__id=%s,id=%s)' % (request.POST['modelo'],
+                                                                          request.POST['foreignkey_campo'],
+                                                                          request.POST['foreignkey_id'],
+                                                                          request.POST['id']))
+                setattr(modelo_object, request.POST['campo'], request.POST['valor'])
+                modelo_object.save()
+                return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'update_nombre':

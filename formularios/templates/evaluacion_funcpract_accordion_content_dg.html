@@ -1,0 +1,26 @@
+<div class="panel callout">
+    <h2 style="font-weight: bold;text-align: center;">Datos generales del cuestionario</h2>
+
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Nombre/Título del cuestionario:</b>
+                <input type="text" class="update_nombre" data-campo="nombre"
+                       data-efp="{{ efp.id }}" value="{{ efp.nombre }}"
+                       placeholder="Nombre del cuestionario de evaluación de funcionarios en prácticas"></label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <a class="small button radius add_interesado" data-efp="{{ efp.id }}">
+                <i class="fa fa-plus"></i>
+                <b>Haga click aquí para añadir tipos de persona que rellenarán el cuestionario</b>
+            </a>
+        </div>
+    </div>
+    <div id="list_interesados">
+        {% for interesado in efp.evalfunpractinteresado_set.all %}
+            {% include "evaluacion_funcpract_accordion_content_dg_interesado.html" %}
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,39 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+
+<fieldset id="fieldset_interesado{{ interesado.id }}" style="position:relative;">
+    <legend>
+        Persona que responderá este cuestionario:
+        <span id="span_interesado{{ interesado.id }}">{{ interesado.interesado }}</span>
+    </legend>
+
+    <span style="position: absolute; right: 20px; top: -40px;">
+            <a class="alert button radius del_interesado" data-efp="{{ interesado.efp.id }}"
+               data-interesado="{{ interesado.id }}">
+                <i class="fa fa-trash"></i> <b>Borrar</b>
+            </a>
+    </span>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Nombre/Título del cuestionario:</b>
+                <input type="text" class="update_input_text" data-campo="interesado" value="{{ interesado.interesado }}"
+                       data-id="{{ interesado.id }}" data-foreignkey_id="{{ interesado.efp.id }}"
+                       data-modelo="EvalFunPractInteresado" data-foreignkey_campo="efp" data-tipo="input"
+                       placeholder="Nombre dado al tipo de persona que responderá al cuestionario"></label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Instrucciones que recibirá el interesado al rellenar el cuestionario:</b></label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <div contenteditable="true" class="ckeditor update_input_text" data-campo="instrucciones" data-tipo="div"
+                 data-id="{{ interesado.id }}" data-foreignkey_id="{{ interesado.efp.id }}" data-foreignkey_campo="efp"
+                 data-modelo="EvalFunPractInteresado"  id="instrucciones{{ interesado.id }}"
+            >{% autoescape off %}{{ interesado.instrucciones }}{% endautoescape %}</div>
+        </div>
+    </div>
+</fieldset>

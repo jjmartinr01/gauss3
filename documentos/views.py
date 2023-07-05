@@ -820,7 +820,7 @@ def normativa(request):
         if request.POST['action'] == 'cargar_normativa':
             if g_e.has_permiso('carga_normativa'):
                 fecha_pub = datetime.strptime(request.POST['fecha_pub'], '%Y-%m-%d')
-                nombre = request.POST['nombre']
+                nombre = request.POST['nombre'][:499]
                 url = request.POST['url'] if 'url' in request.POST else ''
                 texto = request.POST['texto'] if 'texto' in request.POST else ''
                 if 'fichero' in request.FILES:

@@ -1,0 +1,15 @@
+<div class="panel callout">
+    <h2 style="font-weight: bold;text-align: center;">Dimensiones del cuestionario</h2>
+
+    <div class="row">
+        <div class="columns large-12">
+            <a class="small button radius add_dimension" data-efp="{{ efp.id }}">
+                <i class="fa fa-plus"></i>
+                <b>Haga click aquí para añadir una dimensión al cuestionario</b>
+            </a>
+        </div>
+    </div>
+    {% for dimension in efp.evalfunpractdim_set.all %}
+        {% include "evaluacion_funcpract_accordion_content_dims_dim.html" %}
+    {% endfor %}
+</div>

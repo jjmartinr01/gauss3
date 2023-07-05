@@ -410,7 +410,7 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     observaciones_tut = models.TextField('Observaciones para el tutor', blank=True, null=True, default='')
     observaciones_dir = models.TextField('Observaciones para el director', blank=True, null=True, default='')
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
-    borrado = models.BooleanField('Proceso de evaluación de funcionarios en prácticas bloqueado', default=False)
+    borrado = models.BooleanField('Proceso de evaluación de funcionarios en prácticas borrado', default=False)
 
     @property
     def num_usos(self):
@@ -439,26 +439,32 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
         ordering = ['-modificado', ]
 
     def __str__(self):
-        return 'Cuestionario de Evaluación de Funcionarios en Prácticas - %s' % (self.pk)
+        return 'Cuestionario de Evaluación de Funcionarios en Prácticas - %s - Borrado: %s' % (self.pk, self.borrado)
 
 class EvalFunPractInteresado(models.Model):  # Evaluación Funcionarios en Prácticas Interesado
     efp = models.ForeignKey(EvalFunPract, on_delete=models.CASCADE)
     interesado = models.CharField('Texto: Inspector, Director, Docente, ...', max_length=100)
     instrucciones = models.TextField('Instrucciones para el interesado', blank=True, null=True, default='')
+    class Meta:
+        ordering = ['id']
     def __str__(self):
         return 'Interesado: %s - %s' % (self.interesado, self.instrucciones[:100])
 
 class EvalFunPractDim(models.Model):  # Dimensión
     evalfunpract = models.ForeignKey(EvalFunPract, on_delete=models.CASCADE)
+    orden = models.IntegerField('Orden/Posición entre las Dimensiones', default=1)
     dimension = models.TextField('Dimensión a evaluar')
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
+    # @property
+    # def position(self):
+    #     return self.orden * 100000
     @property
     def valor(self):
         return sum(list(self.evalfunpractdimsub_set.all().values_list('valor', flat=True)))
 
     class Meta:
-        ordering = ['evalfunpract', ]
+        ordering = ['evalfunpract', 'orden', 'id']
 
     def __str__(self):
         return '%s - %s' % (self.evalfunpract, self.dimension)
@@ -466,12 +472,17 @@ class EvalFunPractDim(models.Model):  # Dimensión
 
 class EvalFunPractDimSub(models.Model):  # Subdimension
     evalfunpractdim = models.ForeignKey(EvalFunPractDim, on_delete=models.CASCADE)
+    orden = models.IntegerField('Orden/Posición entre las SubDimensiones', default=1)
     subdimension = models.TextField('Subdimensión a evaluar')
     valor = models.IntegerField('Valor total de esta subdimensión', default=10)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
+    # @property
+    # def position(self):
+    #     return self.orden * 1000 + self.evalfunpractdim.position
+
     class Meta:
-        ordering = ['evalfunpractdim', ]
+        ordering = ['evalfunpractdim', 'orden', 'id']
 
     def __str__(self):
         return '%s - %s' % (self.evalfunpractdim, self.subdimension)
@@ -479,6 +490,7 @@ class EvalFunPractDimSub(models.Model):  # Subdimension
 
 class EvalFunPractDimSubCue(models.Model):  # Cuestion
     evalfunpractdimsub = models.ForeignKey(EvalFunPractDimSub, on_delete=models.CASCADE)
+    orden = models.IntegerField('Orden/Posición entre las distintas cuestiones', default=1)
     pregunta = models.TextField('Texto de la pregunta a responder')
     responden = models.ManyToManyField(EvalFunPractInteresado, blank=True)
     responde_ins = models.BooleanField('¿Esta cuestión la responde el inspector?', default=False)
@@ -490,8 +502,11 @@ class EvalFunPractDimSubCue(models.Model):  # Cuestion
     responde_dir = models.BooleanField('¿Esta cuestión la responde el director?', default=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
+    # @property
+    # def position(self):
+    #     return self.orden + self.evalfunpractdimsub.position + self.evalfunpractdimsub.evalfunpractdim.position
     class Meta:
-        ordering = ['evalfunpractdimsub', 'pk']
+        ordering = ['evalfunpractdimsub', 'orden', 'id']
 
     def __str__(self):
         return '%s -> ins: %s, doc:%s, tut:%s, dir:%s' % (self.pregunta[:50], self.responde_ins, self.responde_doc,
