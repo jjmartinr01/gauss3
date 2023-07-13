@@ -92,8 +92,8 @@
 
 {% block final %}
     <script>
-    {#document.addEventListener('touchstart', handler, {passive: true});#}
-    var config_efp = {
+        {#document.addEventListener('touchstart', handler, {passive: true});#}
+        var config_efp = {
             removePlugins: 'exportpdf',
             toolbar: [
                 {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
@@ -118,6 +118,7 @@
             ],
             extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
         }
+
         function constructInlineEditorInstances() {
             $(".ckeditor").each(function (index) {
                 var element = $(this);
@@ -204,6 +205,34 @@
                         }
                     }
                 }
+            }
+        });
+
+        $('body').on('click', '.go_parte', function (e) {
+            var element = $(this);
+            if (element.hasClass('success')) {
+                $('.go_parte').removeClass('info').addClass('success');
+                element.removeClass('success').addClass('info');
+                var efp = $(this).data('efp');
+                var parte = $(this).data('parte');
+                $.post("/evaluacion_funcpract/", {
+                        'action': 'go_parte',
+                        'efp': efp,
+                        'parte': parte
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('.div_parte_cuestionario').html('');
+                            var parte_div_id = '#parte_' + parte + efp;
+                            $(parte_div_id).html(data.html);
+                            {#location.hash = parte_div_id;#}
+                            window.scrollTo(0, $(parte_div_id).offset().top - 50);
+                            constructInlineEditorInstances();
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
             }
         });
 
@@ -385,7 +414,7 @@
         {#        var anchura = element.width() + 2;#}
         {#        setTimeout(function () {#}
         {#            $('#cke_' + id).css('width', anchura + 'px');#}
-                    {# Este es el id del ckeditor creado #}
+        {# Este es el id del ckeditor creado #}
         {#        }, 200);#}
         {#    });#}
         {# }#}

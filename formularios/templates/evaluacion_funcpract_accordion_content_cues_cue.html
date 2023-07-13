@@ -34,4 +34,17 @@
             >{% autoescape off %}{{ subdimensioncue.pregunta }}{% endautoescape %}</div>
         </div>
     </div>
+<div class="row">
+        <div class="columns large-12">
+            <label><b>Persona o personas que responderán a esta cuestión:</b></label>
+        </div>
+    </div>
+    <div class="row">
+        {% for i in subdimensioncue.evalfunpractdimsub.evalfunpractdim.evalfunpract.evalfunpractinteresado_set.all %}
+        <div class="columns large-4">
+            <input type="checkbox" name="interesado_cue{{ subdimensioncue.id }}" data-cue="{{ subdimensioncue.id }}"
+            data-efp="{{ subdimensioncue.evalfunpractdimsub.evalfunpractdim.evalfunpract.id }}"> {{ i.interesado }}
+        </div>
+        {% endfor %}
+    </div>
 </fieldset>

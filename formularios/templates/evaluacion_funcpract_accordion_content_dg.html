@@ -2,11 +2,21 @@
     <h2 style="font-weight: bold;text-align: center;">Datos generales del cuestionario</h2>
 
     <div class="row">
-        <div class="columns large-12">
+        <div class="columns large-9">
             <label><b>Nombre/Título del cuestionario:</b>
-                <input type="text" class="update_nombre" data-campo="nombre"
-                       data-efp="{{ efp.id }}" value="{{ efp.nombre }}"
+                <input type="text" class="update_input_text" data-campo="nombre"
+                       value="{{ efp.nombre }}"
+                       data-id="{{ efp.id }}" data-foreignkey_id="{{ efp.entidad.id }}"
+                       data-modelo="EvalFunPract" data-foreignkey_campo="entidad" data-tipo="input"
                        placeholder="Nombre del cuestionario de evaluación de funcionarios en prácticas"></label>
+        </div>
+        <div class="columns large-3" title="Se debe indicar el número de personas encargadas de hacer la evaluación.">
+            <label><b>Número de evaluadores:</b>
+                <input type="number" class="update_input_text" data-campo="num_evaluadores"
+                       value="{{ efp.num_evaluadores }}"
+                       data-id="{{ efp.id }}" data-foreignkey_id="{{ efp.entidad.id }}"
+                       data-modelo="EvalFunPract" data-foreignkey_campo="entidad" data-tipo="input">
+            </label>
         </div>
     </div>
 

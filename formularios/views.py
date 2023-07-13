@@ -1282,6 +1282,14 @@ def evaluacion_funcpract(request):  # Creación y edición de cuestionarios de e
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'go_parte':
+            try:
+                efp = EvalFunPract.objects.get(id=request.POST['efp'], entidad=g_e.ronda.entidad)
+                efac_file = 'evaluacion_funcpract_accordion_content_%s.html' % request.POST['parte']
+                html = render_to_string(efac_file, {'efp': efp})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'update_nombre':
             try:
                 pefp = ProcesoEvalFunPract.objects.get(id=request.POST['pefp'])

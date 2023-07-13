@@ -405,6 +405,7 @@ class GformRespondeInput(models.Model):
 class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre del cuestionario', max_length=200, blank=True, null=True)
+    num_evaluadores = models.IntegerField('Número de evaluadores', default=3)
     observaciones_ins = models.TextField('Observaciones para el inspector', blank=True, null=True, default='')
     observaciones_doc = models.TextField('Observaciones para el docente', blank=True, null=True, default='')
     observaciones_tut = models.TextField('Observaciones para el tutor', blank=True, null=True, default='')
@@ -413,8 +414,21 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     borrado = models.BooleanField('Proceso de evaluación de funcionarios en prácticas borrado', default=False)
 
     @property
+    def info_evaluadores(self):
+        # El número de participantes será la persona evaluada, más el número de evaluadores:
+        total_participantes = self.num_evaluadores + 1
+        if self.num_evaluadores == 1:
+            texto = '''Cada persona evaluada recibe calificaciones de un evaluador/a. Por tanto participarán en el
+        proceso de evaluación dos personas, contando al evaluado'''
+        else:
+            texto = '''Cada persona evaluada recibe calificaciones de %s evaluadores. Por tanto participarán en el
+        proceso de evaluación %s personas, contando al evaluado''' % (self.num_evaluadores, total_participantes)
+        return texto
+
+    @property
     def num_usos(self):
         return ProcesoEvalFunPract.objects.filter(evalfunpract=self).count()
+
     @property
     def cuestiones(self):
         return EvalFunPractDimSubCue.objects.filter(evalfunpractdimsub__evalfunpractdim__evalfunpract=self)
@@ -441,14 +455,22 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     def __str__(self):
         return 'Cuestionario de Evaluación de Funcionarios en Prácticas - %s - Borrado: %s' % (self.pk, self.borrado)
 
+
 class EvalFunPractInteresado(models.Model):  # Evaluación Funcionarios en Prácticas Interesado
+    TIPOS = (('1', 'Persona evaluada'), ('2', 'Evaluador de tipo 1'), ('3', 'Evaluador de tipo 2'),
+             ('4', 'Evaluador de tipo 3'), ('5', 'Evaluador de tipo 4'), ('6', 'Evaluador de tipo 5'))
     efp = models.ForeignKey(EvalFunPract, on_delete=models.CASCADE)
     interesado = models.CharField('Texto: Inspector, Director, Docente, ...', max_length=100)
     instrucciones = models.TextField('Instrucciones para el interesado', blank=True, null=True, default='')
+    peso = models.IntegerField('Peso de sus calificaciones con respecto al resto de interesados', default=1)
+    tipo = models.CharField('Tipo de persona', max_length=2, default='2', choices=TIPOS)
+
     class Meta:
         ordering = ['id']
+
     def __str__(self):
         return 'Interesado: %s - %s' % (self.interesado, self.instrucciones[:100])
+
 
 class EvalFunPractDim(models.Model):  # Dimensión
     evalfunpract = models.ForeignKey(EvalFunPract, on_delete=models.CASCADE)
@@ -493,6 +515,8 @@ class EvalFunPractDimSubCue(models.Model):  # Cuestion
     orden = models.IntegerField('Orden/Posición entre las distintas cuestiones', default=1)
     pregunta = models.TextField('Texto de la pregunta a responder')
     responden = models.ManyToManyField(EvalFunPractInteresado, blank=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+    # campos a borrar:
     responde_ins = models.BooleanField('¿Esta cuestión la responde el inspector?', default=False)
     responde_doc = models.BooleanField('¿Esta cuestión la responde el docente?', default=True)
     responde_doc_jefe = models.BooleanField('¿La responde el docente si es jefe de departamento?', default=True)
@@ -500,7 +524,6 @@ class EvalFunPractDimSubCue(models.Model):  # Cuestion
     responde_doc_orientador = models.BooleanField('¿La responde el docente si es orientador?', default=True)
     responde_tut = models.BooleanField('¿Esta cuestión la responde el tutor?', default=True)
     responde_dir = models.BooleanField('¿Esta cuestión la responde el director?', default=True)
-    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     # @property
     # def position(self):
@@ -535,7 +558,40 @@ class ProcesoEvalFunPract(models.Model):
         return '%s -> %s' % (self.nombre, self.evalfunpract)
 
 
-class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas Actores
+class EvalFunPractGrAct(models.Model):  # Evaluación Funcionarios en Prácticas: Grupo de Actores o Interesados
+    procesoevalfunpract = models.ForeignKey(ProcesoEvalFunPract, on_delete=models.CASCADE, null=True, blank=True)
+
+    def cuecal(self, cue):
+        actores = EvalFunPractAct.objects.filter(efpga=self)
+        respuesta = {'cal_parciales': {a.id: {'cal': -1, 'peso': 1} for a in actores}, 'cal_total': -1, 'errores': ''}
+        num_cal_total = 0
+        den_cal_total = 0
+        for a in actores:
+            try:
+                efpr = EvalFunPractRes.objects.get(evalfunpractdimsubcue=cue, evalfunpractact=a).respuesta
+                num_cal_total += a.efpi.peso * efpr
+                den_cal_total += a.efpi.peso
+                respuesta['cal_parciales'][a.id]['cal'] = efpr
+                respuesta['cal_parciales'][a.id]['peso'] = a.efpi.peso
+            except Exception as msg:
+                respuesta['errores'] += '%s ***---*** ' % str(msg)
+        try:
+            respuesta['cal_total'] = num_cal_total / den_cal_total
+        except:
+            respuesta['cal_total'] = -1
+        return respuesta
+
+
+class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas: Actores o Interesados
+    efpga = models.ForeignKey(EvalFunPractGrAct, on_delete=models.CASCADE, null=True, blank=True)
+    efpi = models.ForeignKey(EvalFunPractInteresado, on_delete=models.CASCADE, null=True, blank=True)
+    g_e = models.ForeignKey(GE, on_delete=models.CASCADE, related_name='evalfunpractact_set', null=True, blank=True)
+    respondido = models.BooleanField('¿Esta persona ha respondido al cuestionario?', default=False)
+    fecha_min = models.DateField('Fecha inicio para rellenar', null=True, blank=True)
+    fecha_max = models.DateField('Fecha final para rellenar', null=True, blank=True)
+    actualiza_efprs = models.BooleanField('¿Se deben actualizar las efprs?', default=False)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+    # Los siguientes campos habrá que borrarlos en un futuro:
     procesoevalfunpract = models.ForeignKey(ProcesoEvalFunPract, on_delete=models.CASCADE, null=True, blank=True)
     inspector = models.ForeignKey(GE, on_delete=models.CASCADE, related_name='get_inspector')
     tutor = models.ForeignKey(GE, on_delete=models.CASCADE, related_name='get_tutor')
@@ -548,10 +604,8 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
     respondido_doc = models.BooleanField('¿Este cuestionario está respondido por el docente?', default=False)
     respondido_tut = models.BooleanField('¿Este cuestionario está respondido por el tutor?', default=False)
     respondido_dir = models.BooleanField('¿Este cuestionario está respondido por el director?', default=False)
-    fecha_min = models.DateField('Fecha inicio para rellenar', null=True, blank=True)
-    fecha_max = models.DateField('Fecha final para rellenar', null=True, blank=True)
-    actualiza_efprs = models.BooleanField('¿Se deben actualizar las efprs?', default=False)
-    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+
+    # Fin de los campos que habrá que borrar en el futuro
 
     @property
     def is_activo(self):
@@ -668,6 +722,10 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
 class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas Respuestas
     evalfunpractact = models.ForeignKey(EvalFunPractAct, on_delete=models.CASCADE)
     evalfunpractdimsubcue = models.ForeignKey(EvalFunPractDimSubCue, on_delete=models.CASCADE)
+    respuesta = models.IntegerField('Respuesta del interesado', null=True, blank=True, default=-1)
+    obs = models.TextField('Observaciones del interesado', null=True, blank=True, default='')
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+    # Campos a borrar:
     respuesta_ins = models.IntegerField('Respuesta del inspector', null=True, blank=True, default=-1)
     respuesta_doc = models.IntegerField('Respuesta del docente', null=True, blank=True, default=-1)
     respuesta_tut = models.IntegerField('Respuesta del tutor', null=True, blank=True, default=-1)
@@ -680,7 +738,6 @@ class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas R
     obsdirector = models.TextField('Observaciones del director', null=True, blank=True, default='')
     obstutor = models.TextField('Observaciones del tutor', null=True, blank=True, default='')
     obsinspector = models.TextField('Observaciones del inspector', null=True, blank=True, default='')
-    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
     def num_cues_subdim(self):
@@ -826,7 +883,7 @@ CUE = [
                   'tutor': False,
                   'inspector': False
                   },
-{'subsub': 'Participación en los órganos de coordinación docente',
+                 {'subsub': 'Participación en los órganos de coordinación docente',
                   'preg': 'Participa activamente en la elaboración de las programaciones didácticas, en todo lo referente a la atención a la diversidad.',
                   'docente': False,
                   'docente-jefe': False,
@@ -844,7 +901,7 @@ CUE = [
                   'tutor': False,
                   'inspector': False
                   },
-{'subsub': 'Participación en los órganos de coordinación docente',
+                 {'subsub': 'Participación en los órganos de coordinación docente',
                   'preg': 'Participa activamente en las reuniones de los órganos de coordinación docente,  comenta la marcha del curso y propone, si es necesario, cambios en la programación para adaptarla a las necesidades observadas.',
                   'docente': False,
                   'docente-jefe': False,
@@ -880,7 +937,7 @@ CUE = [
                   'tutor': False,
                   'inspector': False
                   },
-{'subsub': 'Participación en los órganos de coordinación docente',
+                 {'subsub': 'Participación en los órganos de coordinación docente',
                   'preg': 'Hace propuestas sobre material de interés para los alumnos del centro, tanto del destinado a los alumnos como del que pueda favorecer la actualización didáctica y científica del profesorado, tomando iniciativas para facilitar su uso.',
                   'docente': False,
                   'docente-jefe': False,
@@ -898,7 +955,7 @@ CUE = [
                   'tutor': False,
                   'inspector': False
                   },
-{'subsub': 'Adopción de iniciativas para la mejora de la práctica docente y del trabajo en equipo',
+                 {'subsub': 'Adopción de iniciativas para la mejora de la práctica docente y del trabajo en equipo',
                   'preg': 'Aporta datos y criterios de evaluación de su propia práctica docente, promoviendo que ésta se haga a través de la revisión de los elementos y desarrollo de las unidades de intervención.',
                   'docente': False,
                   'docente-jefe': False,
@@ -925,7 +982,7 @@ CUE = [
                   'tutor': False,
                   'inspector': False
                   },
-    {'subsub': 'Adopción de iniciativas para la mejora de la práctica docente y del trabajo en equipo',
+                 {'subsub': 'Adopción de iniciativas para la mejora de la práctica docente y del trabajo en equipo',
                   'preg': 'Promueve la participación en actividades de formación: haciendo propuestas de grupos de trabajo, aportando información de cursos que puedan ser de interés, etc.',
                   'docente': False,
                   'docente-jefe': False,
@@ -1194,7 +1251,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Planifica el desarrollo de las actuaciones, organizándolas a lo largo del curso con una distribución adecuada, incluyendo actividades que se ajusten a las características de cada grupo (nivel de conocimientos previos, sus intereses, etc.).',
                   'docente': False,
                   'docente-jefe': False,
@@ -1212,7 +1269,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Planifica el desarrollo de las actividades de modo flexible, teniendo en cuenta y preparando los materiales (ajustados a las características de los alumnos y a la metodología escogida en cada momento), previendo los medios (organización de espacios y recursos) que se van a necesitar, así como las correspondientes normas de uso, instalaciones y guías que se consideren precisas.',
                   'docente': False,
                   'docente-jefe': False,
@@ -1230,7 +1287,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Prevé y planifica a lo largo del curso la utilización de recursos externos al aula: trabajos de campo, museos, visitas a instalaciones de diversos tipos, contactos con agentes externos, etc.',
                   'docente': False,
                   'docente-jefe': False,
@@ -1271,7 +1328,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Presenta un plan de trabajo a los alumnos, antes de cada intervención  y, en general, cuida de que no se pierda el contexto ni la visión de conjunto en cada sesión.',
                   'docente': False,
                   'docente-jefe': False,
@@ -1298,7 +1355,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Utiliza la metodología adaptada  a las características de los distintos grupos de alumnos.',
                   'docente': False,
                   'docente-jefe': False,
@@ -1325,7 +1382,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Plantea en sus actuaciones unos  contenidos bien estructurados y organizados de acuerdo con los planes de orientación, proponiendo actividades variadas que parten de situaciones o problemas reales, que impliquen la búsqueda de información, optando por un planteamiento globalizado cuando la situación lo requiera.',
                   'docente': True,
                   'docente-jefe': False,
@@ -1343,7 +1400,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Integra en la correspondiente unidad de intervención  los recursos didácticos que sean pertinentes: diferentes lenguajes, medios audiovisuales e informáticos, mapas, gráficos, etc.',
                   'docente': True,
                   'docente-jefe': False,
@@ -1384,7 +1441,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': ' Procedimientos de evaluación',
+                 {'subsub': ' Procedimientos de evaluación',
                   'preg': 'Solicita, a comienzo de curso, información sobre los alumnos al tutor del curso anterior, así como a aquellos profesores que puedan disponer de información relevante sobre los mismos.',
                   'docente': True,
                   'docente-jefe': False,
@@ -1402,7 +1459,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': ' Procedimientos de evaluación',
+                 {'subsub': ' Procedimientos de evaluación',
                   'preg': 'Realiza una evaluación inicial, que luego utiliza como punto de partida para ajustar su intervención en el aula.',
                   'docente': True,
                   'docente-jefe': False,
@@ -1551,7 +1608,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Elabora las adaptaciones curriculares para los alumnos que las precisen, asume su aplicación, hace el seguimiento recogiendo documentalmente la selección de contenidos, las modificaciones metodológicas y de evaluación que se realicen.',
                   'docente': True,
                   'docente-jefe': False,
@@ -1587,7 +1644,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Colabora con el profesorado de apoyo a la integración.',
                   'docente': True,
                   'docente-jefe': False,
@@ -1637,7 +1694,7 @@ CUE = [
                   'tutor': True,
                   'inspector': True
                   },
-{'subsub': '',
+                 {'subsub': '',
                   'preg': 'Plantea la intervención en el aula  con un ritmo de progresión adecuado y con tiempos suficientes para las distintas actividades.',
                   'docente': True,
                   'docente-jefe': False,

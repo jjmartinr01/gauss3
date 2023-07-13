@@ -37,17 +37,16 @@
 </div>
 <div style="width:100%; padding:10px;position: fixed;bottom: 0px;z-index: 1000;background-color: white;">
     <div style="position: center;">
-    <a class="button radius info a_partes_cuestionario" data-parte="dg" style="font-weight: bold;" title="Definir la información general del cuestionario">Datos generales</a> <i class="fa fa-long-arrow-right"></i>
-     <a class="button radius success a_partes_cuestionario" data-parte="dims" style="font-weight: bold;" title="Determinar las dimensiones que analiza el cuestionario">Dimensiones</a> <i class="fa fa-long-arrow-right"></i>
-     <a class="button radius success a_partes_cuestionario" data-parte="subdims" style="font-weight: bold;" title="Establecer las subdimensiones en las que se divide cada dimensión">Subdimensiones</a> <i class="fa fa-long-arrow-right"></i>
-     <a class="button radius success a_partes_cuestionario" data-parte="cues" style="font-weight: bold;" title="Escribir las cuestiones de las que consta cada subdimensión">Cuestiones</a>
+    <a class="button radius info go_parte" data-parte="dg" data-efp="{{ efp.id }}" style="font-weight: bold;" title="Definir la información general del cuestionario">Datos generales</a> <i class="fa fa-long-arrow-right"></i>
+     <a class="button radius success go_parte" data-parte="dims" data-efp="{{ efp.id }}" style="font-weight: bold;" title="Determinar las dimensiones que analiza el cuestionario">Dimensiones</a> <i class="fa fa-long-arrow-right"></i>
+     <a class="button radius success go_parte" data-parte="subdims" data-efp="{{ efp.id }}" style="font-weight: bold;" title="Establecer las subdimensiones en las que se divide cada dimensión">Subdimensiones</a> <i class="fa fa-long-arrow-right"></i>
+     <a class="button radius success go_parte" data-parte="cues" data-efp="{{ efp.id }}" style="font-weight: bold;" title="Escribir las cuestiones de las que consta cada subdimensión">Cuestiones</a>
 </div>
 </div>
-
-<div id="datos_generales_cuestionario{{ efp.id }}" class="div_parte_cuestionario">
+<div id="parte_dg{{ efp.id }}" class="div_parte_cuestionario">
     {% include "evaluacion_funcpract_accordion_content_dg.html" %}
 </div>
-<div id="dimensiones_cuestionario{{ efp.id }}" class="div_parte_cuestionario"></div>
-<div id="subdimensiones_cuestionario{{ efp.id }}" class="div_parte_cuestionario"></div>
-<div id="cuestiones_cuestionario{{ efp.id }}" class="div_parte_cuestionario"></div>
+<div id="parte_dims{{ efp.id }}" class="div_parte_cuestionario"></div>
+<div id="parte_subdims{{ efp.id }}" class="div_parte_cuestionario"></div>
+<div id="parte_cues{{ efp.id }}" class="div_parte_cuestionario"></div>
 <div id="espacio_vacio_final_accordion_content{{ efp.id }}"><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p></div>

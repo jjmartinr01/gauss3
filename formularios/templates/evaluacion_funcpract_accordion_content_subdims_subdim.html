@@ -28,7 +28,8 @@
     </div>
     <div class="row">
         <div class="columns large-12">
-            <div contenteditable="true" class="ckeditor update_input_text" data-campo="subdimension" data-tipo="div"
+{#            <div contenteditable="true" class="ckeditor update_input_text" data-campo="subdimension" data-tipo="div"#}
+            <div contenteditable="true" class="update_input_text" data-campo="subdimension" data-tipo="div"
                  data-id="{{ subdimension.id }}" data-foreignkey_id="{{ subdimension.evalfunpractdim.id }}"
                  data-modelo="EvalFunPractDimSub"  id="subdimension{{ subdimension.id }}" data-foreignkey_campo="evalfunpractdim"
             >{% autoescape off %}{{ subdimension.subdimension }}{% endautoescape %}</div>
