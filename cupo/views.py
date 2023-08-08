@@ -17,6 +17,7 @@ from django.utils.timezone import datetime
 from autenticar.control_acceso import permiso_required
 from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento, get_apartados, get_columnas, \
     get_columnas_edb
+from entidades.menus_entidades import TiposCentro_cupo
 from entidades.templatetags.entidades_extras import puestos_especialidad
 from gauss.funciones import pass_generator, genera_pdf, get_dce
 from gauss.rutas import *
@@ -28,7 +29,8 @@ from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
-    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente, CUERPOS
+    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente, CUERPOS, \
+    CUERPOS_ESPECIALIDADES, ESPECS
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
@@ -41,11 +43,6 @@ from estudios.models import Curso, Materia, Grupo, EtapaEscolar, Gauser_extra_es
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
 
 logger = logging.getLogger('django')
-
-# Algunos cuerpos contienen las mismas especialidades, por ejemplo 590 (profe secundaria) y 511 (catedrático secund.)
-# Para el cupo únicamente importa la especialidad así que para evitar duplicidades en las especialidades
-# se toman únicamente los siguientes cuerpos:
-CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 
 
 def get_dce_cupo(g_e):
@@ -241,6 +238,54 @@ def cupo_especialidad(cupo, especialidad):
     profesores_cupo.save()
     return profesores_cupo
 
+def get_cod_cuerpo_cod_especialidad(nombre_especialidad, cuerpos=None):
+    if not cuerpos:
+        cuerpos = ['0590', '0592', '0594', '0595', '0596', '0597', '0598', '0000']
+    cod_cuerpo, cod_espec = '', ''
+    cod_cuerpo_cod_espec = {}
+    for c_cuerpo in ESPECS:
+        if c_cuerpo in cuerpos:
+            if c_cuerpo == '0597' and 'educacion-especial-pedagogia-terapeutica' == slugify(nombre_especialidad):
+                cod_cuerpo += '0597'
+                cod_espec += 'PT'
+                cod_cuerpo_cod_espec['0597'] = 'PT'
+            elif c_cuerpo == '0597' and 'educacion-especial-audicion-y-lenguaje' == slugify(nombre_especialidad):
+                cod_cuerpo += '0597'
+                cod_espec += 'AL'
+                cod_cuerpo_cod_espec['0597'] = 'AL'
+            elif c_cuerpo == '0597' and 'educacion-fisica-de-primaria' == slugify(nombre_especialidad):
+                cod_cuerpo += '0597'
+                cod_espec += 'EF'
+                cod_cuerpo_cod_espec['0597'] = 'EF'
+            elif c_cuerpo == '0597' and 'ingles' == slugify(nombre_especialidad):
+                cod_cuerpo += '0597'
+                cod_espec += 'FI'
+                cod_cuerpo_cod_espec['0597'] = 'FI'
+            elif c_cuerpo == '0000' and 'profesores-de-religion-ensenanza-primaria' == slugify(nombre_especialidad):
+                cod_cuerpo += '0000'
+                cod_espec += 'REP'
+                cod_cuerpo_cod_espec['0000'] = 'REP'
+            for c_espec, n_espec in ESPECS[c_cuerpo].items():
+                if slugify(nombre_especialidad) == slugify(n_espec):
+                    cod_cuerpo += c_cuerpo
+                    cod_espec += c_espec
+                    cod_cuerpo_cod_espec[c_cuerpo] = c_espec
+    if len(cod_cuerpo) > 5:
+        cod_cuerpo, cod_espec = '', ''
+    return cod_cuerpo, cod_espec, cod_cuerpo_cod_espec
+def set_cod_especialidades(cupo):
+    ecs =EspecialidadCupo.objects.filter(cupo=cupo)
+    cuerpos = TiposCentro_cupo[cupo.ronda.entidad.entidadextra.tipo_centro]
+    num_especialidades_sin_definir = 0
+    for ec in ecs:
+        if not ec.cod_cuerpo or ec.cod_cuerpo == '0591':
+            cod_cuerpo, cod_espec, no_necesario = get_cod_cuerpo_cod_especialidad(ec.nombre, cuerpos=cuerpos)
+            ec.cod_cuerpo = cod_cuerpo
+            ec.cod_espec = cod_espec
+            ec.save()
+            if not ec.cod_cuerpo or not ec.cod_espec:
+                num_especialidades_sin_definir += 1
+    return num_especialidades_sin_definir
 
 def ajax_cupo(request):
     if request.is_ajax():
@@ -253,10 +298,16 @@ def ajax_cupo(request):
                                             clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
                 activa_pub_rrhh, msg = cupo.puede_activarse_pub_rrhh(g_e)
                 rondas = Ronda.objects.filter(nombre__icontains='/%s' % datetime.today().year)
+                try:
+                    num_especialidades_sin_definir = set_cod_especialidades(cupo)
+                except:
+                    num_especialidades_sin_definir = 0
                 html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
                                                                         'especialidades_existentes': ESPECIALIDADES,
                                                                         'request': request, 'aprrhh': activa_pub_rrhh,
-                                                                        'rondas': rondas, 'msg': msg})
+                                                                        'rondas': rondas, 'CUERPOS': CUERPOS,
+                                                                        'cs_es': CUERPOS_ESPECIALIDADES, 'msg': msg,
+                                                                        'ec_sin_def': num_especialidades_sin_definir})
                 return JsonResponse({'ok': True, 'html': html, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -400,13 +451,22 @@ def ajax_cupo(request):
                         else:
                             J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7,
                                  'umin': 6}
+                        cod_cuerpo, cod_espec = '', ''
+                        for c_cuerpo in ESPECS:
+                            for c_espec, n_espec in c_cuerpo:
+                                if slugify(nombre_especialidad) == slugify(n_espec):
+                                    cod_cuerpo += c_cuerpo
+                                    cod_espec += c_espec
+                        if len(cod_cuerpo) > 5:
+                            cod_cuerpo, cod_espec = '', ''
                         ec = EspecialidadCupo.objects.create(cupo=cupo, nombre=nombre_especialidad,
                                                              clave_ex=pxls.x_puesto, dep=pxls.departamento,
                                                              x_dep=pxls.x_departamento, max_completa=J['cmax'],
                                                              min_completa=J['cmin'], max_dostercios=J['dmax'],
                                                              min_dostercios=J['dmin'], max_media=J['mmax'],
                                                              min_media=J['mmin'], max_tercio=J['umax'],
-                                                             min_tercio=J['umin'])
+                                                             min_tercio=J['umin'], cod_cuerpo=cod_cuerpo,
+                                                             cod_espec=cod_espec)
                         profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
                         # geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                         # for gep in list(set(geps)):
@@ -702,20 +762,33 @@ def ajax_cupo(request):
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
                 if con1 or con2:
-                    ec, created = EspecialidadCupo.objects.get_or_create(cupo=cupo, nombre=request.POST['especialidad'],
-                                                                         clave_ex=request.POST['especialidad'][:10])
-                    if created:
+                    cod_cuerpo, cod_espec = request.POST['especialidad'].split('-')
+                    ecs = EspecialidadCupo.objects.filter(cupo=cupo, cod_espec=cod_espec, cod_cuerpo=cod_cuerpo)
+                    if ecs.count() == 0:
+                        nombre = ESPECS[cod_cuerpo][cod_espec]
+                        ec = EspecialidadCupo.objects.create(cupo=cupo, nombre=nombre, cod_espec=cod_espec,
+                                                             cod_cuerpo=cod_cuerpo)
                         pc, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
                         if created:
-                            Profesor_cupo.objects.create(profesorado=pc, nombre='Prof. Interino', tipo='INT')
-                    html = render_to_string('cupo_accordion_content_especialidad.html', {'e': ec})
-                    return JsonResponse({'ok': True, 'html': html})
+                            Profesor_cupo.objects.create(profesorado=pc, nombre='Prof. no necesario', tipo='NONE')
+                        html = render_to_string('cupo_accordion_content_especialidad.html', {'e': ec})
+                        return JsonResponse({'ok': True, 'html': html})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'Ya existe una especialidad con ese nombre'})
+                    # ec, created = EspecialidadCupo.objects.get_or_create(cupo=cupo, nombre=request.POST['especialidad'],
+                    #                                                      clave_ex=request.POST['especialidad'][:10])
+                    # if created:
+                    #     pc, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
+                    #     if created:
+                    #         Profesor_cupo.objects.create(profesorado=pc, nombre='Prof. Interino', tipo='INT')
+                    # html = render_to_string('cupo_accordion_content_especialidad.html', {'e': ec})
+                    # return JsonResponse({'ok': True, 'html': html})
                 else:
-                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
-            except:
-                return JsonResponse({'ok': False})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': 'No tienes permiso para crear nuevas especialidades.',
+                                     'm': 'Se ha producido un error: %s.' % str(msg)})
         elif action == 'edit_especialidades':
-
             cupo = Cupo.objects.get(id=request.POST['cupo'])
             con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
             con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
@@ -723,9 +796,6 @@ def ajax_cupo(request):
                 html = render_to_string('cupo_accordion_content_especialidad_edit.html', {'cupo': cupo,
                                                                                           'CUERPOS': CUERPOS})
                 return JsonResponse({'ok': True, 'html': html})
-            else:
-                return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
-
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
@@ -761,6 +831,9 @@ def ajax_cupo(request):
                     ec.save()
                     html = ''
                     if request.POST['campo'] == 'cod_cuerpo':
+                        c, cod_espec, n = get_cod_cuerpo_cod_especialidad(ec.nombre, cuerpos=[request.POST['valor']])
+                        ec.cod_espec = cod_espec
+                        ec.save()
                         html = render_to_string('cupo_accordion_content_especialidad_edit_options.html', {'e': ec})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
@@ -1026,30 +1099,6 @@ def ajax_cupo(request):
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_especialidad_global':
-
-            cupo = Cupo.objects.get(id=request.POST['cupo'])
-            con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
-            con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
-            if con1 or con2:
-                if request.POST['especialidad']:
-                    especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
-                    profesores_cupo = cupo_especialidad(cupo, especialidad).reparto_profes
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
-                    especialidad_nombre = especialidad.nombre
-                    logger.info('%s, change_especialidad_global %s' % (g_e, especialidad_nombre))
-                else:
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None)
-                    profesores_cupo = None
-                    especialidad_nombre = None
-                    especialidad = None
-                    logger.info('%s, change_especialidad_global sin especialidad' % (g_e))
-                especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
-                materias = render_to_string('edit_cupo_materias.html',
-                                            {'materias': materias_cupo, 'especialidades': especialidades,
-                                             'especialidad': especialidad, 'CUERPOS': CUERPOS})
-                return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
-                                     'especialidad': especialidad_nombre})
-
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0

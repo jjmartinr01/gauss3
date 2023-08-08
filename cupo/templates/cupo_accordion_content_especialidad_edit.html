@@ -1,3 +1,4 @@
+{% load cupo_extras %}
 <br>
 <table style="width: 100%;">
     <thead>
@@ -19,11 +20,22 @@
                 <select data-espec="{{ e.id }}" class="espec_edit" data-campo="cod_cuerpo"
                         data-espec="{{ e.id }}">
                     <option value="">-----------</option>
-                    {% for c in CUERPOS %}
-                        <option value="{{ c.codigo }}" {% if c.codigo == e.cod_cuerpo %}selected{% endif %}>
-                            {{ c.codigo }} - {{ c.nombre }}
-                        </option>
-                    {% endfor %}
+                    <optgroup label="Cuerpos recomendados">
+                        {% with cuerpos=e|get_cuerpos %}
+                            {% for k, v in cuerpos.items %}
+                                <option value="{{ k }}">
+                                    {{ k }} - {{ v }}
+                                </option>
+                            {% endfor %}
+                        {% endwith %}
+                    </optgroup>
+                    <optgroup label="Todos los cuerpos">
+                        {% for c in CUERPOS %}
+                            <option value="{{ c.codigo }}" {% if c.codigo == e.cod_cuerpo %}selected{% endif %}>
+                                {{ c.codigo }} - {{ c.nombre }}
+                            </option>
+                        {% endfor %}
+                    </optgroup>
                 </select>
             </td>
             <td style="width: 34%;">

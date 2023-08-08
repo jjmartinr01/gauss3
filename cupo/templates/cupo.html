@@ -268,6 +268,7 @@
                         $("#list_especialidades_cupo").append(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        show_mensajes({'title': '<i class="fa fa-warning"></i> Error', 'texto': data.msg})
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
@@ -289,6 +290,7 @@
                         $("#list_especialidades_cupo").append(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        show_mensajes({'title': '<i class="fa fa-warning"></i> Error', 'texto': data.msg})
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });

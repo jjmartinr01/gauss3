@@ -117,6 +117,7 @@
         </label>
     </div>
 </div>
+{% if ec_sin_def == 0 %}
 <div class="row" id="list_especialidades_cupo">
     {% for e in cupo.especialidadcupo_set.all %}
         {% include "cupo_accordion_content_especialidad.html" %}
@@ -126,13 +127,20 @@
     <label>
         <select class="select_add_especialidad" data-cupo="{{ cupo.id }}">
             <option value="">---------</option>
-            {% for e in especialidades_existentes %}
-                <option value="{{ e.1 }}">{{ e.1 }}</option>
+{#            {% for e in especialidades_existentes %}#}
+{#                <option value="{{ e.1 }}">{{ e.1 }}</option>#}
+{#            {% endfor %}#}
+            {% for e in cs_es %}
+                <option value="{{ e.0 }}">{{ e.1 }}</option>
             {% endfor %}
         </select>
     </label>
 </div>
+{% endif %}
 <div class="row" id="especialidades_edit{{ cupo.id }}">
+    {% if ec_sin_def > 0 %}
+    {% include "cupo_accordion_content_especialidad_edit.html" %}
+    {% endif %}
 </div>
 <hr>
 <div class="row">

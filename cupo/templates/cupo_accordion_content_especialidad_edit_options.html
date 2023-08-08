@@ -1,11 +1,22 @@
 {% load cupo_extras %}
 <option value="">-----------</option>
 {% if e.cod_cuerpo %}
-    {% with especialidades=e.cod_cuerpo|get_especialidades %}
-        {% for codigo, nombre in especialidades.items %}
+    {% with especialidades=e|get_especialidades %}
+        {% if especialidades.0 %}
+            <optgroup label="Especialidades recomendadas">
+            {% for codigo, nombre in especialidades.0.items %}
+            <option value="{{ codigo }}">
+                {{ codigo }} - {{ nombre }}
+            </option>
+        {% endfor %}
+            </optgroup>
+        {% endif %}
+        <optgroup label="Todas las especialidades">
+        {% for codigo, nombre in especialidades.1.items %}
             <option value="{{ codigo }}" {% if codigo == e.cod_espec %}selected{% endif %}>
                 {{ codigo }} - {{ nombre }}
             </option>
         {% endfor %}
+        </optgroup>
     {% endwith %}
 {% endif %}

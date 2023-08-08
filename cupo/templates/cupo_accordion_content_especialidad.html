@@ -1,7 +1,7 @@
-
-<div id="label_especialidad{{ e.id }}" class="label secondary">
+{% load cupo_extras %}
+<div id="label_especialidad{{ e.id }}" class="label secondary" title="{{ e|get_title_cuerpo }}">
     <div style="display: inline-block;font-weight: bold;"
-             id="texto_nombre_espec{{ e.id }}" data-espec="{{ e.id }}">{{ e.nombre }}</div>
+             id="texto_nombre_espec{{ e.id }}" data-espec="{{ e.id }}">{{ e.nombre_oficial }}</div>
         <div style="display: inline-block; font-weight: bold;">
             <a class="select_del_especialidad" data-cupo="{{ e.cupo.id }}" data-especialidad="{{ e.id }}"><i
             class="fa fa-times"></i></a>

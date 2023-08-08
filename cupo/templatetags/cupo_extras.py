@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from difflib import get_close_matches
 from django.template import Library
+from django.utils.text import slugify
 from django.db.models import Q, Sum
 from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente, \
-    ESPECS, Profesor_cupo
+    ESPECS, Profesor_cupo, CUERPOS_CUPO
 from entidades.models import Cargo, Gauser_extra
 from horarios.models import SesionExtra, Sesion
 from programaciones.models import Departamento
@@ -11,6 +12,23 @@ from estudios.models import Grupo, Curso
 
 register = Library()
 
+def get_cod_cuerpo_cod_especialidad(nombre_especialidad, cuerpos=None):
+    if not cuerpos:
+        cuerpos = ['0590', '0592', '0594', '0595', '0596', '0597', '0598', '0000']
+    cod_cuerpo, cod_espec = '', ''
+    cod_cuerpo_cod_espec = []
+    for c_cuerpo in ESPECS:
+        if c_cuerpo in cuerpos:
+            for c_espec, n_espec in ESPECS[c_cuerpo].items():
+                if slugify(nombre_especialidad) == slugify(n_espec):
+                    cod_cuerpo += c_cuerpo
+                    cod_espec += c_espec
+                    i = (c_cuerpo, CUERPOS_CUPO[c_cuerpo], c_espec, ESPECS[c_cuerpo][c_espec])
+                    if i not in cod_cuerpo_cod_espec:
+                        cod_cuerpo_cod_espec.append(i)
+    if len(cod_cuerpo) > 5:
+        cod_cuerpo, cod_espec = '', ''
+    return cod_cuerpo, cod_espec, cod_cuerpo_cod_espec
 
 @register.filter
 def cupo_jornadas(profesores_cupo):
@@ -38,15 +56,32 @@ def get_inspector(cupo):
     except:
         return 'No ha sido elaborado por un/a Inspector/a'
 
+@register.filter
+def get_cuerpos(especialidad_cupo):
+    a, b, posibles_cuerpos = get_cod_cuerpo_cod_especialidad(especialidad_cupo.nombre)
+    cuerpos = {}
+    for c in posibles_cuerpos:
+        cuerpos[c[0]] = c[1]
+    return cuerpos
 
 @register.filter
-def get_especialidades(cod_cuerpo):
-    return ESPECS[cod_cuerpo]
-    try:
-        return {'codigo': cod_cuerpo,
-                'cod_especialidad': cod_especialidad + ' - ' + ESPECS[cod_cuerpo][cod_especialidad]}
-    except:
-        return ''
+def get_title_cuerpo(especialidad_cupo):
+    if especialidad_cupo.cod_cuerpo:
+        if especialidad_cupo.cod_cuerpo == '0591':
+            return 'ERROR. El cuerpo 0591 está a extinguir y por tanto no debería estar seleccionado.'
+        else:
+            return 'Especialidad vinculada al cuerpo de %s' % CUERPOS_CUPO[especialidad_cupo.cod_cuerpo]
+    else:
+        return 'Especialidad errónea. No tiene un cuerpo de profesores asociado.'
+
+@register.filter
+def get_especialidades(ec):
+    a, b, especialidades = get_cod_cuerpo_cod_especialidad(ec.nombre, cuerpos=[ec.cod_cuerpo])
+    espec_recomendadas = {}
+    if len(especialidades) > 1:
+        for e in especialidades:
+            espec_recomendadas[e[2]] = e[3]
+    return [espec_recomendadas, ESPECS[ec.cod_cuerpo]]
 
 
 @register.filter
