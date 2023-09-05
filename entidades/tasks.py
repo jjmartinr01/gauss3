@@ -488,7 +488,7 @@ def carga_masiva_alumnos(carga, entidad):
     return True
 
 
-def carga_masiva_personal(carga, entidad):
+def carga_masiva_personal(carga, entidad_destino):
     centros_cargados = []
     docentes_cargados = {}
     carga.log += '<p>Comienza carga de docentes</p>'
@@ -503,14 +503,14 @@ def carga_masiva_personal(carga, entidad):
     for row_index in range(5, sheet.nrows):
         try:
             code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
-            entidad_archivo = Entidad.objects.get(code=code_entidad)
-            if entidad:
-                if entidad != entidad_archivo:
+            entidad = Entidad.objects.get(code=code_entidad)
+            if entidad_destino:
+                if entidad_destino != entidad:
                     carga.cargado = True
+                    carga.error = True
                     carga.log += '<p>Se interrumpe la carga porque no corresponde al centro educativo.</p>'
                     carga.save()
                     return False
-            entidad = entidad_archivo
             if code_entidad not in centros_cargados:
                 centros_cargados.append(code_entidad)
             if code_entidad not in docentes_cargados:
@@ -688,7 +688,7 @@ def carga_masiva_datos_centros(carga):
             carga.save()
             if entidad.ronda:  # Si existe una ronda, capturamos los g_es con perfiles de dirección
                 q = Q(clave_cargo='g_miembro_equipo_directivo') | Q(clave_cargo='g_jefe_estudios') | Q(
-                    clave_cargo='g_director_centro') | Q(clave_cargo='g_nodocente')
+                    clave_cargo='g_director_centro') | Q(clave_cargo='g_nodocente') | Q(clave_cargo='g_inspector_educacion')
                 cargos = Cargo.objects.filter(q, Q(entidad=entidad))
                 g_es = Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, activo=True)
             else:
@@ -1259,7 +1259,7 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             carga.save()
             if entidad.ronda:  # Si existe una ronda, capturamos los g_es con perfiles de dirección
                 q = Q(clave_cargo='g_miembro_equipo_directivo') | Q(clave_cargo='g_jefe_estudios') | Q(
-                    clave_cargo='g_director_centro') | Q(clave_cargo='g_nodocente')
+                    clave_cargo='g_director_centro') | Q(clave_cargo='g_nodocente') | Q(clave_cargo='g_inspector_educacion')
                 # q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
                 cargos = Cargo.objects.filter(q, Q(entidad=entidad))
                 g_es = Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, activo=True)
@@ -1509,9 +1509,9 @@ def carga_masiva_from_excel(carga_id=None):
         elif carga.tipo == 'ALUMN_CENTROS':
             carga_masiva_alumnos(carga=carga, entidad=False)
         elif carga.tipo == 'PERSONAL_CENTRO':
-            carga_masiva_personal(carga=carga, entidad=carga.g_e.ronda.entidad)
+            carga_masiva_personal(carga=carga, entidad_destino=carga.g_e.ronda.entidad)
         elif carga.tipo == 'PERSONAL_CENTROS':
-            carga_masiva_personal(carga=carga, entidad=None)
+            carga_masiva_personal(carga=carga, entidad_destino=None)
         elif carga.tipo == 'DATOS_CENTROS':
             carga_masiva_datos_centros(carga=carga)
         elif carga.tipo == 'HORARIO_PERSONAL_CENTRO':

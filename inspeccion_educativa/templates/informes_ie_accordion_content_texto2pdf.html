@@ -7,6 +7,16 @@
     <title>Informe de Inspección: {{ ie.asunto }}</title>
 
     <style type="text/css">
+        /* akronim-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Akronim';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/media/fonts/akronim-v23-latin-regular.woff2') format('woff2');
+}
+
+
         html {
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -34,6 +44,10 @@
         }
 
         .gauss_header{display: none;}
+
+        .acronim{
+            font-family: Akronim!important;
+        }
     </style>
 </head>
 <body>
@@ -48,7 +62,7 @@
                 {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
         </tr>
     </table>
-
+{#<span class="acronim">fafdadsfds</span>#}
     <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
     <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
 </div>

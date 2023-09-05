@@ -205,7 +205,17 @@ class EntidadExtraExpedienteOferta(models.Model):
     def __str__(self):
         return '%s -> %s' % (self.eeexpediente, self.oferta)
 
-
+# def update_font_file(instance, filename):
+#     nombre = filename.partition('.')
+#     instance.fich_name = filename.rpartition('/')[2].replace(' ', '_')
+#     nombre = pass_generator(size=20) + '.' + nombre[2]
+#     return '/'.join(['normativa', str(instance.creador.ronda.entidad.code), nombre])
+# class DocConfFontFile(models.Model):
+#     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+#     font_family = models.CharField('Nombre de la font-family para cargar a través de CSS', max_length=100)
+#     font_file = models.FileField('Fichero con documento', upload_to=update_font_file, blank=True, null=True)
+#     fich_name = models.CharField('Nombre del fichero', max_length=100, blank=True, null=True)
+#     content_type = models.CharField('Tipo de archivo', max_length=200, blank=True, null=True)
 class DocConfEntidad(models.Model):
     ORIENTATION = (('Portrait', 'Vertical'), ('Landscape', 'Horizontal'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
