@@ -2038,7 +2038,7 @@ def progsecundaria(request):
         elif action == 'busca_progsec_manual':
             try:
                 ronda = Ronda.objects.get(id=request.POST['ronda'])
-                if g_e.has_cargos(['g_director_centro', 'g_miembro_equipo_directivo']):
+                if g_e.has_claves_cargos(['g_director_centro', 'g_miembro_equipo_directivo']):
                     id_progsecs = ProgSec.objects.filter(pga__ronda=ronda).values_list('id', flat=True)
                 else:
                     id_progsecs1 = DocProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
