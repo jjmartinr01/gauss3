@@ -28,7 +28,7 @@
         <div id="div_progsec_seleccionados"></div>
 
         <div>
-            <h4 id="title_page"><strong>--Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
+            <h4 id="title_page"><strong>Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
         </div>
         <div id="formulario_search" style="display: block;">
             {% with rondas=request.session.gauser_extra|get_rondas_ge %}
