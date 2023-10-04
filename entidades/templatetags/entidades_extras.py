@@ -7,6 +7,9 @@ from estudios.models import Gauser_extra_estudios
 register = Library()
 
 
+@register.filter
+def list_usuarios_ronda(ronda, cargo):
+    return Gauser_extra.objects.filter(ronda=ronda, cargos__in=[cargo])
 
 @register.filter
 def get_dependencias(sesion):

@@ -71,12 +71,16 @@
             <br>
             <div id="cargos{{ ronda.id }}">
                 {% include "configura_rondas_accordion_content_cargos.html" %}
+            </div>
+            <div id="list_usuarios_ronda{{ ronda.id }}">
+            {% include "configura_rondas_accordion_content_listusuarios.html" %}
 {#                {% for cargo in cargos %}#}
-{#                    <div class="columns large-4"#}
-{#                         title="Existen {{ cargo|cargos_ronda:ronda }} perfiles en esta ronda ({{ ronda.nombre }})">#}
-{#                        <input type="checkbox" class="upgrade_usuarios" data-cargo="{{ cargo.id }}"#}
-{#                               data-ronda="{{ ronda.id }}"> {{ cargo.cargo }} ({{ cargo|cargos_ronda:ronda }})#}
-{#                    </div>#}
+{#                    <fieldset>#}
+{#                        <legend>{{ cargo.cargo }}</legend>#}
+{#                        {% for u in ronda|list_usuarios_ronda:cargo %}#}
+{#                            <span class="label radius">{{ u.gauser.get_full_name }}</span>#}
+{#                        {% endfor %}#}
+{#                    </fieldset>#}
 {#                {% endfor %}#}
             </div>
         </div>

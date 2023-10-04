@@ -589,6 +589,9 @@ class Gauser_extra(models.Model):
         else:
             return len([cargo for cargo in self.cargos.all() if cargo in cargos_comprobar]) > 0
 
+    def has_claves_cargos(self, lista_claves_cargos):  # True (False) si (no) posee algún (ningún) lista_claves_cargos
+        return len([cargo for cargo in self.cargos.all() if cargo.clave_cargo in lista_claves_cargos]) > 0
+
     def has_permiso(self, permiso_comprobar):
         if self.gauser.username == 'gauss' or permiso_comprobar == 'libre':
             return True

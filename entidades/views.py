@@ -858,67 +858,72 @@ def configura_rondas(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'upgrade_usuarios':
-            ronda = Ronda.objects.get(id=request.POST['ronda'], entidad=g_e.ronda.entidad)
-            cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad)
-            if ronda.id > g_e.ronda.entidad.ronda.id:
-                # Capturamos los g_es seleccionados:
-                g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo], activo=True)
-                # En caso aumentar de curso creamos g_es si es necesario
-                # Los primeros en crearse deben ser los tutores, ya que deberán asignarse a los no tutores
-                lista = g_es.values_list('tutor1__id', 'tutor2__id')
-                tutores = Gauser_extra.objects.filter(id__in=list(set([a for sublist in lista for a in sublist])))
-                otros_usuarios = g_es.exclude(id__in=tutores)
-                tutores_nuevos_id = []
-                for g__e in tutores:
-                    try:
-                        Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
-                    except:
-                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
-                                                               ronda=ronda,
-                                                               id_entidad=g__e.id_entidad,
-                                                               id_organizacion=g__e.id_organizacion,
-                                                               alias=g__e.alias, activo=True,
-                                                               observaciones=g__e.observaciones,
-                                                               foto=g__e.foto,
-                                                               ocupacion=g__e.ocupacion,
-                                                               num_cuenta_bancaria=g__e.num_cuenta_bancaria)
-                        new_user.subentidades.add(*g__e.subentidades.all())
-                        new_user.subsubentidades.add(*g__e.subsubentidades.all())
-                        new_user.cargos.add(*g__e.cargos.all())
-                        new_user.permisos.add(*g__e.permisos.all())
-                        tutores_nuevos_id.append(new_user.id)
+            try:
+                ronda = Ronda.objects.get(id=request.POST['ronda'], entidad=g_e.ronda.entidad)
+                cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad)
+                if ronda.id > g_e.ronda.entidad.ronda.id:
+                    # Capturamos los g_es seleccionados:
+                    g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo], activo=True)
+                    # En caso aumentar de curso creamos g_es si es necesario
+                    # Los primeros en crearse deben ser los tutores, ya que deberán asignarse a los no tutores
+                    lista = g_es.values_list('tutor1__id', 'tutor2__id')
+                    tutores = Gauser_extra.objects.filter(id__in=list(set([a for sublist in lista for a in sublist])))
+                    otros_usuarios = g_es.exclude(id__in=tutores)
+                    tutores_nuevos_id = []
+                    for g__e in tutores:
+                        try:
+                            Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
+                        except:
+                            new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
+                                                                   ronda=ronda,
+                                                                   id_entidad=g__e.id_entidad,
+                                                                   id_organizacion=g__e.id_organizacion,
+                                                                   alias=g__e.alias, activo=True,
+                                                                   observaciones=g__e.observaciones,
+                                                                   foto=g__e.foto,
+                                                                   ocupacion=g__e.ocupacion,
+                                                                   num_cuenta_bancaria=g__e.num_cuenta_bancaria)
+                            new_user.subentidades.add(*g__e.subentidades.all())
+                            new_user.subsubentidades.add(*g__e.subsubentidades.all())
+                            new_user.cargos.add(*g__e.cargos.all())
+                            new_user.permisos.add(*g__e.permisos.all())
+                            tutores_nuevos_id.append(new_user.id)
 
-                tutores_nuevos = Gauser_extra.objects.filter(id__in=tutores_nuevos_id, ronda=g_e.ronda.entidad.ronda)
-                for g__e in otros_usuarios:
-                    try:
-                        Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
-                    except:
+                    tutores_nuevos = Gauser_extra.objects.filter(id__in=tutores_nuevos_id, ronda=g_e.ronda.entidad.ronda)
+                    for g__e in otros_usuarios:
                         try:
-                            tutor1 = tutores_nuevos.get(gauser=g__e.tutor1.gauser)
+                            Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
                         except:
-                            tutor1 = None
-                        try:
-                            tutor2 = tutores_nuevos.get(gauser=g__e.tutor2.gauser)
-                        except:
-                            tutor2 = None
-                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
-                                                               ronda=ronda,
-                                                               id_entidad=g__e.id_entidad,
-                                                               id_organizacion=g__e.id_organizacion,
-                                                               alias=g__e.alias, activo=True,
-                                                               observaciones=g__e.observaciones,
-                                                               foto=g__e.foto,
-                                                               tutor1=tutor1, tutor2=tutor2,
-                                                               ocupacion=g__e.ocupacion,
-                                                               num_cuenta_bancaria=g__e.num_cuenta_bancaria)
-                        new_user.subentidades.add(*g__e.subentidades.all())
-                        new_user.subsubentidades.add(*g__e.subsubentidades.all())
-                        new_user.cargos.add(*g__e.cargos.all())
-                        new_user.permisos.add(*g__e.permisos.all())
-            cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
-            html = render_to_string('configura_rondas_accordion_content_cargos.html',
-                                    {'cargos': cargos, 'ronda': ronda})
-            return JsonResponse({'ok': True, 'html': html, 'ronda': ronda.id})
+                            try:
+                                tutor1 = tutores_nuevos.get(gauser=g__e.tutor1.gauser)
+                            except:
+                                tutor1 = None
+                            try:
+                                tutor2 = tutores_nuevos.get(gauser=g__e.tutor2.gauser)
+                            except:
+                                tutor2 = None
+                            new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
+                                                                   ronda=ronda,
+                                                                   id_entidad=g__e.id_entidad,
+                                                                   id_organizacion=g__e.id_organizacion,
+                                                                   alias=g__e.alias, activo=True,
+                                                                   observaciones=g__e.observaciones,
+                                                                   foto=g__e.foto,
+                                                                   tutor1=tutor1, tutor2=tutor2,
+                                                                   ocupacion=g__e.ocupacion,
+                                                                   num_cuenta_bancaria=g__e.num_cuenta_bancaria)
+                            new_user.subentidades.add(*g__e.subentidades.all())
+                            new_user.subsubentidades.add(*g__e.subsubentidades.all())
+                            new_user.cargos.add(*g__e.cargos.all())
+                            new_user.permisos.add(*g__e.permisos.all())
+                cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
+                html = render_to_string('configura_rondas_accordion_content_cargos.html',
+                                        {'cargos': cargos, 'ronda': ronda, 'ronda_actual': g_e.ronda})
+                list_usuarios = render_to_string('configura_rondas_accordion_content_listusuarios.html',
+                                                 {'ronda': ronda, 'cargos': cargos})
+                return JsonResponse({'ok': True, 'html': html, 'ronda': ronda.id, 'list_usuarios': list_usuarios})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'change_campo_texto':
             try:
                 ronda = Ronda.objects.get(id=request.POST['ronda'], entidad=g_e.ronda.entidad)
@@ -932,11 +937,14 @@ def configura_rondas(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'open_accordion':
-            ronda = Ronda.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
-            cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
-            html = render_to_string('configura_rondas_accordion_content.html',
-                                    {'ronda': ronda, 'ronda_actual': g_e.ronda.entidad.ronda, 'cargos': cargos})
-            return JsonResponse({'html': html, 'ok': True})
+            try:
+                ronda = Ronda.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
+                cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
+                html = render_to_string('configura_rondas_accordion_content.html',
+                                        {'ronda': ronda, 'ronda_actual': g_e.ronda.entidad.ronda, 'cargos': cargos})
+                return JsonResponse({'html': html, 'ok': True})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
 
     if request.method == 'POST':
         action = request.POST['action']

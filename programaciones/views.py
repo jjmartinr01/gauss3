@@ -2038,11 +2038,14 @@ def progsecundaria(request):
         elif action == 'busca_progsec_manual':
             try:
                 ronda = Ronda.objects.get(id=request.POST['ronda'])
-                id_progsecs1 = DocProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
-                                                         gep__ge__ronda=ronda).values_list('psec__id', flat=True)
-                id_progsecs2 = ProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
-                                                      gep__ge__ronda=ronda).values_list('id', flat=True)
-                id_progsecs = list(set(list(id_progsecs1) + list(id_progsecs2)))
+                if g_e.has_cargos(['g_director_centro', 'g_miembro_equipo_directivo']):
+                    id_progsecs = ProgSec.objects.filter(gep__ge__ronda=ronda).values_list('id', flat=True)
+                else:
+                    id_progsecs1 = DocProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
+                                                             gep__ge__ronda=ronda).values_list('psec__id', flat=True)
+                    id_progsecs2 = ProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
+                                                          gep__ge__ronda=ronda).values_list('id', flat=True)
+                    id_progsecs = list(set(list(id_progsecs1) + list(id_progsecs2)))
                 progsecs = ProgSec.objects.filter(id__in=id_progsecs)
                 html = render_to_string('progsec_accordion.html', {'progsecs': progsecs, 'buscadas': True})
                 return JsonResponse({'ok': True, 'html': html})

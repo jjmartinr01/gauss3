@@ -1,0 +1,9 @@
+{% load entidades_extras %}
+{% for cargo in cargos %}
+    <fieldset>
+        <legend>{{ cargo.cargo }}</legend>
+        {% for u in ronda|list_usuarios_ronda:cargo %}
+            <span class="label radius">{{ u.gauser.get_full_name }}</span>
+        {% endfor %}
+    </fieldset>
+{% endfor %}

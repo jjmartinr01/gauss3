@@ -82,6 +82,7 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                         $('#cargos' + data.ronda).html(data.html);
+                        $('#list_usuarios_ronda' + data.ronda).html(data.list_usuarios);
                     }
                 });
         });
