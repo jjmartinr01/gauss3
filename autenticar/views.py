@@ -529,7 +529,11 @@ def index(request):
                         request.session['ronda'] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
                         # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-                        gauss = Gauser.objects.get(username='gauss')
+                        try:
+                            gauss = Gauser.objects.get(username='gauss')
+                        except:
+                            gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                                                                    email=None, last_login=timezone.now())
                         Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                         logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         return redirect(url_destino)
@@ -585,7 +589,11 @@ def index(request):
             request.session["ronda"] = request.session["gauser_extra"].ronda
             request.session['num_items_page'] = 15
             # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-            gauss = Gauser.objects.get(username='gauss')
+            try:
+                gauss = Gauser.objects.get(username='gauss')
+            except:
+                gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                                                        email=None, last_login=timezone.now())
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             return redirect(url_destino)
@@ -665,7 +673,11 @@ def logincas(request):
                     request.session["ronda"] = request.session["gauser_extra"].ronda
                     request.session['num_items_page'] = 15
                     # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-                    gauss = Gauser.objects.get(username='gauss')
+                    try:
+                        gauss = Gauser.objects.get(username='gauss')
+                    except:
+                        gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                                                                email=None, last_login=timezone.now())
                     Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                     logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                     return redirect(request.session['nexturl'])
@@ -689,7 +701,11 @@ def logincas(request):
             request.session["ronda"] = request.session["gauser_extra"].ronda
             request.session['num_items_page'] = 15
             # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-            gauss = Gauser.objects.get(username='gauss')
+            try:
+                gauss = Gauser.objects.get(username='gauss')
+            except:
+                gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                                                        email=None, last_login=timezone.now())
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             return redirect(request.session['nexturl'])
