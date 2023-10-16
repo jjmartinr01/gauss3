@@ -2055,6 +2055,21 @@ def progsecundaria(request):
         elif action == 'open_accordion':
             try:
                 progsec = ProgSec.objects.get(id=request.POST['id'], identificador=request.POST['identificador'])
+                # Durante la copia de programaciones el departamento es None, pero si es INF o PRI no debería ser así:
+                CURSOS_CICLOS = {'00INF0': 'Primer Ciclo Infantil', '00INF1': 'Primer Ciclo Infantil',
+                                 '00INF2': 'Primer Ciclo Infantil', '00INF3': 'Segundo Ciclo Infantil',
+                                 '00INF4': 'Segundo Ciclo Infantil', '00INF5': 'Segundo Ciclo Infantil',
+                                 '10PRI1': 'Primer Ciclo Primaria', '10PRI2': 'Primer Ciclo Primaria',
+                                 '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
+                                 '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
+                if not progsec.departamento and progsec.areamateria.curso in CURSOS_CICLOS:
+                    ciclo = CURSOS_CICLOS[progsec.areamateria.curso]
+                    etapa = ''.join([i for i in progsec.areamateria.curso if not i.isdigit()])
+                    dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
+                                                                abreviatura=etapa)
+                    progsec.departamento = dep
+                    progsec.save()
+                #Fin de las líneas para evitar tener programaciones de INF o PRI sin ciclo asignado
                 docentes_id = DocProgSec.objects.filter(psec=progsec).values_list('gep__ge', flat=True)
                 departamentos = Departamento.objects.filter(ronda=g_e.ronda)
                 # if departamentos.count() == 0:
@@ -2310,8 +2325,11 @@ def progsecundaria(request):
                 permiso = progsec.get_permiso(g_ep)
                 if 'E' in permiso or 'X' in permiso:
                     ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['jefe'])
-                    departamento = progsec.departamento
-                    geps = departamento.gauser_extra_programaciones_set.all()
+                    try:
+                        departamento = progsec.departamento
+                        geps = departamento.gauser_extra_programaciones_set.all()
+                    except:
+                        geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda)
                     for gep in geps.filter(jefe=True):
                         gep.jefe = False
                         try:
