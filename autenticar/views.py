@@ -455,6 +455,21 @@ def ejecutar_query(request):
 ##########################################################################
 ###############  PÁGINA DE ACCESO
 
+def get_gauss_user(passusuario):
+    gauss = None
+    superusuarios = Gauser.objects.filter(is_superuser=True)
+    for superusuario in superusuarios:
+        superusuario_encontrado = authenticate(username=superusuario.username, password=passusuario)
+        if superusuario_encontrado:
+            logger.info('Se ha conectado con la contraseña de un superusuario')
+            try:
+                gauss = Gauser.objects.get(username='gauss')
+            except:
+                gauss = Gauser.objects.create_superuser('gauss', password=pass_generator(12),
+                                                        email=None, last_login=timezone.now())
+    return gauss
+
+
 @LogGauss
 def index(request):
     configauss, c = Configauss.objects.get_or_create(server_name=request.META.get('HTTP_HOST'))
@@ -480,19 +495,23 @@ def index(request):
         if request.POST['action'] == 'acceso':
             usuario = request.POST['usuario']
             passusuario = request.POST['passusuario']
-            gauss = authenticate(username='gauss', password=passusuario)
-            if gauss is not None:
+            gauss = get_gauss_user(passusuario)
+            # if usuario == 'gauss':
+            #     gauss = get_gauss_user(passusuario)
+            # else:
+            #     gauss = None
+            if gauss:
                 logger.info('Se ha conectado con la contraseña de Gauss')
-                #Líneas a borrar una vez que todas las entidades tengan el campo secret activo:
-                entidades_secret = Entidad.objects.all()
-                for entidad_secret in entidades_secret:
-                    try:
-                        if not entidad_secret.secret:
-                            entidad_secret.secret = pass_generator(10)
-                            entidad_secret.save()
-                    except:
-                        pass
-                # Fin del conjunto de líneas a borrar
+                ## Líneas a borrar una vez que todas las entidades tengan el campo secret activo:
+                # entidades_secret = Entidad.objects.all()
+                # for entidad_secret in entidades_secret:
+                #     try:
+                #         if not entidad_secret.secret:
+                #             entidad_secret.secret = pass_generator(10)
+                #             entidad_secret.save()
+                #     except:
+                #         pass
+                ## Fin del conjunto de líneas a borrar
                 try:
                     user = Gauser.objects.get(username=usuario)
                     logger.info('Se ha conectado con el usuario %s' % user)
@@ -535,6 +554,7 @@ def index(request):
                             gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
                                                                     email=None, last_login=timezone.now())
                         Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+                        # Fin de las líneas para asegurar que existe el usuario 'gauss'
                         logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         return redirect(url_destino)
                     else:
@@ -592,7 +612,7 @@ def index(request):
             try:
                 gauss = Gauser.objects.get(username='gauss')
             except:
-                gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                gauss = Gauser.objects.create_superuser('gauss', password=pass_generator(12),
                                                         email=None, last_login=timezone.now())
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
@@ -676,7 +696,7 @@ def logincas(request):
                     try:
                         gauss = Gauser.objects.get(username='gauss')
                     except:
-                        gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                        gauss = Gauser.objects.create_superuser('gauss', password=pass_generator(12),
                                                                 email=None, last_login=timezone.now())
                     Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                     logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
@@ -704,7 +724,7 @@ def logincas(request):
             try:
                 gauss = Gauser.objects.get(username='gauss')
             except:
-                gauss = Gauser.objects.create_superuser('gauss', password='Contraseña_Cambiar01',
+                gauss = Gauser.objects.create_superuser('gauss', password=pass_generator(12),
                                                         email=None, last_login=timezone.now())
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
