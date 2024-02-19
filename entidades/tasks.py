@@ -417,17 +417,21 @@ def carga_masiva_alumnos(carga, entidad):
                 try:
                     grupo = Grupo.objects.get(ronda=ronda, clave_ex=x_unidad)
                 except Exception as msg:
-                    grupos = Grupo.objects.filter(ronda=ronda, clave_ex=x_unidad)
-                    if grupos.count() > 0:
-                        carga.log += '<p>grupos iguales (%s): %s - %s</p>' % (grupos.count(), d['x_unidad'], ronda)
-                        carga.save()
-                        grupo = grupos[0]
-                    else:
-                        grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
-                        logger.info('Carga masiva xls. Se crea grupo %s-%s' % (grupo.clave_ex, d['grupo']))
-                        carga.log += '<br>Se crea grupo %s (%s) - Curso: %s (%s)' % (d[grupo], grupo.clave_ex,
-                                                                                     curso.nombre, curso.clave_ex)
-                        carga.save()
+                    carga.log += '<p>Error: %s</p>' % str(msg)
+                    try:
+                        grupos = Grupo.objects.filter(ronda=ronda, clave_ex=x_unidad)
+                        if grupos.count() > 0:
+                            carga.log += '<p>grupos iguales (%s): %s - %s</p>' % (grupos.count(), d['x_unidad'], ronda)
+                            carga.save()
+                            grupo = grupos[0]
+                        else:
+                            grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
+                            logger.info('Carga masiva xls. Se crea grupo %s-%s' % (grupo.clave_ex, d['grupo']))
+                            carga.log += '<br>Se crea grupo %s (%s) - Curso: %s (%s)' % (d[grupo], grupo.clave_ex,
+                                                                                         curso.nombre, curso.clave_ex)
+                            carga.save()
+                    except Exception as msg:
+                        carga.log += '<p>Error 2: %s</p>' % str(msg)
                 grupo.nombre = d['grupo']
                 grupo.save()
                 grupo.cursos.add(curso)
