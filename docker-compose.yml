@@ -1,0 +1,104 @@
+version: '3.4'
+
+services:
+  postgres-gauss:
+    #TODO Which Version?
+    image: postgres
+    container_name: postgres-gauss
+    volumes:
+      - postgres-gauss:/var/lib/postgresql/data
+    hostname: postgres-gauss
+    networks:
+      - gauss_network
+    ports:
+      - 5432:5432
+    env_file: .env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    env_file: .env
+    environment:
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    networks:
+      - gauss_network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq/mnesia/rabbit@rabbitmq
+
+  gauss3:
+    image: gauss3
+    depends_on:
+      - postgres-gauss
+      - rabbitmq
+    hostname: gauss3
+    container_name: gauss3
+    command: /start-django
+    build:
+      context: .
+      dockerfile: ./Docker/Gauss/Dockerfile
+    ports:
+      - 8000:8000
+    networks:
+      - gauss_network
+    volumes:
+      - static_volume:/var/www/python/gauss3/sitestatic
+      - media_volume:/var/www/python/gauss3/media
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./Docker/Gauss/Dockerfile
+    image: gauss3_celery_worker
+    command: /start-celeryworker
+    depends_on:
+      - postgres-gauss
+      - rabbitmq
+    networks:
+      - gauss_network
+
+  #  celery_beat:
+  #    build:
+  #      context: .
+  #      dockerfile: ./Docker/Gauss/Dockerfile
+  #    image: gauss3_celery_beat
+  #    command: /start-celerybeat
+  #    depends_on:
+  #      - postgres-gauss
+  #      - rabbitmq
+  #    networks:
+  #      - gauss_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./Docker/Nginx/Dockerfile
+    ports:
+      - 1337:80
+    depends_on:
+      - gauss3
+    volumes:
+      - static_volume:/var/www/python/gauss3/sitestatic
+      - media_volume:/var/www/python/gauss3/media
+    networks:
+      - gauss_network
+
+volumes:
+  postgres-gauss:
+  rabbitmq-data:
+  static_volume:
+  media_volume:
+
+
+networks:
+  gauss_network:
+    name: gauss_network

@@ -22,3 +22,4 @@ lib/*
 pyvenv.cfg
 share/*
 !requirements.txt
+.env
