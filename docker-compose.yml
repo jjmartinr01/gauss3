@@ -65,6 +65,8 @@ services:
       - rabbitmq
     networks:
       - gauss_network
+    volumes:
+      - media_volume:/var/www/python/gauss3/media
 
   #  celery_beat:
   #    build:
