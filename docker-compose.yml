@@ -42,7 +42,7 @@ services:
       - rabbitmq
     hostname: gauss3
     container_name: gauss3
-    command: /start-django
+    command: /start-django.sh
     build:
       context: .
       dockerfile: ./Docker/Gauss/Dockerfile
@@ -59,7 +59,7 @@ services:
       context: .
       dockerfile: ./Docker/Gauss/Dockerfile
     image: gauss3_celery_worker
-    command: /start-celeryworker
+    command: /start-celeryworker.sh
     depends_on:
       - postgres-gauss
       - rabbitmq
@@ -67,6 +67,9 @@ services:
       - gauss_network
     volumes:
       - media_volume:/var/www/python/gauss3/media
+    deploy:
+      mode: replicated
+      replicas: 3 #change number depending number of istances
 
   #  celery_beat:
   #    build:

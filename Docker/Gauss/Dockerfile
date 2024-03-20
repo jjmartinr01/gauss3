@@ -1,52 +1,76 @@
+# Stage 1: Build stage
+FROM python:3.7.17-slim-bullseye AS builder
+
+# Install system dependencies including build-essential for compilation
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    git \
+    gcc \
+    libpq-dev \
+    locales \
+    locales-all \
+    build-essential \
+    libattr1-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up the locale
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+# Copy and install Python dependencies
+COPY requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
+
+# Stage 2: Final image
 FROM python:3.7.17-slim-bullseye
-RUN mkdir -p /var/www/python
-RUN apt update
-RUN apt install -y git
+
+RUN apt-get update && apt-get install -y locales locales-all && rm -rf /var/lib/apt/lists/*
+
+# Set locale
+RUN locale-gen es_ES.UTF-8
+ENV LANG es_ES.UTF-8
+ENV LANGUAGE es_ES:es
+ENV LC_ALL es_ES.UTF-8
+
+# Copy built Python dependencies from the previous stage
+COPY --from=builder /usr/local/lib/python3.7/site-packages/ /usr/local/lib/python3.7/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+
+# Copy application code
 COPY / /var/www/python/gauss3
-RUN mkdir -p /var/www/python/gauss3/log 
-RUN touch /var/www/python/gauss3/log/logGaussDomotica.log
-WORKDIR /var/www/python/gauss3
 
-#Python needs to compile some dependencies
-RUN apt install gcc libpq-dev -y
-#Hace falta descarga el locale de es-ES
-RUN apt-get install -y locales locales-all
+# Set up directories
+RUN mkdir -p /var/www/python/gauss3/log \
+    && touch /var/www/python/gauss3/log/logGaussDomotica.log \
+    && mkdir -p /var/www/python/gauss3/sitestatic \
+    && mkdir -p /var/www/python/gauss3/media
 
-EXPOSE 8000
+# Copy scripts and set permissions
+COPY ./scripts/cleanMigration.sh /cleanMigration.sh
+COPY ./scripts/worker_start.sh /start-celeryworker.sh
+COPY ./scripts/beat_start.sh /start-celerybeat.sh
+COPY ./scripts/django_start.sh /start-django.sh
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+RUN sed -i 's/\r$//g' /cleanMigration.sh /start-celeryworker.sh /start-celerybeat.sh /start-django.sh \
+    && chmod +x /cleanMigration.sh /start-celeryworker.sh /start-celerybeat.sh /start-django.sh
 
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
-# Install pip requirements
-COPY requirements.txt /var/www/python/gauss3/requirements.txt
-RUN python -m pip install -r requirements.txt
-
+# Copy settings file
 COPY gauss/settings.py /var/www/python/gauss3/gauss/settings.py
 
-COPY ./scripts/cleanMigration.sh /cleanMigration.sh
-RUN sed -i 's/\r$//g' /cleanMigration.sh
-RUN chmod +x /cleanMigration.sh
-
-COPY ./scripts/worker_start /start-celeryworker
-RUN sed -i 's/\r$//g' /start-celeryworker
-RUN chmod +x /start-celeryworker
-
-COPY ./scripts/beat_start /start-celerybeat
-RUN sed -i 's/\r$//g' /start-celerybeat
-RUN chmod +x /start-celerybeat
-
-COPY ./scripts/django_start /start-django
-RUN sed -i 's/\r$//g' /start-django
-RUN chmod +x /start-django
-
-RUN mkdir /var/www/python/gauss3/sitestatic
-RUN mkdir /var/www/python/gauss3/media
-
-RUN python /var/www/python/gauss3/manage.py collectstatic --noinput
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /var/www/python/gauss3/
+# Switch to non-root user
+RUN adduser -u 5678 --disabled-password --gecos "" appuser \
+    && chown -R appuser /var/www/python/gauss3/
 USER appuser
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Expose port
+EXPOSE 8000
+
+# Run Django collectstatic
+RUN python /var/www/python/gauss3/manage.py collectstatic --noinput
+
+# Set working directory
+WORKDIR /var/www/python/gauss3
