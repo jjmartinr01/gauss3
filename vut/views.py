@@ -97,8 +97,52 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
 
 # -------------------------------------------------------------------------------
 
+def verlibroregistros(request, id_vivienda):
+    g_e = request.session['gauser_extra']
+    vivienda = Vivienda.objects.get(id=id_vivienda)
+    viviendas = viviendas_autorizado(g_e)
+    permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
+    if vivienda in viviendas and has_permiso_on_vivienda(g_e, vivienda, permiso):
+        fecha_anterior_limite = datetime.today().date() - timedelta(1100)
+        viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
+                                          reserva__entrada__gte=fecha_anterior_limite)
+        if 'pdf' in request.GET:
+            doc_progsec = 'Configuración de programaciones didácticas'
+            dce = get_dce(entidad, doc_progsec)
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify('%s_%s' % (progsec.areamateria.nombre, progsec.areamateria.get_curso_display()))
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
 
-# @permiso_required('acceso_viviendas')
+        # p_d = request.POST['protocol_domain']
+        p_d = None
+        return render(request, "libro_registro_policia.html",
+                      {'vivienda': vivienda, 'viajeros': viajeros, 'p_d': p_d, 'dce': None})
+    try:
+        g_e = request.session['gauser_extra']
+        vivienda = Vivienda.objects.get(id=id_vivienda)
+        viviendas = viviendas_autorizado(g_e)
+        permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
+        if vivienda in viviendas and has_permiso_on_vivienda(g_e, vivienda, permiso):
+            fecha_anterior_limite = datetime.today().date() - timedelta(1100)
+            viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
+                                              reserva__entrada__gte=fecha_anterior_limite)
+            if 'pdf' in request.GET:
+                doc_progsec = 'Configuración de programaciones didácticas'
+                dce = get_dce(entidad, doc_progsec)
+                c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True, 'dce': dce})
+                genera_pdf(c, dce)
+                nombre = slugify('%s_%s' % (progsec.areamateria.nombre, progsec.areamateria.get_curso_display()))
+                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                    content_type='application/pdf')
+
+            p_d = request.POST['protocol_domain']
+            return render(request, "libro_registro_policia.html",
+                          {'vivienda': vivienda, 'viajeros': viajeros, 'p_d': p_d, 'dce': None})
+    except:
+        pass
+@permiso_required('acceso_viviendas')
 def viviendas(request):
     g_e = request.session['gauser_extra']
     vvs = viviendas_autorizado(g_e)

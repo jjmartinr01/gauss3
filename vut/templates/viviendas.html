@@ -652,8 +652,10 @@
                 var protocol = window.location.protocol;
                 var port = window.location.port;
                 var domain = window.location.hostname;
+                var protocol_domain = protocol + '//' + domain + ':' + port;
                 $('#protocol_domain').val(protocol + '//' + domain + ':' + port);
-                document.getElementById('{{formname}}').submit();
+                {#document.getElementById('{{formname}}').submit();#}
+                location.href = protocol_domain + '/verlibroregistros/' + $(this).data('id') + '/'
             });
         {% endif %}
 
