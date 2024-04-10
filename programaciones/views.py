@@ -4098,7 +4098,7 @@ def calificacc_all(request, grupo_id):
                 cal_dos[key] = cal_ce
         return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
                              'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
-                             'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams,
+                             'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams_ids,
                              'msg_ams_multiples': msg_ams_multiples, 'alumno_id': alumno.id})
         # try:
         #     cal_dos = {}
