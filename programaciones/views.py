@@ -4115,7 +4115,6 @@ def calificacc_all(request, grupo_id):
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
                             content_type='application/pdf')
 
-    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo)
     cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
     am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
     ams = AreaMateria.objects.filter(id__in=am_ids)
@@ -4130,7 +4129,7 @@ def calificacc_all(request, grupo_id):
                       #      ),
                       'alumnos': alumnos,
                       'alumnos_id': json.dumps(list(alumnos.values_list('id', flat=True))),
-                      'ps': tabla_cc.ps,
+                      'ps': ams[0].ps,
                       'ams': ams,
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
