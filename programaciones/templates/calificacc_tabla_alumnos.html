@@ -188,8 +188,7 @@
         {#$('#boton_informe_cc_pdf').show();#}
 
         function carga_alumnocc(alumno) {
-            var alumno = $(this).data('alumno');
-            $.post('/calificacc_all/', {'action': 'carga_alumnocc', alumno_id: alumno},
+            $.post('/calificacc_all/{{ grupo_id }}/', {'action': 'carga_alumnocc', alumno_id: alumno},
                 function (data) {
                     if (data.ok) {
 

@@ -4171,6 +4171,7 @@ def calificacc_all(request, grupo_id):
                       #      {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
                       #       'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                       #      ),
+                      'grupo_id': grupo_id,
                       'alumnos': alumnos,
                       'alumnos_id': json.dumps(list(alumnos.values_list('id', flat=True))),
                       'ps': ams[0].ps,
