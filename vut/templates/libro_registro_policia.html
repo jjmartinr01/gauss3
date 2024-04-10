@@ -1,11 +1,3 @@
-{#<!DOCTYPE html>#}
-{#<html lang="es">#}
-{#<head>#}
-{#    <meta charset="UTF-8">#}
-{#    <meta name="tipo_documento"#}
-{#          content="Documento requerido en virtud de la Ley Orgánica 4/2015 de Protección de la Seguridad Ciudadana"/>#}
-{#    <title>Anexo </title>#}
-{#</head>#}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
 <head>
@@ -43,8 +35,10 @@
     </style>
 </head>
 <body>
+{% if dce %}
 <span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
 <span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
+{% endif %}
 {% for viajero in viajeros reversed %}
     <h1 class="center"><u>ANEXO</u></h1>
     <h2 class="center interlineado">Modelo de parte de entrada de viajeros.</h2>
@@ -52,7 +46,8 @@
     <p class="center interlineado">(Rellenar con mayúsculas) </p>
     <h1 class="center interlineado"><u>Datos del establecimiento</u></h1>
 
-    Parte nº: {{ forloop.counter }}<br>
+{#    Parte nº: {{ forloop.counter }}<br>#}
+    Parte nº: {{ viajero.num }}<br>
     NIF: {{ vivienda.nif|upper }} <br>
     Nombre del establecimiento: {{ vivienda.nombre|upper }}<br>
     Municipio: {{ vivienda.municipio|upper }}<br>
@@ -76,7 +71,8 @@
     <table>
         <tr>
             <td>Firma del viajero</td>
-            <td><img src="{{ p_d }}{{ viajero.firma.url }}" width="120px" alt="firma del viajero"></td>
+{#            <td><img src="{{ p_d }}{{ viajero.firma.url }}" width="120px" alt="firma del viajero"></td>#}
+            <td><img src="{{ viajero.firma.url }}" width="120px" alt="firma del viajero"></td>
         </tr>
     </table>
     <div style="font-size: small">

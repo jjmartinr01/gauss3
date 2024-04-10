@@ -5,8 +5,9 @@
     <div class="columns large-12">
         <ul class="button-group right">
             {% if g_e|has_permiso:'genera_libro_registro_policia' %}
-                <li><a class="button libro_registros" data-id="{{ vivienda.id }}"><i class="fa fa-book"></i> Libro de
-                    registros</a></li>
+{#                <li><a class="button libro_registros" data-id="{{ vivienda.id }}"><i class="fa fa-book"></i> Libro de#}
+{#                    registros</a></li>#}
+                <li><a class="button" href="/verlibroregistros/{{ vivienda.id }}/" target="_blank"><i class="fa fa-book"></i> Libro de registros</a></li>
             {% endif %}
             {% if g_e|has_permiso:'borra_viviendas' %}
                 <li><a class="button delete_vivienda alert" data-id="{{ vivienda.id }}"><i class="fa fa-trash"></i>
