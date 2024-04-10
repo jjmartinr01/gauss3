@@ -4054,7 +4054,7 @@ def calificacc_all(request, grupo_id):
     g_e = request.session['gauser_extra']
     grupo = Grupo.objects.get(id=grupo_id, ronda__entidad=g_e.ronda.entidad)
     alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
-    if request.method == 'POST' and request.POST['action'] =='carga_alumnocc':
+    if request.method == 'POST' and request.POST['action'] == 'carga_alumnocc':
         alumno = alumnos.get(id=request.POST['alumno_id'])
         cal_dos = {}
         cal_ces = {}
