@@ -46,7 +46,8 @@
     <p class="center interlineado">(Rellenar con mayúsculas) </p>
     <h1 class="center interlineado"><u>Datos del establecimiento</u></h1>
 
-    Parte nº: {{ forloop.counter }}<br>
+{#    Parte nº: {{ forloop.counter }}<br>#}
+    Parte nº: {{ viajero.num }}<br>
     NIF: {{ vivienda.nif|upper }} <br>
     Nombre del establecimiento: {{ vivienda.nombre|upper }}<br>
     Municipio: {{ vivienda.municipio|upper }}<br>

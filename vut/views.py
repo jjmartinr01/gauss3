@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from dateutil.rrule import rrule, MONTHLY
 import csv
@@ -53,6 +53,11 @@ import locale
 # Create your views here.
 locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 logger = logging.getLogger('django')
+
+
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 
 def viviendas_con_permiso(g_e, permiso):

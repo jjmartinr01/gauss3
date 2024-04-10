@@ -3982,7 +3982,7 @@ def calificacc(request):
                     if v > 1:
                         am = AreaMateria.objects.get(id=k).nombre
                         msg_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
-                html = render_to_string('calificacc_tabla_alumnos.html', {'cuadernos': cuadernos})
+                html = render_to_string('calificacc_tabla_alumno.html', {'cuadernos': cuadernos})
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 cc_siglas = []
                 dos_claves = []
@@ -4047,6 +4047,93 @@ def calificacc(request):
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
+
+# @permiso_required('acceso_repositorio_instrumento')
+def calificacc_all(request, grupo_id):
+    g_e = request.session['gauser_extra']
+    grupo = Grupo.objects.get(id=grupo_id, ronda__entidad=g_e.ronda.entidad)
+    alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
+    if request.method == 'POST' and request.POST['action'] =='carga_alumnocc':
+        alumno = alumnos.get(id=request.POST['alumno_id'])
+        try:
+            cal_dos = {}
+            cal_ces = {}
+            cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
+            cursos = []
+            ams_ids = []
+            # Cada AreaMateria debería estar evaluada en un solo cuaderno. Registro de cuadernos múltiples:
+            ams_multiples = {}
+            for cuaderno in cuadernos:
+                curso = cuaderno.psec.areamateria.get_curso_display()
+                am_id = cuaderno.psec.areamateria.id
+                if curso not in cursos:
+                    cursos.append(curso)
+                if am_id not in ams_ids:
+                    ams_ids.append(am_id)
+                    ams_multiples[am_id] = 1
+                else:
+                    ams_multiples[am_id] += 1
+            msg_ams_multiples = ''
+            for k, v in ams_multiples.items():
+                if v > 1:
+                    am = AreaMateria.objects.get(id=k).nombre
+                    msg_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
+            html = render_to_string('calificacc_tabla_alumno.html', {'cuadernos': cuadernos})
+
+            ams = AreaMateria.objects.filter(id__in=ams_ids)
+            ps = ams[0].ps
+            cc_siglas = []
+            dos_claves = []
+            for cc in ps.competenciaclave_set.all():
+                cc_siglas.append(cc.siglas)
+                for do in DescriptorOperativo.objects.filter(cc=cc):
+                    dos_claves.append(do.clave)
+            cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
+            for cal_ce_alumno in cals_ces_alumnos:
+                ce = cal_ce_alumno.cep.ce
+                cal_ce = cal_ce_alumno.valor
+                cal_ces['cal_ce_informe%s' % ce.id] = cal_ce
+                for do in ce.dos.all():
+                    key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
+                    cal_dos[key] = cal_ce
+            return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
+                                 'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
+                                 'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams,
+                                 'msg_ams_multiples': msg_ams_multiples, 'alumno_id': alumno.id})
+        except Exception as msg:
+            return JsonResponse({'ok': False, 'msg': str(msg)})
+
+
+    if request.method == 'POST' and request.POST['action'] == 'genera_pdf':
+        doc_progsec_informe_cc = 'Configuración para el informe de adquisición de competencias clave'
+        dce = get_dce(g_e.ronda.entidad, doc_progsec_informe_cc)
+        tablas = request.POST['textarea_tabla_generar_informe']
+        c = render_to_string('califcacc_tabla_alumno_html2pdf.html', {'tablas': tablas, 'dce': dce})
+        genera_pdf(c, dce)
+        nombre = slugify('Informe_competencias_clave')
+        return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                            content_type='application/pdf')
+    # grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
+    #                                      borrado=False).values_list('grupo__id', 'grupo__nombre')
+    # alumnos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
+    # alumnos_grupo = Gauser_extra.objects.filter(id__in=alumnos, gauser_extra_estudios__grupo__isnull=False)
+    # grupos = set(alumnos_grupo.values_list('gauser_extra_estudios__grupo__id', 'gauser_extra_estudios__grupo__nombre'))
+    return render(request, "calificacc_tabla_alumnos.html",
+                  {
+                      'formname': 'calificacc_all',
+                      # 'iconos':
+                      #     ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Importar instrumento', 'permiso': 'libre',
+                      #       'title': 'Importar un instrumento de evaluación al repositorio.'},
+                      #      {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
+                      #       'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
+                      #      ),
+                      'alumnos': alumnos,
+                      'alumnos_id': json.dumps(alumnos.values_list('id', flat=True)),
+                      'g_e': g_e,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
 
 
 @gauss_required

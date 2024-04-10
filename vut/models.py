@@ -433,8 +433,14 @@ class Viajero(models.Model):
             return ayer
 
     def save(self, *args, **kwargs):
-        num = Viajero.objects.filter(reserva__vivienda__police_code=self.reserva.vivienda.police_code).count() + 1
-        self.num = num
+        viajeros = Viajero.objects.filter(reserva__vivienda__police_code=self.reserva.vivienda.police_code)
+        try:
+            num = viajeros.last().num + 1
+            self.num = num if num < 1000 else 1
+        except:
+            self.num = 1
+        # num = Viajero.objects.filter(reserva__vivienda__police_code=self.reserva.vivienda.police_code).count() + 1
+        # self.num = num
         super(Viajero, self).save(*args, **kwargs)
 
     class Meta:

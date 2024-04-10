@@ -37,4 +37,5 @@ urlpatterns = [
     path('arregla_cuaderno/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno),
     path('arregla_cuaderno2/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno2),
     path('arregla_cuaderno3/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno3),
+    path('calificacc_all/<int:grupo_id>/', views.calificacc_all),
 ]
