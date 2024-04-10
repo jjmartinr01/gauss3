@@ -4129,7 +4129,7 @@ def calificacc_all(request, grupo_id):
                       #       'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                       #      ),
                       'alumnos': alumnos,
-                      'alumnos_id': json.dumps(alumnos.values_list('id', flat=True)),
+                      'alumnos_id': json.dumps(list(alumnos.values_list('id', flat=True))),
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
