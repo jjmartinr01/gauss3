@@ -161,7 +161,6 @@
     {#$('#boton_informe_cc_pdf').show();#}
 
     function carga_alumnocc(alumno) {
-        e.preventDefault();
         var alumno = $(this).data('alumno');
         $.post('/calificacc_all/', {'action': 'carga_alumnocc', alumno_id: alumno},
             function (data) {
