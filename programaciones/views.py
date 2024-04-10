@@ -4114,11 +4114,11 @@ def calificacc_all(request, grupo_id):
         nombre = slugify('Informe_competencias_clave')
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
                             content_type='application/pdf')
-    # grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
-    #                                      borrado=False).values_list('grupo__id', 'grupo__nombre')
-    # alumnos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
-    # alumnos_grupo = Gauser_extra.objects.filter(id__in=alumnos, gauser_extra_estudios__grupo__isnull=False)
-    # grupos = set(alumnos_grupo.values_list('gauser_extra_estudios__grupo__id', 'gauser_extra_estudios__grupo__nombre'))
+
+    tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo)
+    cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
+    am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
+    ams = AreaMateria.objects.filter(id__in=am_ids)
     return render(request, "calificacc_tabla_alumnos.html",
                   {
                       'formname': 'calificacc_all',
@@ -4130,6 +4130,8 @@ def calificacc_all(request, grupo_id):
                       #      ),
                       'alumnos': alumnos,
                       'alumnos_id': json.dumps(list(alumnos.values_list('id', flat=True))),
+                      'ps': tabla_cc.ps,
+                      'ams': ams,
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
