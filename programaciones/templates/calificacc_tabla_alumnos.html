@@ -23,7 +23,7 @@
         <p style="font-weight: bold;" id="nombre_centro_alumno{{ alumno.id }}">{{ alumno.ronda.entidad.name }}</p>
         <p>
             Curso: <span style="font-weight: bold;"
-                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos %}
+                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
             {{ curso.nombre }}{% endfor %}</span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Grupo: <span style="font-weight: bold;"
@@ -72,7 +72,7 @@
         </p>
         <p class="no_visible">
             Curso: <span style="font-weight: bold;"
-                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos %}
+                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
             {{ curso.nombre }}{% endfor %}</span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Grupo: <span style="font-weight: bold;"
@@ -115,7 +115,7 @@
         </p>
         <p class="no_visible">
             Curso: <span style="font-weight: bold;"
-                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos %}
+                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
             {{ curso.nombre }}{% endfor %}</span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Grupo: <span style="font-weight: bold;"
