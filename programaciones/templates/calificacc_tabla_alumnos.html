@@ -65,8 +65,8 @@
                             <td>
                                 {{ cc.competencia }}
                             </td>
-                            <td id="cal_{{ cc.siglas }}_{{ alumno.id }}" style="font-weight: bold;text-align: center;"
-                                contenteditable="true"></td>
+                            <td id="cal_cc_informe{{ cc.siglas }}_{{ alumno.id }}"
+                                style="font-weight: bold;text-align: center;" contenteditable="true"></td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -123,7 +123,7 @@
                                 <td title="{{ do.clave }}">
                                     {{ do.texto }}
                                 </td>
-                                <td id="cal_do{{ do.clave }}_{{ alumno.id }}" style="text-align: center;"
+                                <td id="cal_do_informe{{ do.clave }}_{{ alumno.id }}" style="text-align: center;"
                                     contenteditable="true"></td>
                             </tr>
                         {% endfor %}
@@ -189,6 +189,50 @@
             $.post('/calificacc_all/{{ grupo_id }}/', {'action': 'carga_alumnocc', alumno_id: alumno},
                 function (data) {
                     if (data.ok) {
+                        $.each(data.cal_ces, function (id, value) {
+                            if (value === 0) {
+                                $('#' + id).html('-');
+                            } else {
+                                $('#' + id).html(value);
+                            }
+                        });
+                        $.each(data.cal_dos, function (id, value) {
+                            $('#' + id).html(value);
+                        });
+                        $.each(data.cal_ccs, function (id, value) {
+                            if (value <= 4) {
+                                calificacion_CC = 'D';
+                            } else if (value <= 6) {
+                                calificacion_CC = 'C';
+                            } else if (value <= 8) {
+                                calificacion_CC = 'B';
+                            } else {
+                                calificacion_CC = 'A';
+                            }
+                            $('#' + id).html(calificacion_CC);
+                        });
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }
+            )
+        }
+
+
+        var alumnos_id = JSON.parse('{{ alumnos_id | escapejs }}');
+        setTimeout(function () {
+            alumnos_id.forEach(function (alumno_id) {
+                carga_alumnocc(alumno_id);
+            });
+        }, 200);
+
+
+        function carga_alumnocc_antigua(alumno) {
+            $.post('/calificacc_all/{{ grupo_id }}/', {'action': 'carga_alumnocc', alumno_id: alumno},
+                function (data) {
+                    if (data.ok) {
                         {# Instrucciones para rellenar tabla que genera el informe de CC: #}
                         {#$('.nombre_alumno_informe_cc').html(data.nombre_alumno);#}
                         {#                        #}
@@ -224,12 +268,12 @@
                                 $('#' + id + '_' + data.alumno_id).html(value);
                             }
                         });
-                        $('.tbody_am').hide();
-                        setTimeout(function () {
-                            for (var idx in data.ams) {
-                                $('#tbody_am' + data.ams[idx] + '_' + data.alumno_id).show();
-                            }
-                        }, 200);
+                        {#$('.tbody_am').hide();#}
+                        {#setTimeout(function () {#}
+                        {#    for (var idx in data.ams) {#}
+                        {#        $('#tbody_am' + data.ams[idx] + '_' + data.alumno_id).show();#}
+                        {#    }#}
+                        {# }, 200);#}
                         {# Fin de las instrucciones #}
 
                         setTimeout(function () {
@@ -304,12 +348,5 @@
                 }
             )
         }
-
-        var alumnos_id = JSON.parse('{{ alumnos_id | escapejs }}');
-        setTimeout(function () {
-            alumnos_id.forEach(function (alumno_id) {
-                carga_alumnocc(alumno_id);
-            });
-        }, 200);
     </script>
 {% endblock %}

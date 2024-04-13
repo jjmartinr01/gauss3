@@ -4056,8 +4056,6 @@ def calificacc_all(request, grupo_id):
     alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
     if request.method == 'POST' and request.POST['action'] == 'carga_alumnocc':
         alumno = alumnos.get(id=request.POST['alumno_id'])
-        cal_dos = {}
-        cal_ces = {}
         cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
         cursos = []
         ams_ids = []
@@ -4082,24 +4080,31 @@ def calificacc_all(request, grupo_id):
 
         ams = AreaMateria.objects.filter(id__in=ams_ids)
         ps = ams[0].ps
-        cc_siglas = []
-        dos_claves = []
+        cal_ccs = {}
+        cal_dos = {}
+        cal_ces = {}
+        calificaciones = {}
         for cc in ps.competenciaclave_set.all():
-            cc_siglas.append(cc.siglas)
+            calificaciones[cc.siglas] = {}
+            cal_ccs['cal_cc_informe%s_%s' % (cc.siglas, alumno.id)] = 0
             for do in DescriptorOperativo.objects.filter(cc=cc):
-                dos_claves.append(do.clave)
+                calificaciones[cc.siglas][do.clave] = []
+                cal_dos['cal_do_informe%s_%s' % (do.clave, alumno.id)] = 0
         cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
         for cal_ce_alumno in cals_ces_alumnos:
             ce = cal_ce_alumno.cep.ce
             cal_ce = cal_ce_alumno.valor
-            cal_ces['cal_ce_informe%s' % ce.id] = cal_ce
+            cal_ces['cal_ce_informe%s_%s' % (ce.id, alumno.id)] = cal_ce
             for do in ce.dos.all():
-                key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
-                cal_dos[key] = cal_ce
-        return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-                             'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
-                             'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams_ids,
-                             'msg_ams_multiples': msg_ams_multiples, 'alumno_id': alumno.id})
+                calificaciones[do.cc.siglas][do.clave].append(cal_ce)
+        for cc in calificaciones:
+            for do in calificaciones[cc]:
+                cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(calificaciones[cc][do])
+                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos[do] / len(calificaciones[cc])
+
+        
+        return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
+                             'alumno_id': alumno.id})
         # try:
         #     cal_dos = {}
         #     cal_ces = {}
