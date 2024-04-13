@@ -4099,7 +4099,10 @@ def calificacc_all(request, grupo_id):
                 calificaciones[do.cc.siglas][do.clave].append(cal_ce)
         for cc in calificaciones:
             for do in calificaciones[cc]:
-                cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(calificaciones[cc][do])
+                try:
+                    cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(calificaciones[cc][do])
+                except:
+                    cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = 0
                 cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] / len(calificaciones[cc])
 
         
