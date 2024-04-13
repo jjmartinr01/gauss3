@@ -192,11 +192,11 @@
                             if (value === 0) {
                                 $('#' + id).html('-');
                             } else {
-                                $('#' + id).html(value);
+                                $('#' + id).html(value.toFixed(2));
                             }
                         });
                         $.each(data.cal_dos, function (id, value) {
-                            $('#' + id).html(value);
+                            $('#' + id).html(value.toFixed(2));
                         });
                         $.each(data.cal_ccs, function (id, value) {
                             if (value <= 4) {
