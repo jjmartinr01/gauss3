@@ -4119,7 +4119,7 @@ def calificacc_all(request, grupo_id):
         dce = get_dce(g_e.ronda.entidad, doc_progsec_informe_cc)
         tablas = request.POST['textarea_tabla_generar_informe']
         c = render_to_string('califcacc_tabla_alumno_html2pdf.html', {'tablas': tablas, 'dce': dce,
-                                                                      'informe_grupo': True})
+                                                                      'grupo': grupo})
         genera_pdf(c, dce)
         nombre = slugify('Informe_competencias_clave')
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
