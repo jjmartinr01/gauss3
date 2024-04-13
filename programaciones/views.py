@@ -4055,106 +4055,63 @@ def calificacc_all(request, grupo_id):
     grupo = Grupo.objects.get(id=grupo_id, ronda__entidad=g_e.ronda.entidad)
     alumnos = Gauser_extra.objects.filter(gauser_extra_estudios__grupo=grupo)
     if request.method == 'POST' and request.POST['action'] == 'carga_alumnocc':
-        alumno = alumnos.get(id=request.POST['alumno_id'])
-        cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
-        cursos = []
-        ams_ids = []
-        # Cada AreaMateria debería estar evaluada en un solo cuaderno. Registro de cuadernos múltiples:
-        ams_multiples = {}
-        for cuaderno in cuadernos:
-            curso = cuaderno.psec.areamateria.get_curso_display()
-            am_id = cuaderno.psec.areamateria.id
-            if curso not in cursos:
-                cursos.append(curso)
-            if am_id not in ams_ids:
-                ams_ids.append(am_id)
-                ams_multiples[am_id] = 1
-            else:
-                ams_multiples[am_id] += 1
-        msg_ams_multiples = ''
-        for k, v in ams_multiples.items():
-            if v > 1:
-                am = AreaMateria.objects.get(id=k).nombre
-                msg_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
-        html = render_to_string('calificacc_tabla_alumno.html', {'cuadernos': cuadernos})
+        try:
+            alumno = alumnos.get(id=request.POST['alumno_id'])
+            cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
+            cursos = []
+            ams_ids = []
+            # Cada AreaMateria debería estar evaluada en un solo cuaderno. Registro de cuadernos múltiples:
+            ams_multiples = {}
+            for cuaderno in cuadernos:
+                curso = cuaderno.psec.areamateria.get_curso_display()
+                am_id = cuaderno.psec.areamateria.id
+                if curso not in cursos:
+                    cursos.append(curso)
+                if am_id not in ams_ids:
+                    ams_ids.append(am_id)
+                    ams_multiples[am_id] = 1
+                else:
+                    ams_multiples[am_id] += 1
+            msg_ams_multiples = ''
+            for k, v in ams_multiples.items():
+                if v > 1:
+                    am = AreaMateria.objects.get(id=k).nombre
+                    msg_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
+            html = render_to_string('calificacc_tabla_alumno.html', {'cuadernos': cuadernos})
 
-        ams = AreaMateria.objects.filter(id__in=ams_ids)
-        ps = ams[0].ps
-        cal_ccs = {}
-        cal_dos = {}
-        cal_ces = {}
-        calificaciones = {}
-        for cc in ps.competenciaclave_set.all():
-            calificaciones[cc.siglas] = {}
-            cal_ccs['cal_cc_informe%s_%s' % (cc.siglas, alumno.id)] = 0
-            for do in DescriptorOperativo.objects.filter(cc=cc):
-                calificaciones[cc.siglas][do.clave] = []
-                cal_dos['cal_do_informe%s_%s' % (do.clave, alumno.id)] = 0
-        cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
-        for cal_ce_alumno in cals_ces_alumnos:
-            ce = cal_ce_alumno.cep.ce
-            cal_ce = cal_ce_alumno.valor
-            cal_ces['cal_ce_informe%s_%s' % (ce.id, alumno.id)] = cal_ce
-            for do in ce.dos.all():
-                calificaciones[do.cc.siglas][do.clave].append(cal_ce)
-        for cc in calificaciones:
-            for do in calificaciones[cc]:
-                try:
-                    cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(calificaciones[cc][do])
-                except:
-                    cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = 0
-                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] / len(calificaciones[cc])
+            ams = AreaMateria.objects.filter(id__in=ams_ids)
+            ps = ams[0].ps
+            cal_ccs = {}
+            cal_dos = {}
+            cal_ces = {}
+            calificaciones = {}
+            for cc in ps.competenciaclave_set.all():
+                calificaciones[cc.siglas] = {}
+                cal_ccs['cal_cc_informe%s_%s' % (cc.siglas, alumno.id)] = 0
+                for do in DescriptorOperativo.objects.filter(cc=cc):
+                    calificaciones[cc.siglas][do.clave] = []
+                    cal_dos['cal_do_informe%s_%s' % (do.clave, alumno.id)] = 0
+            cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
+            for cal_ce_alumno in cals_ces_alumnos:
+                ce = cal_ce_alumno.cep.ce
+                cal_ce = cal_ce_alumno.valor
+                cal_ces['cal_ce_informe%s_%s' % (ce.id, alumno.id)] = cal_ce
+                for do in ce.dos.all():
+                    calificaciones[do.cc.siglas][do.clave].append(cal_ce)
+            for cc in calificaciones:
+                for do in calificaciones[cc]:
+                    try:
+                        cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(
+                            calificaciones[cc][do])
+                    except:
+                        cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = 0
+                    cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos['cal_do_informe%s_%s' % (
+                    do, alumno.id)] / len(calificaciones[cc])
 
-        
-        return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
-                             'alumno_id': alumno.id})
-        # try:
-        #     cal_dos = {}
-        #     cal_ces = {}
-        #     cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
-        #     cursos = []
-        #     ams_ids = []
-        #     # Cada AreaMateria debería estar evaluada en un solo cuaderno. Registro de cuadernos múltiples:
-        #     ams_multiples = {}
-        #     for cuaderno in cuadernos:
-        #         curso = cuaderno.psec.areamateria.get_curso_display()
-        #         am_id = cuaderno.psec.areamateria.id
-        #         if curso not in cursos:
-        #             cursos.append(curso)
-        #         if am_id not in ams_ids:
-        #             ams_ids.append(am_id)
-        #             ams_multiples[am_id] = 1
-        #         else:
-        #             ams_multiples[am_id] += 1
-        #     msg_ams_multiples = ''
-        #     for k, v in ams_multiples.items():
-        #         if v > 1:
-        #             am = AreaMateria.objects.get(id=k).nombre
-        #             msg_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
-        #     html = render_to_string('calificacc_tabla_alumno.html', {'cuadernos': cuadernos})
-        #
-        #     ams = AreaMateria.objects.filter(id__in=ams_ids)
-        #     ps = ams[0].ps
-        #     cc_siglas = []
-        #     dos_claves = []
-        #     for cc in ps.competenciaclave_set.all():
-        #         cc_siglas.append(cc.siglas)
-        #         for do in DescriptorOperativo.objects.filter(cc=cc):
-        #             dos_claves.append(do.clave)
-        #     cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
-        #     for cal_ce_alumno in cals_ces_alumnos:
-        #         ce = cal_ce_alumno.cep.ce
-        #         cal_ce = cal_ce_alumno.valor
-        #         cal_ces['cal_ce_informe%s' % ce.id] = cal_ce
-        #         for do in ce.dos.all():
-        #             key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
-        #             cal_dos[key] = cal_ce
-        #     return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
-        #                          'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
-        #                          'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams,
-        #                          'msg_ams_multiples': msg_ams_multiples, 'alumno_id': alumno.id})
-        # except Exception as msg:
-        #     return JsonResponse({'ok': False, 'msg': str(msg)})
+            return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
+                                 'alumno_id': alumno.id})
+        except Exception as msg:
+            return JsonResponse({'ok': False, 'msg': str(msg)})
 
 
     if request.method == 'POST' and request.POST['action'] == 'genera_pdf':
@@ -4173,12 +4130,13 @@ def calificacc_all(request, grupo_id):
     return render(request, "calificacc_tabla_alumnos.html",
                   {
                       'formname': 'calificacc_all',
-                      # 'iconos':
-                      #     ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Importar instrumento', 'permiso': 'libre',
-                      #       'title': 'Importar un instrumento de evaluación al repositorio.'},
-                      #      {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
-                      #       'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
-                      #      ),
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF',
+                            'title': 'Generar pdf de los informes competenciales',
+                            'permiso': 'libre'},
+                           # {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
+                           #  'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
+                           ),
                       'grupo_id': grupo_id,
                       'alumnos': alumnos,
                       'alumnos_id': json.dumps(list(alumnos.values_list('id', flat=True))),
