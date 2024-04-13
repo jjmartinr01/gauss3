@@ -4100,7 +4100,7 @@ def calificacc_all(request, grupo_id):
         for cc in calificaciones:
             for do in calificaciones[cc]:
                 cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(calificaciones[cc][do])
-                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos[do] / len(calificaciones[cc])
+                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] / len(calificaciones[cc])
 
         
         return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,

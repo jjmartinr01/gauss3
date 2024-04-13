@@ -31,7 +31,6 @@
             display: none;
         }
     </style>
-    <p>AMS: {{ ams }}</p>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         {% for alumno in alumnos %}
