@@ -33,6 +33,7 @@
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
+        <input type="hidden" id="action" name="action" value=""/>
         <div id="tabla_generar_informe">
             {% for alumno in alumnos %}
                 <div id="tabla_generar_informe{{ alumno.id }}">

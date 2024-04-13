@@ -47,6 +47,7 @@
     {# }#}
 </style>
 <div class="row panel callout">
+    <div class="row">
     <div class="columns large-9">
         <p>Fecha y hora de la última actualización: <b>{{ fecha_hora|date:'d-m-Y \a \l\a\s H:i' }}</b></p>
         <p>Si observa que la información y tablas mostradas a continuación son incompletas, pulse
@@ -57,15 +58,20 @@
     <div class="columns large-3">
         <a class="button actualizar_datos" data-grupo="{{ grupo.id }}">Actualizar</a>
     </div>
-</div>
-<div class="row panel callout">
-    <div class="columns large-9">
-        <p>Generar informes de todos los alumnos del grupo:</p>
+        </div>
+    <hr>
+    <div class="row">
+        <div class="columns large-9">
+        <p>Si lo deseas, puedes generar los informes de todos los alumnos del grupo.</p>
+            <p>Se abrirá otra pestaña con los informes en pantalla, donde podrás modificar manualmente las 
+            calificaciones y/o generar todos los informes en formato <i class="fa fa-file-pdf-o"></i></p>
     </div>
     <div class="columns large-3">
-        <a class="button" href="/calificacc_all/{{ grupo.id }}/" target="_blank">Informes</a>
+        <a class="button" href="/calificacc_all/{{ grupo.id }}/" target="_blank"><i class="fa fa-file-o"></i> Informes</a>
+    </div>
     </div>
 </div>
+
 <div class="row">
     <div class="columns large-12">
         <label><b>Este grupo está siendo evaluado a través de los siguientes cuadernos:</b></label>
