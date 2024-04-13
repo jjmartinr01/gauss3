@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Informe con estadística de programaciones</title>
+    <title>Informe adquisición de competencias clave</title>
 
     <style>
         html {
@@ -36,7 +36,9 @@
 <body>
 <span class="gauss_header" style="display: none;">{% autoescape off %}{{ dce.header }}{% endautoescape %}</span>
 <span class="gauss_footer" style="display: none;">{% autoescape off %}{{ dce.footer }}{% endautoescape %}</span>
+{% if not informe_grupo %}
 <h1>INFORME ADQUISICIÓN DE COMPETENCIAS CLAVE</h1>
+{% endif %}
 <p>&nbsp;</p>
 {% autoescape off %}
 {{ tablas }}

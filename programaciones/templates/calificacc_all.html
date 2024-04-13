@@ -36,6 +36,7 @@
         <input type="hidden" id="action" name="action" value=""/>
         <div id="tabla_generar_informe">
             {% for alumno in alumnos %}
+                <h1 class="pagebreak">INFORME ADQUISICIÓN DE COMPETENCIAS CLAVE</h1>
                 <div id="tabla_generar_informe{{ alumno.id }}">
                     <p style="font-weight: bold;font-size: large;">
                         Alumno: <span class="nombre_alumno_informe_cc">{{ alumno.gauser.get_full_name }}</span>

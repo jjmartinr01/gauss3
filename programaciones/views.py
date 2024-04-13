@@ -4118,7 +4118,8 @@ def calificacc_all(request, grupo_id):
         doc_progsec_informe_cc = 'Configuración para el informe de adquisición de competencias clave'
         dce = get_dce(g_e.ronda.entidad, doc_progsec_informe_cc)
         tablas = request.POST['textarea_tabla_generar_informe']
-        c = render_to_string('califcacc_tabla_alumno_html2pdf.html', {'tablas': tablas, 'dce': dce})
+        c = render_to_string('califcacc_tabla_alumno_html2pdf.html', {'tablas': tablas, 'dce': dce,
+                                                                      'informe_grupo': True})
         genera_pdf(c, dce)
         nombre = slugify('Informe_competencias_clave')
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
@@ -4127,7 +4128,7 @@ def calificacc_all(request, grupo_id):
     cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
     am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
     ams = AreaMateria.objects.filter(id__in=am_ids)
-    return render(request, "calificacc_tabla_alumnos.html",
+    return render(request, "calificacc_all.html",
                   {
                       'formname': 'calificacc_all',
                       'iconos':
