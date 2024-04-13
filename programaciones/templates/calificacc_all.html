@@ -189,7 +189,10 @@
 {% block final %}
     <script type="text/javascript">
         {#$('#boton_informe_cc_pdf').show();#}
-        habilita(['s_file-pdf-o',]);
+        setTimeout(function () {
+            habilita(['s_file-pdf-o',]);
+        }, 2000);
+        
 
         function carga_alumnocc(alumno) {
             $.post('/calificacc_all/{{ grupo_id }}/', {'action': 'carga_alumnocc', alumno_id: alumno},
