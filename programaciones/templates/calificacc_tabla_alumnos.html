@@ -30,8 +30,8 @@
         .no_visible {
             display: none;
         }
-
     </style>
+    <p>AMS: {{ ams }}</p>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         {% for alumno in alumnos %}
@@ -145,10 +145,8 @@
                 <table style="width: 100%;">
                     <thead>
                     <tr>
-                        <th colspan="3" style="text-align: center;">Evaluación de las competencias específicas
-                            vinculadas a
-                            cada
-                            asignatura
+                        <th colspan="3" style="text-align: center;">
+                            Evaluación de las competencias específicas vinculadas a cada asignatura
                         </th>
                     </tr>
                     <tr>
@@ -282,15 +280,17 @@
                                         $('#cal_' + clave + '_' + data.alumno_id).html('D');
                                     } else {
                                         var calificacion = (cal_cc / num_cal_cc);
+                                        var calificacion_CC = 'D';
                                         if (calificacion <= 4) {
-                                            $('#cal_' + clave + '_' + data.alumno_id).html('D');
+                                            calificacion_CC = 'D';
                                         } else if (calificacion <= 6) {
-                                            $('#cal_' + clave + '_' + data.alumno_id).html('C');
+                                            calificacion_CC = 'C';
                                         } else if (calificacion <= 8) {
-                                            $('#cal_' + clave + '_' + data.alumno_id).html('B');
+                                            calificacion_CC = 'B';
                                         } else {
-                                            $('#cal_' + clave + '_' + data.alumno_id).html('A');
+                                            calificacion_CC = 'A';
                                         }
+                                        $('#cal_' + clave + '_' + data.alumno_id).html(calificacion_CC);
                                     }
                                     {# Fin de las instrucciones #}
                                 });
