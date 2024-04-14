@@ -4038,8 +4038,8 @@ def calificacc(request):
                   {
                       'formname': 'calificacc',
                       'iconos':
-                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Importar instrumento', 'permiso': 'libre',
-                            'title': 'Importar un instrumento de evaluación al repositorio.'},
+                          ({'tipo': 'button', 'nombre': 'file-o', 'texto': 'Generar informes', 'permiso': 'libre',
+                            'title': 'Generar todos los informes del grupo a la vez.'},
                            {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
                             'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                            ),
@@ -4099,14 +4099,21 @@ def calificacc_all(request, grupo_id):
                 for do in ce.dos.all():
                     calificaciones[do.cc.siglas][do.clave].append(cal_ce)
             for cc in calificaciones:
+                num_dos = 0
+                cal_cc = 0
                 for do in calificaciones[cc]:
                     try:
                         cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = sum(calificaciones[cc][do]) / len(
                             calificaciones[cc][do])
                     except:
                         cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] = 0
-                    cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] += cal_dos['cal_do_informe%s_%s' % (
-                    do, alumno.id)] / len(calificaciones[cc])
+                    if cal_dos['cal_do_informe%s_%s' % (do, alumno.id)] > 0:
+                        cal_cc += cal_dos['cal_do_informe%s_%s' % (do, alumno.id)]
+                        num_dos += 1
+                try:
+                    cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = cal_cc / num_dos
+                except:
+                    cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = 0
 
             return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
                                  'alumno_id': alumno.id})
