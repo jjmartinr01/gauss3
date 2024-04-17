@@ -14,7 +14,7 @@
         <label><b>Distribución temporal de la programación:</b></label>
     </div>
 </div>
-{% for saber in progsec.saberbas_set.all %}
+{% for saber in progsec.get_saberes %}
     {% with divs=saber.divs_gantt %}
     <div class="row" title="Comienzo el {{ saber.comienzo|date:'d/m/Y' }} y dura {{ saber.periodos }} periodos.&#013;{{ saber.nombre }}">
         <div style="float:left;">{{ saber.orden }}</div>
