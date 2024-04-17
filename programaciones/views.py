@@ -2693,7 +2693,7 @@ def verprogramaciones(request, secret):
     try:
         entidad = Entidad.objects.get(secret=secret)
         pga = PGA.objects.get(ronda=entidad.ronda)
-        progsecs = ProgSec.objects.filter(pga=pga, tipo='DEF').order_by('areamateria__curso')
+        progsecs = ProgSec.objects.filter(pga=pga, tipo__in=('DEF', 'BIN', 'BNO', 'BDI', 'EOI')).order_by('areamateria__curso')
         return render(request, "verprogramaciones.html",
                       {
                           'formname': 'verprogramaciones',
