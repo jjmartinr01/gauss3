@@ -9,6 +9,9 @@ from programaciones.models import *
 register = Library()
 
 @register.filter
+def ecpv_selected(calalum, ecpv):
+    return calalum.calalumvalor_set.filter(ecpv=ecpv).count() > 0
+@register.filter
 def get_estadistica(objeto):
     if type(objeto) == Organization:
         anyo = datetime.now().year if datetime.now().month in [9, 10, 11, 12] else datetime.now().year - 1

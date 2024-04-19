@@ -69,10 +69,18 @@
                         $('#curso').val(data.curso);
                         $('#contenido_competencias_clave').html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
+                        habilita(['s_file-o',]);
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+        });
+        
+        $('#file-o_sign').click(function (e) {
+            e.preventDefault();
+            var grupo = $('#id_grupo').val();
+            {#location.href('/calificacc_all/' + grupo + '/')#}
+            window.open('/calificacc_all/' + grupo + '/', '_blank');
         });
 
         $('#Contenido').on('click', '.carga_alumnocc', function (e) {
