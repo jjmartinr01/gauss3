@@ -23,3 +23,9 @@
         </table>
     </div>
 </div>
+{% if msg_cua_ams_multiples %}
+    <span style="color: red;font-weight: bold;">POSIBLES ERRORES:</span>
+    <ul>
+    {{ msg_cua_ams_multiples }}
+    </ul>
+{% endif %}
