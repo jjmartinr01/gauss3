@@ -2531,7 +2531,7 @@ def progsecundaria(request):
                 permiso = progsec.get_permiso(g_ep)
                 if 'E' in permiso or 'X' in permiso:
                     html = None
-                    saber = progsec.saberbas_set.get(id=request.POST['saber'],borrado=False)
+                    saber = progsec.saberbas_set.get(id=request.POST['saber'])
                     campo = request.POST['campo']
                     if campo == 'nombre':
                         saber.nombre = request.POST['valor']
@@ -2693,7 +2693,7 @@ def verprogramaciones(request, secret):
     try:
         entidad = Entidad.objects.get(secret=secret)
         pga = PGA.objects.get(ronda=entidad.ronda)
-        progsecs = ProgSec.objects.filter(pga=pga, tipo__in=('DEF', 'BIN', 'BNO', 'BDI', 'EOI')).order_by('areamateria__curso')
+        progsecs = ProgSec.objects.filter(pga=pga, tipo='DEF').order_by('areamateria__curso')
         return render(request, "verprogramaciones.html",
                       {
                           'formname': 'verprogramaciones',
