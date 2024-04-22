@@ -2531,7 +2531,7 @@ def progsecundaria(request):
                 permiso = progsec.get_permiso(g_ep)
                 if 'E' in permiso or 'X' in permiso:
                     html = None
-                    saber = progsec.saberbas_set.get(id=request.POST['saber'])
+                    saber = progsec.saberbas_set.get(id=request.POST['saber'],borrado=False)
                     campo = request.POST['campo']
                     if campo == 'nombre':
                         saber.nombre = request.POST['valor']
