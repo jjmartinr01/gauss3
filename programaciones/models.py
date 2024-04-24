@@ -674,6 +674,7 @@ class ProgSec(models.Model):
     borrado = models.BooleanField('¿ProgSec borrada?', default=False)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
+    observaciones = models.TextField('Observaciones generales de la programación', null=True, blank=True, default='')
 
     @property
     def get_saberes(self):
