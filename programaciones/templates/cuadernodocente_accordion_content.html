@@ -58,6 +58,24 @@
     .update_calalum {
         cursor: pointer;
     }
+
+    /* Mostrar/ocultar unidades*/
+    .ver_ocultar_sb span {
+        margin-bottom: 8px;
+        margin-right: 8px;
+        display: inline-block;
+        padding: 8px 10px;
+        border-radius: 3px;
+        background-color: #008CBA !important;
+        color: white !important;
+    }
+    .ver_ocultar_sb span.disabled {
+        background-color: white !important;
+        border: 1px solid #DDDDDD !important;
+        color: #222222 !important;
+    }
+
+
 </style>
 <div class="row">
     <div class="columns large-6">
@@ -312,7 +330,7 @@
                     <a class="ver_ocultar_sb" data-toggle="sb__{{ sb.sb.id }}"
                        title="Mostrar/ocultar {{ sb.sb.nombre }}">
                             <span class="label info" style="font-weight: bold;">
-                                <i class="fa fa-eye"></i>/<i class="fa fa-eye-slash"></i> {{ sb.sb.nombre }}
+                                <i class="fa fa-eye"></i> {{ sb.sb.nombre }}
                             </span>
                     </a>
                 {% endfor %}

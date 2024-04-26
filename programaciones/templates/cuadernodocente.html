@@ -787,6 +787,10 @@
         $('body').on('click', '.ver_ocultar_sb', function(){
             var sb = $(this).data('toggle');
             $('.' + sb).toggle();
+
+            $(this).find("span").toggleClass("disabled");       //Cambiamos estilo del pill
+            $(this).find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
+            $(this).find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono
         });
     </script>
 
