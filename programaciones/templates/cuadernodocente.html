@@ -18,7 +18,7 @@
         <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="">
         <input type="hidden" id="id_cieval" name="id_cieval" value="">
         <input type="hidden" id="id_alumno" name="id_alumno" value="">
-        <div>
+        <div id="title_page_cuadernos_docentes">
             <h4 class="title_page"><strong>Cuadernos de docente asociados a programaciones didácticas</strong></h4>
         </div>
 
@@ -223,10 +223,19 @@
             e.preventDefault();
             if (cuaderno_full_screen) {
                 $('#Principal').removeClass('large-12').addClass('large-10');
-                $('#menu_lateral_for_large').removeClass('hide-for-large');
+                
+                $('#side').removeClass('hide-for-large hide-for-xlarge');
+                $('#cabecera_gauss2').removeClass('hide-for-large hide-for-xlarge');
+                $('#barra_iconos_menu').removeClass('hide-for-large hide-for-xlarge');
+                $('#title_page_cuadernos_docentes').removeClass('hide-for-large hide-for-xlarge');
+
                 cuaderno_full_screen = false;
             } else {
-                $('#menu_lateral_for_large').addClass('hide-for-large');
+                $('#side').addClass('hide-for-large hide-for-xlarge');
+                $('#cabecera_gauss2').addClass('hide-for-large hide-for-xlarge');
+                $('#barra_iconos_menu').addClass('hide-for-large hide-for-xlarge');
+                $('#title_page_cuadernos_docentes').addClass('hide-for-large hide-for-xlarge');
+
                 $('#Principal').removeClass('large-10').addClass('large-12');
                 cuaderno_full_screen = true;
             }

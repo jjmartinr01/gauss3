@@ -12,38 +12,47 @@
         font-weight: bold;
     }
 
+    /* First column and header table fixed */
     .tabla_cuaderno {
         white-space: nowrap;
         table-layout: fixed;
         width: 100%;
         overflow-x: auto;
         display: block;
+        height: 600px;
+        border-collapse: collapse;
     }
 
-    .tabla_cuaderno thead th {
-        position: sticky;
-        z-index: 1;
-    }
+    .tabla_cuaderno thead {
+        position: sticky; 
+        top:0;
+        z-index: 100;
+      }
 
-    .tabla_cuaderno th {
-        text-align: center !important;
-    }
-
-    .tabla_cuaderno td {
-        text-align: center !important;
-    }
-
-    .fixed_column {
+    .tabla_cuaderno tr td:first-child, .fixed_column{
         position: sticky;
         left: 0;
         z-index: 5 !important;
         background: #F5F5F5;
     }
+    /* First column and header table fixed */
 
-    .tabla_cuaderno tbody td:first-child {
-        position: sticky;
-        left: 0;
-        z-index: 2;
+
+
+    .tabla_cuaderno tr th {
+        background: #F5F5F5;
+    }
+     
+    .tabla_cuaderno th, .tabla_cuaderno td {
+        text-align: center !important;
+    }
+
+    .tabla_cuaderno td.alumno {
+        text-align: left !important;
+    }
+
+    .tabla_cuaderno td.alumno span.firstname {
+        color: gray;
     }
 
     .update_calalum {
@@ -163,7 +172,7 @@
     {% if cuaderno.tipo == 'CES' %}
         <div class="div_table{{ cuaderno.id }}">
             <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-                <thead style="position: sticky;top:0">
+                <thead>
                 <tr>
                     <th class="fixed_column" id="fixed_column{{ cuaderno.id }}">
                         Nombre alumno/a<br><br>
@@ -189,8 +198,8 @@
                 <tbody id="tbody_cuaderno{{ cuaderno.id }}">
                 {% for alumno in cuaderno.alumnos.all %}
                     <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                        <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                        <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                            <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</span></b>
                         </td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged cep.ce.asignatura %}
@@ -228,7 +237,7 @@
         <p><b>En breve se terminará el desarrollo para que se produzca dicha actualización.</b></p>
         <div class="div_table{{ cuaderno.id }}">
             <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-                <thead style="position: sticky;top:0">
+                <thead>
                 <tr>
                     <th class="fixed_column" rowspan="2" id="fixed_column{{ cuaderno.id }}">
                         Nombre alumno/a<br><br>
@@ -264,8 +273,8 @@
                 <tbody id="tbody_cuaderno{{ cuaderno.id }}">
                 {% for alumno in cuaderno.alumnos.all %}
                     <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                        <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                        <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                            <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</</b>
                         </td>
                         <td id="cal_am_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
@@ -309,7 +318,7 @@
                 {% endfor %}
                 <div class="div_table{{ cuaderno.id }}">
                     <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-                        <thead style="position: sticky;top:0">
+                        <thead>
                         <tr>
                             <th class="fixed_column" rowspan="5" id="fixed_column{{ cuaderno.id }}">
                                 Nombre alumno/a<br><br>
@@ -394,8 +403,8 @@
                         <tbody id="tbody_cuaderno{{ cuaderno.id }}">
                         {% for alumno in cuaderno.alumnos.all %}
                             <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                                <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                                    <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                                <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                                    <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</</b>
                                 </td>
                                 {% for sb in estructura_cuaderno %}
                                     {% for sap in sb.saps %}
@@ -432,7 +441,7 @@
             {% with num_asig=cuaderno.psec.ces_asignaturas_ambito|length caas=cuaderno.psec.ces_asignaturas_ambito %}
                 <div class="div_table{{ cuaderno.id }}">
                     <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-                        <thead style="position: sticky;top:0">
+                        <thead>
                         <tr>
                             <th class="fixed_column" rowspan="5">
                                 Nombre alumno/a<br><br>
@@ -477,9 +486,9 @@
                             {% for asignatura, ces in caas.items %}
                                 <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}" style="color:red">
                                     {% if forloop.first %}
-                                        <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}"
+                                        <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}"
                                             rowspan="{{ num_asig }}">
-                                            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                                            <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</</b>
                                         </td>
                                     {% endif %}
                                     {% if num_asig > 1 %}
