@@ -155,41 +155,42 @@
                                 });
                             }
                         }, 500);
-                        setTimeout(function () {
-                            for (var idx in data.cc_siglas) {
-                                var clave = data.cc_siglas[idx];
-                                var cal_cc = 0;
-                                var num_cal_cc = 0;
-                                $.each($('.' + clave), function (id, element) {
-                                    var cal = parseFloat($(element).html());
-                                    if (cal > 0) {
-                                        num_cal_cc += 1;
-                                        cal_cc += cal;
-                                    }
-                                    if (num_cal_cc === 0) {
-                                        $('#' + clave).html('-');
-                                    } else {
-                                        $('#' + clave).html((cal_cc / num_cal_cc).toFixed(2));
-                                    }
+                        $('#div_califcacc_alumno').html(data.informe);
+                        {#setTimeout(function () {#}
+                        {#    for (var idx in data.cc_siglas) {#}
+                        {#        var clave = data.cc_siglas[idx];#}
+                        {#        var cal_cc = 0;#}
+                        {#        var num_cal_cc = 0;#}
+                        {#        $.each($('.' + clave), function (id, element) {#}
+                        {#            var cal = parseFloat($(element).html());#}
+                        {#            if (cal > 0) {#}
+                        {#                num_cal_cc += 1;#}
+                        {#                cal_cc += cal;#}
+                        {#            }#}
+                        {#            if (num_cal_cc === 0) {#}
+                        {#                $('#' + clave).html('-');#}
+                        {#            } else {#}
+                        {#                $('#' + clave).html((cal_cc / num_cal_cc).toFixed(2));#}
+                        {#            }#}
                                     {# Instrucciones para rellenar tabla que genera el informe de CC: #}
-                                    if (num_cal_cc === 0) {
-                                        $('#cal_' + clave).html('D');
-                                    } else {
-                                        var calificacion = (cal_cc / num_cal_cc);
-                                        if (calificacion <= 4) {
-                                            $('#cal_' + clave).html('D');
-                                        } else if (calificacion <= 6) {
-                                            $('#cal_' + clave).html('C');
-                                        } else if (calificacion <= 8) {
-                                            $('#cal_' + clave).html('B');
-                                        } else {
-                                            $('#cal_' + clave).html('A');
-                                        }
-                                    }
+                        {#            if (num_cal_cc === 0) {#}
+                        {#                $('#cal_' + clave).html('D');#}
+                        {#            } else {#}
+                        {#                var calificacion = (cal_cc / num_cal_cc);#}
+                        {#                if (calificacion <= 4) {#}
+                        {#                    $('#cal_' + clave).html('D');#}
+                        {#                } else if (calificacion <= 6) {#}
+                        {#                    $('#cal_' + clave).html('C');#}
+                        {#                } else if (calificacion <= 8) {#}
+                        {#                    $('#cal_' + clave).html('B');#}
+                        {#                } else {#}
+                        {#                    $('#cal_' + clave).html('A');#}
+                        {#                }#}
+                        {#            }#}
                                     {# Fin de las instrucciones #}
-                                });
-                            }
-                        }, 1000);
+                        {#        });#}
+                        {#    }#}
+                        {# }, 1000);#}
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})

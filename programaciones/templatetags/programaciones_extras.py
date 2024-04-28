@@ -9,6 +9,15 @@ from programaciones.models import *
 register = Library()
 
 @register.filter
+def obtener_cc_cal(cal_ccs, siglas):
+    return cal_ccs['cal_cc_informe%s' % siglas]
+@register.filter
+def obtener_do_cal(cal_ccs, clave):
+    return cal_ccs['cal_do_informe%s' % clave]
+@register.filter
+def obtener_ce_cal(cal_ccs, id):
+    return cal_ccs['cal_ce_informe%s' % id]
+@register.filter
 def ecpv_selected(calalum, ecpv):
     return calalum.calalumvalor_set.filter(ecpv=ecpv).count() > 0
 @register.filter
