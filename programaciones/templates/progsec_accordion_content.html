@@ -1,6 +1,11 @@
 {% load entidades_extras %}
 {% load programaciones_extras %}
 <style>
+
+    .callout.panel{
+        margin-top: 30px;
+    }
+
     p {
         text-align: justify;
     }
@@ -294,9 +299,7 @@
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de
-                        la
-                        siguiente media ponderada:</p>
+                    <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de la siguiente media ponderada:</p>
                 </div>
             </div>
             <div class="row">
@@ -318,8 +321,7 @@
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <p style="color: gray;">En la anterior fórmula, CE1 es la calificación que un alumno obtiene en la
-                        competencia específica 1,
+                    <p style="color: gray;">En la anterior fórmula, CE1 es la calificación que un alumno obtiene en la competencia específica 1,
                         <br>En la anterior fórmula, CE2 es la calificación que un alumno obtiene en la
                         competencia específica 2,
                         <br>...
@@ -392,9 +394,7 @@
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de
-                        la
-                        siguiente media ponderada:</p>
+                    <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de la siguiente media ponderada:</p>
                 </div>
             </div>
             <div class="row">
@@ -575,6 +575,7 @@
         </label>
     </div>
 </div>
+
 <div class="row">
     <div class="columns large-12">
         <label>Introduce observaciones acerca del libro/material:
@@ -586,6 +587,7 @@
         </label>
     </div>
 </div>
+
 <div class="row">
     {#        <div class="columns large-9">#}
     {#            <label>Cargar el archivo del libro/material (opcional):#}
@@ -600,11 +602,8 @@
 </div>
 
 <div class="row">
-    <div class="columns large-12">
-        <div class="panel callout">
-            <h3>6º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
-        </div>
-        {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
+    <div class="columns large-12 panel callout">
+        <h3>6º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
     </div>
 </div>
 
@@ -648,11 +647,11 @@
         </label>
     </div>
 </div>
+
 <div class="row">
     <div class="columns large-12">
         <label>Observaciones a la actividad extraescolar/complementaria:
-            <!-- <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
-placeholder="Texto opcional"></textarea> -->
+            <!-- <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}" placeholder="Texto opcional"></textarea> -->
             <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}"
                  contenteditable="true" id="observaciones_actex{{ progsec.id }}">
                 {% autoescape off %}{% endautoescape %}</div>
@@ -665,6 +664,7 @@ placeholder="Texto opcional"></textarea> -->
     {#        </label>#}
     {#    </div>#}
 </div>
+
 <div class="row">
     <div class="columns large-9">&nbsp;</div>
     <div class="columns large-3 right">
@@ -676,18 +676,32 @@ placeholder="Texto opcional"></textarea> -->
 
 
 <div class="row">
-    <div class="columns large-12">
-        <div class="panel callout">
-            <h3 id="unidades_programacion{{ progsec.id }}">7º Unidades de programación</h3>
-        </div>
-        <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de
-            competencias. En este proceso se desarrollan los saberes básicos (conocimientos, destrezas y actitudes),
-            cuyo aprendizaje resulta necesario para la adquisición de compentecias.</p>
-        <p>En este apartado, usted debe secuenciar las diferentes unidades de programación asociadas con la materia
-            ({{ progsec.areamateria.nombre }} de {{ progsec.areamateria.get_curso_display }}) e indicar el número de
-            periodos lectivos que estima serán necesarios para impartir la docencia correspondiente.
-            Recuerde que cada unidad de programación puede contener saberes de diferentes bloques.</p>
+    <div class="columns large-12 callout panel">
+        <h3>7º Observaciones generales de la programación</h3>
     </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label>Puede incluir en el siguiente campo: aspectos, características u observaciones generales de la programación que no han sido incluídas en los espacios anteriores.
+            <div style="border: lightgrey solid 1px; padding:10px; margin-bottom: 10px;" data-id="{{ progsec.id }}"
+                 contenteditable="true" id="observaciones{{ progsec.id }}">
+                {% autoescape off %}{{ progsec.observaciones }}{% endautoescape %}</div>
+        </label>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="columns large-12 panel callout">
+        <h3 id="unidades_programacion{{ progsec.id }}">8º Unidades de programación</h3>
+    </div>
+    <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de
+        competencias. En este proceso se desarrollan los saberes básicos (conocimientos, destrezas y actitudes),
+        cuyo aprendizaje resulta necesario para la adquisición de compentecias.</p>
+    <p>En este apartado, usted debe secuenciar las diferentes unidades de programación asociadas con la materia
+        ({{ progsec.areamateria.nombre }} de {{ progsec.areamateria.get_curso_display }}) e indicar el número de
+        periodos lectivos que estima serán necesarios para impartir la docencia correspondiente.
+        Recuerde que cada unidad de programación puede contener saberes de diferentes bloques.</p>
 </div>
 
 {#<div class="row">#}
@@ -757,10 +771,12 @@ placeholder="Texto opcional"></textarea> -->
     <div class="columns large-1"
          title="Enlace a las situaciones de aprendizaje asociadas con esta unidad de programación"><b>SAP</b></div>
 </div>
+
 <div id="lista_saberes{{ progsec.id }}">
     {% include "progsec_accordion_content_saberes.html" %}
 </div>
-</div>
+
+
 <script>
     $('select').select2();
     // Espe: Enviar programación a otro docente
@@ -795,6 +811,7 @@ placeholder="Texto opcional"></textarea> -->
         var planrecup{{ progsec.id }} = CKEDITOR.inline('planrecup{{ progsec.id }}');
         var observaciones_libro{{ progsec.id }} = CKEDITOR.inline('observaciones_libro{{ progsec.id }}');
         var observaciones_actex{{ progsec.id }} = CKEDITOR.inline('observaciones_actex{{ progsec.id }}');
+        var observaciones{{ progsec.id }} = CKEDITOR.inline('observaciones{{ progsec.id }}');
 
         procdiversidad{{ progsec.id }}.on('change', function (e) {
             var texto = e.editor.getData();
@@ -811,6 +828,15 @@ placeholder="Texto opcional"></textarea> -->
             var progsec = {{ progsec.id }};
             setTimeout(function () {
                 comprueba_cambio_texto(texto, progsec, 'planrecup');
+            }, 1000);
+            re_adjust_check_time();
+        });
+        observaciones{{ progsec.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            texto_editor = texto;
+            var progsec = {{ progsec.id }};
+            setTimeout(function () {
+                comprueba_cambio_texto(texto, progsec, 'observaciones');
             }, 1000);
             re_adjust_check_time();
         });
