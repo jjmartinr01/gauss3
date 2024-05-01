@@ -187,6 +187,11 @@
     </tbody>
 </table>
 
+{% if progsec.observaciones %}
+    <h4>Observaciones generales de la programación</h4>
+    {% autoescape off %}{{ progsec.observaciones|cbarra2br }}{% endautoescape %}
+{% endif %}
+
 
 <h4 id="unidades_programacion{{ progsec.id }}">Unidades de programación</h4>
 <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de

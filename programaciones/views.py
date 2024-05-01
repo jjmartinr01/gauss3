@@ -2069,7 +2069,7 @@ def progsecundaria(request):
                                                                 abreviatura=etapa)
                     progsec.departamento = dep
                     progsec.save()
-                #Fin de las líneas para evitar tener programaciones de INF o PRI sin ciclo asignado
+                # Fin de las líneas para evitar tener programaciones de INF o PRI sin ciclo asignado
                 docentes_id = DocProgSec.objects.filter(psec=progsec).values_list('gep__ge', flat=True)
                 departamentos = Departamento.objects.filter(ronda=g_e.ronda)
                 # if departamentos.count() == 0:
@@ -2531,7 +2531,7 @@ def progsecundaria(request):
                 permiso = progsec.get_permiso(g_ep)
                 if 'E' in permiso or 'X' in permiso:
                     html = None
-                    saber = progsec.saberbas_set.get(id=request.POST['saber'],borrado=False)
+                    saber = progsec.saberbas_set.get(id=request.POST['saber'], borrado=False)
                     campo = request.POST['campo']
                     if campo == 'nombre':
                         saber.nombre = request.POST['valor']
@@ -2693,7 +2693,8 @@ def verprogramaciones(request, secret):
     try:
         entidad = Entidad.objects.get(secret=secret)
         pga = PGA.objects.get(ronda=entidad.ronda)
-        progsecs = ProgSec.objects.filter(pga=pga, tipo__in=('DEF', 'BIN', 'BNO', 'BDI', 'EOI')).order_by('areamateria__curso')
+        progsecs = ProgSec.objects.filter(pga=pga, tipo__in=('DEF', 'BIN', 'BNO', 'BDI', 'EOI')).order_by(
+            'areamateria__curso')
         return render(request, "verprogramaciones.html",
                       {
                           'formname': 'verprogramaciones',
@@ -3903,7 +3904,7 @@ def calificacc(request):
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
                 try:
-                    min_datetime = datetime.strptime('20/06/2023 23:05', '%d/%m/%Y %H:%M')
+                    min_datetime = datetime.strptime('01/05/2024 23:05', '%d/%m/%Y %H:%M')
                     madrid_timezone = pytz.timezone('Europe/Madrid')
                     min_datetime_timezone = madrid_timezone.localize(min_datetime)
                     tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado__gt=min_datetime_timezone)
@@ -3916,13 +3917,7 @@ def calificacc(request):
                     am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
                     ams = AreaMateria.objects.filter(id__in=am_ids)
                     ps = ams[0].ps
-                    # am = cuadernos[0].psec.areamateria
-                    # ps = am.ps
-                    # ams = AreaMateria.objects.filter(curso=am.curso)
                     alum_order = alumnos.order_by('gauser__last_name')
-                    # html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
-                    #                                                   'curso': am.curso, 'cuadernos': cuadernos,
-                    #                                                   'fecha_hora': datetime.now(), 'grupo': grupo})
                     html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
                                                                       'cuadernos': cuadernos,
                                                                       'fecha_hora': datetime.now(), 'grupo': grupo})
@@ -3940,14 +3935,7 @@ def calificacc(request):
                 am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
                 ams = AreaMateria.objects.filter(id__in=am_ids)
                 ps = ams[0].ps
-                # cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
-                # am = cuadernos[0].psec.areamateria
-                # ps = am.ps
-                # ams = AreaMateria.objects.filter(curso=am.curso)
                 alum_order = alumnos.order_by('gauser__last_name')
-                # html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
-                #                                                   'curso': am.curso, 'cuadernos': cuadernos,
-                #                                                   'fecha_hora': datetime.now(), 'grupo': grupo})
                 html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
                                                                   'cuadernos': cuadernos,
                                                                   'fecha_hora': datetime.now(), 'grupo': grupo})
@@ -3998,10 +3986,11 @@ def calificacc(request):
                     for do in ce.dos.all():
                         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                         cal_dos[key] = cal_ce
+                informe = calcula_calificaciones_cc(alumno)
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
                                      'nombre_alumno': alumno.gauser.get_full_name(), 'cal_ces': cal_ces, 'html': html,
                                      'grupo': alumno.gauser_extra_estudios.grupo.nombre, 'cursos': cursos, 'ams': ams,
-                                     'msg_ams_multiples': msg_ams_multiples})
+                                     'msg_ams_multiples': msg_ams_multiples, 'informe': informe})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':
@@ -4029,11 +4018,9 @@ def calificacc(request):
         nombre = slugify('Informe_competencias_clave')
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
                             content_type='application/pdf')
-    # grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
-    #                                      borrado=False).values_list('grupo__id', 'grupo__nombre')
-    alumnos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
-    alumnos_grupo = Gauser_extra.objects.filter(id__in=alumnos, gauser_extra_estudios__grupo__isnull=False)
-    grupos = set(alumnos_grupo.values_list('gauser_extra_estudios__grupo__id', 'gauser_extra_estudios__grupo__nombre'))
+    alumnos_id = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
+    grupos_id = Gauser_extra_estudios.objects.filter(ge__id__in=alumnos_id, grupo__isnull=False).values_list('grupo', flat=True)
+    grupos = Grupo.objects.filter(id__in=grupos_id).distinct().order_by('cursos')
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',
@@ -4043,13 +4030,14 @@ def calificacc(request):
                            {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
                             'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                            ),
-                      'grupos': set(grupos),
+                      # 'grupos': set(grupos),
+                      'grupos': grupos,
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
 
-def calcula_calificaciones_cc(alumno):
+def calcula_calificaciones_cc__antiguo(alumno):
     try:
         cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
         cursos = []
@@ -4107,14 +4095,105 @@ def calcula_calificaciones_cc(alumno):
                     cal_cc += cal_dos['cal_do_informe%s_%s' % (do, alumno.id)]
                     num_dos += 1
             try:
-                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = cal_cc / num_dos
+                cal_cc_num = cal_cc / num_dos
             except:
-                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = 0
+                cal_cc_num = 0
 
+            if cal_cc_num <= 4:
+                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = 'D'
+            elif cal_cc_num <= 6:
+                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = 'C'
+            elif cal_cc_num <= 8:
+                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = 'B'
+            else:
+                cal_ccs['cal_cc_informe%s_%s' % (cc, alumno.id)] = 'A'
+
+        html = render_to_string('calificacc_alumno.html',
+                                {'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
+                                 'alumno_id': alumno.id})
         return {'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
-                             'alumno_id': alumno.id, 'html': html}
+                'alumno_id': alumno.id, 'html': html}
     except Exception as msg:
         return {'ok': False, 'msg': str(msg)}
+
+
+def calcula_calificaciones_cc(alumno):
+    try:
+        cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
+        cursos = []
+        ams_ids = []
+        # Cada AreaMateria debería estar evaluada en un solo cuaderno. Registro de cuadernos múltiples:
+        ams_multiples = {}
+        for cuaderno in cuadernos:
+            curso = cuaderno.psec.areamateria.get_curso_display()
+            am_id = cuaderno.psec.areamateria.id
+            if curso not in cursos:
+                cursos.append(curso)
+            if am_id not in ams_ids:
+                ams_ids.append(am_id)
+                ams_multiples[am_id] = 1
+            else:
+                ams_multiples[am_id] += 1
+        msg_cua_ams_multiples = ''
+        for k, v in ams_multiples.items():
+            if v > 1:
+                am = AreaMateria.objects.get(id=k).nombre
+                msg_cua_ams_multiples += '<li><b>La asignatura %s tiene %s cuadernos diferentes.</b></li>' % (am, v)
+        html = render_to_string('calificacc_tabla_alumno.html', {'cuadernos': cuadernos,
+                                                                 'msg_cua_ams_multiples': msg_cua_ams_multiples})
+
+        ams = AreaMateria.objects.filter(id__in=ams_ids)
+        ps = ams[0].ps
+        cal_ccs = {}
+        cal_dos = {}
+        cal_ces = {}
+        calificaciones = {}
+        for cc in ps.competenciaclave_set.all():
+            calificaciones[cc.siglas] = {}
+            cal_ccs['cal_cc_informe%s' % (cc.siglas)] = 0
+            for do in DescriptorOperativo.objects.filter(cc=cc):
+                calificaciones[cc.siglas][do.clave] = []
+                cal_dos['cal_do_informe%s' % (do.clave)] = 0
+        cals_ces_alumno = CalAlumCE.objects.filter(alumno=alumno, cp__borrado=False)
+        for cal_ce_alumno in cals_ces_alumno:
+            ce = cal_ce_alumno.cep.ce
+            cal_ce = cal_ce_alumno.valor
+            cal_ces['cal_ce_informe%s' % (ce.id)] = cal_ce
+            for do in ce.dos.all():
+                if cal_ce > 0:
+                    calificaciones[do.cc.siglas][do.clave].append(cal_ce)
+        for cc in calificaciones:
+            num_dos = 0
+            cal_cc = 0
+            for do in calificaciones[cc]:
+                try:
+                    cal_dos['cal_do_informe%s' % (do)] = sum(calificaciones[cc][do]) / len(
+                        calificaciones[cc][do])
+                except:
+                    cal_dos['cal_do_informe%s' % (do)] = 0
+                if cal_dos['cal_do_informe%s' % (do)] > 0:
+                    cal_cc += cal_dos['cal_do_informe%s' % (do)]
+                    num_dos += 1
+            try:
+                cal_cc_num = cal_cc / num_dos
+            except:
+                cal_cc_num = 0
+
+            if cal_cc_num <= 4:
+                cal_ccs['cal_cc_informe%s' % (cc)] = 'D'
+            elif cal_cc_num <= 6:
+                cal_ccs['cal_cc_informe%s' % (cc)] = 'C'
+            elif cal_cc_num <= 8:
+                cal_ccs['cal_cc_informe%s' % (cc)] = 'B'
+            else:
+                cal_ccs['cal_cc_informe%s' % (cc)] = 'A'
+
+        return render_to_string('calificacc_alumno.html',
+                                {'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
+                                 'alumno': alumno, 'ps': ps, 'ams': ams})
+    except Exception as msg:
+        return {'ok': False, 'msg': str(msg)}
+
 
 @permiso_required('acceso_calificaciones_competencias_clave')
 def calificacc_all(request, grupo_id):
@@ -4124,7 +4203,7 @@ def calificacc_all(request, grupo_id):
     if request.method == 'POST' and request.POST['action'] == 'carga_alumnocc':
         try:
             alumno = alumnos.get(id=request.POST['alumno_id'])
-            return JsonResponse(calcula_calificaciones_cc(alumno))
+            return JsonResponse({'ok': True, 'informe': calcula_calificaciones_cc(alumno)})
         except Exception as msg:
             return JsonResponse({'ok': False, 'msg': str(msg)})
         # try:
@@ -4192,8 +4271,6 @@ def calificacc_all(request, grupo_id):
         # except Exception as msg:
         #     return JsonResponse({'ok': False, 'msg': str(msg)})
 
-
-
     if request.method == 'POST' and request.POST['action'] == 'genera_pdf':
         doc_progsec_informe_cc = 'Configuración para el informe de adquisición de competencias clave'
         dce = get_dce(g_e.ronda.entidad, doc_progsec_informe_cc)
@@ -4226,7 +4303,6 @@ def calificacc_all(request, grupo_id):
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
-
 
 
 @gauss_required
