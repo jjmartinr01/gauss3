@@ -3904,7 +3904,7 @@ def calificacc(request):
             try:
                 grupo = Grupo.objects.get(id=request.POST['grupo'])
                 try:
-                    min_datetime = datetime.strptime('20/06/2023 23:05', '%d/%m/%Y %H:%M')
+                    min_datetime = datetime.strptime('01/05/2024 23:05', '%d/%m/%Y %H:%M')
                     madrid_timezone = pytz.timezone('Europe/Madrid')
                     min_datetime_timezone = madrid_timezone.localize(min_datetime)
                     tabla_cc = TablaCompetenciasClave.objects.get(grupo=grupo, modificado__gt=min_datetime_timezone)
@@ -3917,9 +3917,6 @@ def calificacc(request):
                     am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
                     ams = AreaMateria.objects.filter(id__in=am_ids)
                     ps = ams[0].ps
-                    # am = cuadernos[0].psec.areamateria
-                    # ps = am.ps
-                    # ams = AreaMateria.objects.filter(curso=am.curso)
                     alum_order = alumnos.order_by('gauser__last_name')
                     html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
                                                                       'cuadernos': cuadernos,
@@ -3938,10 +3935,6 @@ def calificacc(request):
                 am_ids = cuadernos.values_list('psec__areamateria__id', flat=True)
                 ams = AreaMateria.objects.filter(id__in=am_ids)
                 ps = ams[0].ps
-                # cuadernos = CuadernoProf.objects.filter(alumnos__in=alumnos, borrado=False).distinct()
-                # am = cuadernos[0].psec.areamateria
-                # ps = am.ps
-                # ams = AreaMateria.objects.filter(curso=am.curso)
                 alum_order = alumnos.order_by('gauser__last_name')
                 html = render_to_string('calificacc_tabla.html', {'alumnos': alum_order, 'ps': ps, 'ams': ams,
                                                                   'cuadernos': cuadernos,
@@ -4025,11 +4018,9 @@ def calificacc(request):
         nombre = slugify('Informe_competencias_clave')
         return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
                             content_type='application/pdf')
-    # grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
-    #                                      borrado=False).values_list('grupo__id', 'grupo__nombre')
-    alumnos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
-    alumnos_grupo = Gauser_extra.objects.filter(id__in=alumnos, gauser_extra_estudios__grupo__isnull=False)
-    grupos = set(alumnos_grupo.values_list('gauser_extra_estudios__grupo__id', 'gauser_extra_estudios__grupo__nombre'))
+    alumnos_id = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, borrado=False).values_list('alumnos', flat=True)
+    grupos_id = Gauser_extra_estudios.objects.filter(ge__id__in=alumnos_id, grupo__isnull=False).values_list('grupo', flat=True)
+    grupos = Grupo.objects.filter(id__in=grupos_id).distinct().order_by('cursos')
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',
@@ -4039,7 +4030,8 @@ def calificacc(request):
                            {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
                             'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                            ),
-                      'grupos': set(grupos),
+                      # 'grupos': set(grupos),
+                      'grupos': grupos,
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -4124,6 +4116,7 @@ def calcula_calificaciones_cc__antiguo(alumno):
     except Exception as msg:
         return {'ok': False, 'msg': str(msg)}
 
+
 def calcula_calificaciones_cc(alumno):
     try:
         cuadernos = CuadernoProf.objects.filter(alumnos__in=[alumno], borrado=False)
@@ -4195,12 +4188,9 @@ def calcula_calificaciones_cc(alumno):
             else:
                 cal_ccs['cal_cc_informe%s' % (cc)] = 'A'
 
-        html = render_to_string('calificacc_alumno.html',
+        return render_to_string('calificacc_alumno.html',
                                 {'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
-                                 'alumno_id': alumno.id})
-        return html
-        # return {'ok': True, 'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
-        #         'alumno_id': alumno.id, 'html': html}
+                                 'alumno': alumno, 'ps': ps, 'ams': ams})
     except Exception as msg:
         return {'ok': False, 'msg': str(msg)}
 
@@ -4213,7 +4203,7 @@ def calificacc_all(request, grupo_id):
     if request.method == 'POST' and request.POST['action'] == 'carga_alumnocc':
         try:
             alumno = alumnos.get(id=request.POST['alumno_id'])
-            return JsonResponse(calcula_calificaciones_cc(alumno))
+            return JsonResponse({'ok': True, 'informe': calcula_calificaciones_cc(alumno)})
         except Exception as msg:
             return JsonResponse({'ok': False, 'msg': str(msg)})
         # try:

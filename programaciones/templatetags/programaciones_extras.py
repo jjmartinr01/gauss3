@@ -13,10 +13,12 @@ def obtener_cc_cal(cal_ccs, siglas):
     return cal_ccs['cal_cc_informe%s' % siglas]
 @register.filter
 def obtener_do_cal(cal_ccs, clave):
-    return cal_ccs['cal_do_informe%s' % clave]
+    do_cal = round(cal_ccs['cal_do_informe%s' % clave], 2)
+    return do_cal if do_cal > 0 else '-'
 @register.filter
 def obtener_ce_cal(cal_ccs, id):
-    return cal_ccs['cal_ce_informe%s' % id]
+    ce_cal = round(cal_ccs['cal_ce_informe%s' % id])
+    return ce_cal if ce_cal > 0 else '-'
 @register.filter
 def ecpv_selected(calalum, ecpv):
     return calalum.calalumvalor_set.filter(ecpv=ecpv).count() > 0

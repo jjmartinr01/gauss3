@@ -32,7 +32,7 @@
                     {{ cc.competencia }}
                 </td>
                 <td id="cal_cc_informe{{ cc.siglas }}_{{ alumno.id }}"
-                    style="font-weight: bold;text-align: center;" contenteditable="true">{{ obtener_cc_cal|cal_ccs:cc.siglas }}</td>
+                    style="font-weight: bold;text-align: center;" contenteditable="true">{{ cal_ccs|obtener_cc_cal:cc.siglas }}</td>
             </tr>
         {% endfor %}
         </tbody>
@@ -90,7 +90,7 @@
                         {{ do.texto }}
                     </td>
                     <td id="cal_do_informe{{ do.clave }}_{{ alumno.id }}" style="text-align: center;"
-                        contenteditable="true">{{ obtener_do_cal|cal_dos:do.clave }}</td>
+                        contenteditable="true">{{ cal_dos|obtener_do_cal:do.clave }}</td>
                 </tr>
             {% endfor %}
         {% endfor %}
@@ -134,7 +134,7 @@
                         {{ ce.nombre }}
                     </td>
                     <td id="cal_ce_informe{{ ce.id }}_{{ alumno.id }}" style="text-align: center;"
-                        contenteditable="true">{{ obtener_ce_cal|cal_ces:ce.id }}</td>
+                        contenteditable="true">{{ cal_ces|obtener_ce_cal:ce.id }}</td>
                 </tr>
             {% endfor %}
             </tbody>
