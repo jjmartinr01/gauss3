@@ -187,6 +187,11 @@
     </tbody>
 </table>
 
+{% if progsec.observaciones %}
+    <h4>Observaciones generales de la programación</h4>
+    {% autoescape off %}{{ progsec.observaciones|cbarra2br }}{% endautoescape %}
+{% endif %}
+
 
 <h4 id="unidades_programacion{{ progsec.id }}">Unidades de programación</h4>
 <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de
@@ -262,7 +267,7 @@
 {% for saber in progsec.get_saberes %}
 <h3 class="pagebreak" style="text-align: center;">{{ saber.orden }}.- {{ saber.nombre }} ({{ saber.periodos }}
     periodos)</h3>
-<p>Esta unidad de programación está compuesta por {{ saber.sitapren_set.all|length }} situaciones de aprendizaje
+<p>Esta unidad de programación está compuesta por {{ saber.get_sitaprens|length }} situaciones de aprendizaje
     que son descritas a continuación.</p>
 {% for sitapren in saber.get_sitaprens %}
 <h4>{{ sitapren.nombre }}</h4>
