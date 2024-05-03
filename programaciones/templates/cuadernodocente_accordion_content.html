@@ -20,14 +20,14 @@
         overflow-x: auto;
         display: block;
         height: 600px;
-        border-collapse: collapse;
+        
     }
 
     .tabla_cuaderno thead {
         position: sticky; 
-        top:0;
-        z-index: 100;
-      }
+        top:1px;
+        z-index: 20;
+    }
 
     .tabla_cuaderno tr td:first-child, .fixed_column{
         position: sticky;
@@ -37,11 +37,6 @@
     }
     /* First column and header table fixed */
 
-
-
-    .tabla_cuaderno tr th {
-        background: #F5F5F5;
-    }
      
     .tabla_cuaderno th, .tabla_cuaderno td {
         text-align: center !important;
@@ -55,16 +50,131 @@
         color: gray;
     }
 
-    .update_calalum {
-        cursor: pointer;
+    /* Nueva forma d emeter notas */
+    .update_calalum2 {
+        padding: 0;
     }
+
+    .update_calalum2_data{
+        height: 40px;
+        padding: 10px;
+        position: relative;
+    }
+
+    .update_calalum2_data span.icon-obs {
+        font-size: 0.8em;
+        position: absolute;
+        top: 3px; 
+        margin-left: 5px;
+        color: #008CBA;
+    }
+
+    .update_calalum2_data span.hidden {
+        display: none;
+    }
+
+    .update_calalum2_data:hover {
+        cursor: pointer;
+        background-color: #f08a24;
+        transition: background-color 0.5s ease;
+    }
+
+    .update_calalum2_form input{
+        text-align: center;
+    }
+
+    .update_calalum2{
+        position: relative;
+    }
+
+    .update_calalum2_form {
+        width: 300px;
+        position: absolute;
+        top: -3px; left: -3px;
+        z-index: 11;
+        background-color: #fac289;
+        padding: 10px;
+        border-radius: 3px;
+    }
+
+    .update_calalum2_form_block {
+        margin-bottom: 3px;
+        overflow: hidden;
+    }
+    .update_calalum2_form_block > span,  .update_calalum2_form_block > input {
+        float: left;
+    }
+
+    .update_calalum2_form input {
+        width: 120px;
+        border: 3px solid #f08a24;
+        margin-right: 10px;
+    }
+
+    .update_calalum2_form span {
+        width: 30px;
+    }
+    .update_calalum2_form textarea {
+        width: 100%;
+    }
+
+    .update_calalum2_form span.postfix {
+        cursor: pointer;
+        transition: color 1s ease;
+        transition: background-color 0.5s ease;
+    }
+
+    .update_calalum2_form span.calificar {
+        background-color: #007095;
+        color: white;
+        width: 60px;
+    }
+
+    .update_calalum2_form span.calificar:hover {
+        background-color: #024b63;
+    }
+
+    .update_calalum2_form span.delete {
+        margin-left: 20px;
+    }
+    .update_calalum2_form span.delete:hover {
+        background-color: #cf2a0e;
+        color: white;
+    }
+
+    .update_calalum2_form span.cerrar {
+        float: right;
+        cursor: pointer;
+        border: 1px solid #cccccc;
+    }
+
+    .update_calalum2_data.highlight {
+        background-color: white;
+        animation-name: data_updated;
+        animation-duration: 2s;
+     }
+    
+    @keyframes data_updated {
+      from { background-color: #fac289; }
+      to { background-color:rgba(242, 245, 169, 0); }
+    }
+
+    .tabla_cuaderno tr > .alumno.selected {
+        background-color: #fac289;
+    }
+
+    .tabla_cuaderno tr > th.selected {
+        background-color: #fac289;
+    }
+
+   
 
     /* Mostrar/ocultar unidades*/
     .ver_ocultar_sb span {
-        margin-bottom: 8px;
-        margin-right: 8px;
+        margin-bottom: 6px;
+        margin-right: 6px;
         display: inline-block;
-        padding: 8px 10px;
+        padding: 6px 8px;
         border-radius: 3px;
         background-color: #008CBA !important;
         color: white !important;
@@ -75,8 +185,24 @@
         color: #222222 !important;
     }
 
-
+    .modal{
+        width: 500px;
+        height: 300px;
+        background-color: green;
+        position: absolute;
+        top: 0px;
+        z-index: 10;
+        display: none;
+    }
 </style>
+
+<div class="modal" id="modal">
+    <h1>MODAL NOTAS</h2>
+
+
+
+</div>
+
 <div class="row">
     <div class="columns large-6">
         <span class="label warning radius" style="font-weight: bold;">
@@ -404,7 +530,7 @@
                                             {% for cieval in ieval.cievals %}
                                                 {% if cieval %}
                                                     <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
-                                               {{ cieval.cevps.cev.texto }}" class="sb__{{ sb.sb.id }}">
+                                               {{ cieval.cevps.cev.texto }}" class="sb__{{ sb.sb.id }} cieval__{{ cieval.id }}">
                                                         {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
                                                         {{ cieval.cevps.cev.texto|truncatechars:10 }}
                                                     </th>
@@ -430,14 +556,42 @@
                                             {% for ieval in asap.ievals %}
                                                 {% for cieval in ieval.cievals %}
                                                     {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
-                                                        <td class="update_calalum sb__{{ sb.sb.id }}"
-                                                            data-cieval="{{ cieval.id }}"
-                                                            data-calalum="{{ calalum.id }}"
-                                                            data-cuaderno="{{ cuaderno.id }}"
-                                                            data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"
-                                                                {#                                                        id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
+                                                        <td datas class="update_calalum2 sb__{{ sb.sb.id }} cieval__{{ cieval.id }}"
+                                                            title="{{ calalum.obs }}"
+                                                                {# id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
                                                             id="valor_calalum{{ cieval.id }}_{{ alumno.id }}">
-                                                            {{ calalum.cal }}
+                    
+                    <!-- nueva forma meter calificaciones-->
+                    <div class="update_calalum2_data">
+                        <span class="data-valor">{{ calalum.cal }}</span>
+                        <span class="icon-obs {% if not calalum.obs %}hidden{% endif %}">
+                            <i class="fa fa-commenting-o" aria-hidden="true"></i>
+                        </span>
+                        
+                    </div>
+                    <div class="update_calalum2_form" style="display: none;">
+                        <div class="update_calalum2_form_block">
+                            <input data-valor type="text" value="{{ calalum.cal }}" id="cal_esvcn_text{{ calalum.id }}" />   
+                            <span class="postfix calificar update_esvcn" 
+                                data-calalum="{{ calalum.id }}" 
+                                data-ecpv="empty" 
+                                data-cieval="{{ cieval.id }}"
+                                data-calalum="{{ calalum.id }}"
+                                data-cuaderno="{{ cuaderno.id }}"
+                                data-alumno="{{ alumno.id }}">
+                                <i class="fa fa-check"></i>
+                            </span>
+                            <span data-calalum="{{ calalum.id }}" class="postfix delete delete_calalum_valores"><i class="fa fa fa-trash-o"></i></span>
+                            
+                            <span class="postfix cerrar update_calalum2_close"><i class="fa fa-times"></i></span>
+                        </div>
+                        <div class="update_calalum2_form_block">
+                            <textarea data-obs placeholder="Observacaciones ...">{{ calalum.obs }}</textarea>
+                        </div>
+                    </div>
+
+
+
                                                         </td>
                                                     {% endwith %}
                                                 {% endfor %}

@@ -3591,6 +3591,8 @@ def cuadernodocente(request):
                                      'asignatura': slugify(asignatura), 'cep': calalumce.cep.id})
             except:
                 return JsonResponse({'ok': False})
+        
+        # DEPRECATED. No guardamos la nota en dos pasos
         elif action == 'update_calalum':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3628,12 +3630,34 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
             except:
                 return JsonResponse({'ok': False})
+            
         elif action == 'update_esvcn':
+            # Params: cuaderno, cieval, alumno, calcalum, ecpv, valor
             try:
-                ca = CalAlum.objects.get(id=request.POST['calalum'])
+                ca = None # Inicializamos la variable para meter la calificación
+                
+                if request.POST['calalum']:
+                    # ca = CalAlum.objects.get(id=request.POST['calalum']) => evitor tratar la excepción MyModel.DoesNotExists:
+                    ca = CalAlum.objects.filter(id=request.POST['calalum']).first()
+                   
+                # Si no hay CalAlum, la creo partiendo del cuaderno, del alumno y del criterio
+                if not ca: 
+                    cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                    cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                    alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
+                    ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
+                    ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+
                 ca.calalumvalor_set.all().delete()
                 valor = max(0, min(10, float(request.POST['valor'])))
                 ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
+
+                # Guardamos observaciones si vienen
+                if request.POST['obs']:
+                    ca.obs = request.POST['obs']
+                    ca.save()
+                
                 for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
                     e.y = idx
                     e.save()
@@ -3641,15 +3665,20 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+            
         elif action == 'delete_calalum_valores':
             try:
                 ca = CalAlum.objects.get(id=request.POST['calalum'])
                 cieval = ca.cie.id
                 alumno = ca.alumno.id
+                ca.obs = "" # Quitamos también las observaciones
+                ca.save()
                 ca.calalumvalor_set.all().delete()
                 return JsonResponse({'ok': True, 'cieval': cieval, 'alumno': alumno})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        
+        # DEPRECATED
         elif action == 'update_obs':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
