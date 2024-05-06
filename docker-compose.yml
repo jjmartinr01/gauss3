@@ -49,6 +49,7 @@ services:
     networks:
       - gauss_network
     volumes:
+      - .:/var/www/python/gauss3/
       - static_volume:/var/www/python/gauss3/sitestatic
       - media_volume:/var/www/python/gauss3/media
 
