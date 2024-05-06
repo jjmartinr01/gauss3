@@ -46,13 +46,19 @@ RUN mkdir -p /var/www/python/gauss3/log \
     && mkdir -p /var/www/python/gauss3/media
 
 # Copy scripts and set permissions
-COPY ./scripts/cleanMigration.sh /cleanMigration.sh
-COPY ./scripts/worker_start.sh /start-celeryworker.sh
-COPY ./scripts/beat_start.sh /start-celerybeat.sh
-COPY ./scripts/django_start.sh /start-django.sh
+COPY ./scripts/cleanMigration.sh /usr/local/bin/cleanMigration.sh
+COPY ./scripts/re_migrations.sh /usr/local/bin/re_migrations.sh
+COPY ./scripts/worker_start.sh /usr/local/bin/start-celeryworker.sh
+COPY ./scripts/django_start.sh /usr/local/bin/start-django.sh
 
-RUN sed -i 's/\r$//g' /cleanMigration.sh /start-celeryworker.sh /start-celerybeat.sh /start-django.sh \
-    && chmod +x /cleanMigration.sh /start-celeryworker.sh /start-celerybeat.sh /start-django.sh
+RUN sed -i 's/\r$//g' /usr/local/bin/cleanMigration.sh \
+    /usr/local/bin/re_migrations.sh \
+    /usr/local/bin/start-celeryworker.sh \
+    /usr/local/bin/start-django.sh \
+    && chmod +x /usr/local/bin/cleanMigration.sh \
+    /usr/local/bin/re_migrations.sh \
+    /usr/local/bin/start-celeryworker.sh \
+    /usr/local/bin/start-django.sh
 
 # Copy settings file
 COPY gauss/settings.py /var/www/python/gauss3/gauss/settings.py
