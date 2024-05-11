@@ -3289,16 +3289,60 @@ def repositorio_sap(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-
+# Index
 # @permiso_required('acceso_cuaderno_docente')
-def cuadernodocente(request):
+def cuadernosdocentes(request):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
+    return render(request, "cuadernosdocentes.html",
+        {
+            'iconos':
+                ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
+                  'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
+                 ),
+            'g_e': g_e,
+            # Mostramos todos los cuadernos no borrados que tengan psec no barrada o que no tengan psec(nuevos)
+            'cuadernos': CuadernoProf.objects.filter(ge=g_e, borrado=False, psec__borrado=False) | CuadernoProf.objects.filter(ge=g_e, borrado=False, psec=None) ,
+            'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+        })
+
+# Get & Post
+# @permiso_required('acceso_cuaderno_docente')
+def cuadernodocente(request, id=None):
+    g_e = request.session['gauser_extra']
+    g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
+
+    if request.method == 'GET':
+        # Uso filter en vez de get para evitar el error si no existe el cuaderno
+        cuaderno = CuadernoProf.objects.filter(ge__gauser=g_e.gauser, id=id).first()
+        
+        if not cuaderno:
+            return redirect('/cuadernosdocentes/')
+
+        docentes = profesorado(g_e.ronda.entidad)
+        cuaderno.log += '%s %s %s\n' % ("Ver cuaderno "+str(id), now(), g_e)
+        cuaderno.save()
+        return render(request, "cuadernodocente.html",
+            {
+                'iconos':
+                    ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cuadernos docentes',
+                        'title': 'Volver a la lista de cuadernos docentes', 'permiso': 'libre'},
+                     ),
+                'g_e': g_e,
+                'cuaderno': cuaderno,
+                'docentes': docentes,
+            })
+
+            
+            
+  
+
     # Borrar definitivamente cuadernos borrados por los docentes la ronda anterior
     # CuadernoProf.objects.filter(borrado=True, ge__ronda__fin__lt=g_e.ronda.inicio).delete()
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'crea_cuaderno':
+            
             try:
                 # Comprobamos si el usuario tiene programaciones asociadas.
                 # Serán válidas tanto las de la entidad a la que pertenece, como de la entidad
@@ -3314,10 +3358,12 @@ def cuadernodocente(request):
                     return JsonResponse({'ok': False, 'msg': msg})
                 log = '%s %s %s\n' % (action, now(), g_e)
                 cuaderno = CuadernoProf.objects.create(ge=g_e, log=log)
-                html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno})
+                html = render_to_string('cuadernosdocentes_link.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+            
+        # DEPRECATED    
         elif action == 'open_accordion':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['id'])
@@ -3334,15 +3380,27 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+            
         elif action == 'borrar_cuadernoprof':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                
+                # Si el cuaderno no tiene programación asignada, lo borramos directamente porque se acaba de crear.
+                # De esta forma no guardamos cuadernos nuevos vacíos
+
+                if cuaderno.psec_id == None:
+                    cuaderno.delete()
+                    return JsonResponse({'ok': True, 'redirect': "/cuadernosdocentes/"})
+                
+                # Si el cuaderno tiene programación asignada, simplemente cambiamos el estado a borrado
                 cuaderno.borrado = True
                 cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
                 cuaderno.save()
-                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
-            except:
+                
+                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id, 'redirect': "/cuadernosdocentes/"})
+            except Exception as msg:
                 return JsonResponse({'ok': False})
+            
         elif action == 'copiar_cuadernoprof':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3369,6 +3427,7 @@ def cuadernodocente(request):
                     return JsonResponse({'ok': False, 'msg': str(msg)})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+            
         elif action == 'configura_cuaderno':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3384,9 +3443,10 @@ def cuadernodocente(request):
                         for cevp in cep.cevprogsec_set.all():
                             CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevp)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
-                return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
+                return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre, 'redirect': '/cuadernodocente/%s/'%(cuaderno.id)})
             except:
                 return JsonResponse({'ok': False})
+            
         elif action == 'select_asignar_cuaderno':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3395,7 +3455,7 @@ def cuadernodocente(request):
                     cuaderno.ge = ge
                     cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, ge.gauser)
                     cuaderno.save()
-                    return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
+                    return JsonResponse({'ok': True, 'redirect': '/cuadernosdocentes/' })
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
             except Exception as msg:
@@ -3735,18 +3795,7 @@ def cuadernodocente(request):
                                      'num_alumnos': cuaderno.alumnos.all().count()})
             except:
                 return JsonResponse({'ok': False})
-    return render(request, "cuadernodocente.html",
-                  {
-                      'formname': 'cuadernodocente',
-                      'iconos':
-                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
-                            'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
-                           ),
-                      'g_e': g_e,
-                      'cuadernos': CuadernoProf.objects.filter(ge=g_e, borrado=False, psec__borrado=False),
-                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                  })
-
+    
 
 def carga_edrubrics(id):
     s = requests.Session()

@@ -84,7 +84,7 @@ MENU_DEFAULT = [
      },
     {'code_menu': 'acceso_cuaderno_docente',
      'texto_menu': 'Cuadernos docentes',
-     'href': 'cuadernodocente',
+     'href': 'cuadernosdocentes',
      'nivel': 2,
      'tipo': 'Accesible',
      'pos': 10,

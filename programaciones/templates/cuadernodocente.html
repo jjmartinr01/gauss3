@@ -4,8 +4,26 @@
 {% block contenido %}
     <style>
         .title_page {
-            text-align: center;
-            color: #008CBA;
+            margin: 20px 0px;
+            font-weight: bold;
+            font-size: 1.4em;
+            border-bottom: 1px solid #EFEFEF;
+            padding-bottom: 10px;
+        }
+
+        .title_page span.cuaderno-id {
+            font-size: 0.8em;
+            color: #9e9e9e;
+            float: right;
+        }
+
+        .cuaderno-borrado {
+            background-color: #f04124;
+            padding: 5px;
+            margin: 10px 0px;
+            text-align: left;
+            font-weight: bold;
+            color: white;
         }
 
         .ckeditor {
@@ -13,91 +31,43 @@
             min-height: 100px;
         }
     </style>
-    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
-        {% csrf_token %}
-        <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="">
-        <input type="hidden" id="id_cieval" name="id_cieval" value="">
-        <input type="hidden" id="id_alumno" name="id_alumno" value="">
-        <div id="title_page_cuadernos_docentes">
-            <h4 class="title_page"><strong>Cuadernos de docente asociados a programaciones didácticas</strong></h4>
-        </div>
 
-        <div id="contenido_cuadernos">
-            <br>
-            <dl class="accordion" data-accordion id="list_cuadernos">
-{#                {% for cuaderno in g_e.cuaderno_docente_set.all %}#}
-{#                    {% if not cuaderno.borrado %}#}
-{#                        {% include 'cuadernodocente_accordion.html' %}#}
-{#                    {% endif %}#}
-{#                {% endfor %}#}
-                {% for cuaderno in cuadernos %}
-                    {% include 'cuadernodocente_accordion.html' %}
-                {% endfor %}
-            </dl>
-        </div>
-        <div id="define_ecp" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
-             role="dialog">
-            <input type="hidden" id="id_instreval" value="">
-            <div id="content_ecp"></div>
-            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-        </div>
-    </form>
+    <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="{{cuaderno.id}}">
+    <!--input type="hidden" id="id_cieval" name="id_cieval" value="">
+    <input type="hidden" id="id_alumno" name="id_alumno" value=""-->
+
+
+    <div id="title_page_cuadernos_docentes">
+        <h4 class="title_page">
+            {% if not cuaderno.grupo and cuaderno.alumnos.all|length == 0 %}<span style="color:red">Nuevo cuaderno</span>
+            {% else %}{{ cuaderno.nombre }}{% endif %}
+            <span class="cuaderno-id">Id: {{ cuaderno.id }}</span>
+        </h4>
+        {% if cuaderno.borrado %}<div class="cuaderno-borrado">Cuaderno borrado</div>{% endif %}
+    </div>
+    <div id="contenido_cuadernos">
+        {% include 'cuadernodocente_content.html' %}
+    </div>
+    <div id="define_ecp" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
+         role="dialog">
+        <input type="hidden" id="id_instreval" value="">
+        <div id="content_ecp"></div>
+        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+    
 {% endblock %}
 
 {% block final %}
     <script>
-        {# $('#tabla11').animate({scrollLeft: $('#sb1').position().left - $('#fixed_column11').width() - 30}, 200); #}
-        {# Mover horizontalmente la tabla#}
-        {% if g_e|has_permiso:"crea_programaciones" %}
-            habilita(['s_plus']);
-            $('#plus_sign').click(function (event) {
-                event.preventDefault();
-                $.post('/cuadernodocente/', {'action': 'crea_cuaderno'},
-                    function (data) {
-                        if (data.ok) {
-                            $('#list_cuadernos').append(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                        {#$(document).scrollTop($('#title_page').offset().top - 150);#}
-                    });
-            });
-        {% endif %}
 
-        $(document).foundation({
-            accordion: {
-                callback: function (accordion) {
-                    if (accordion.hasClass('accordion-cuaderno')) {
-                        var id = accordion.data('id');
-                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
-                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post('/cuadernodocente/', {action: 'open_accordion', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#panel' + id).html(data.html);
-                                        {#destroyEditorInstances();#}
-                                        {#constructInlineEditorInstances(id);#}
-                                        $('#id_cuaderno').val(id);
-                                        {# utilizado para generar pdf #}
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        } else {
-                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#panel' + id).html('');
-                            $('#id_cuaderno').val('');
-                        }
-                    }
-                }
-            }
+        // Mostamos el botón de volver al list_cuadernos
+        habilita(['s_arrow-left']);
+        $('#arrow-left_sign').click(function (event) {
+            event.preventDefault();
+            location.href ="/cuadernosdocentes/";
         });
-
+    
+        // Funcionalidad: Borrar cuaderno profesor
         $('body').on('click', '.borrar_cuadernoprof', function (e) {
             show_mensajes({
                 title: '<i class="fa fa-warning"></i> ¿Borrar a este cuaderno docente?',
@@ -114,8 +84,7 @@
                             },
                             function (data) {
                                 if (data.ok) {
-                                    $("#accordion" + data.cuaderno).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    location.href = data.redirect;
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
                                 }
@@ -125,6 +94,7 @@
             });
         });
 
+        //DEPRECATED
         $('#Contenido').on('click', '.copiar_cuadernoprof', function (e) {
             $.post('/cuadernodocente/', {
                     action: 'copiar_cuadernoprof', cuaderno: $('#id_cuaderno').val()
@@ -139,6 +109,7 @@
                 });
         });
 
+        // Funcionalidad: Asignar cuaderno profesor
         $('body').on('click', '.asignar_cuadernoprof', function (e) {
             e.preventDefault();
             var cuaderno = $('#id_cuaderno').val();
@@ -169,8 +140,7 @@
                             },
                             function (data) {
                                 if (data.ok) {
-                                    $('#accordion' + element.data('cuaderno')).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    location.href = data.redirect;
                                 } else {
                                     $('#update_error').show().delay(1500).fadeOut();
                                 }
@@ -180,6 +150,8 @@
             });
         });
 
+
+        // Funcionalidad: Configuración inicial del cuaderno
         $('body').on('change', '.select_psec', function () {
             var element = $(this);
             var cuaderno = element.data('cuaderno');
@@ -209,15 +181,15 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#panel' + cuaderno).html(data.html);
-                        $('#nombre' + cuaderno).html(data.nombre);
-                        $("#update_ok").show().delay(1500).fadeOut();
+                        location.href = data.redirect;
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
 
+
+        // Funcionalidad: Full screen
         var cuaderno_full_screen = false;
         $(document).on('click', '.cuaderno_full_screen', function (e) {
             e.preventDefault();
@@ -260,27 +232,8 @@
                 });
         });
 
-        {#$('#Contenido').on('mouseenter', '.create_calalumn', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var element = $(this);#}
-        {#    var cuaderno = element.data('cuaderno');#}
-        {#    var cieval = element.data('cieval');#}
-        {#    var ge = element.data('ge');#}
-        {#    $.post('/cuadernodocente/', {#}
-        {#            action: 'create_calalumn', cuaderno: cuaderno, cieval: cieval, ge: ge#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                element.removeClass('create_calalumn').addClass('update_calalum');#}
-        {#                element.html(data.cal);#}
-        {#                element.prop('contenteditable', 'true');#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $('#update_error').show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
 
+        // Funcionalidad: Definir escala de valoración del instrumento
         $('#Contenido').on('click', '.define_ecp', function (e) {
             e.preventDefault();
             var ieval = $(this).data('ieval');
@@ -492,7 +445,7 @@
             }
         });
 
-        /** Nueva forma meter notas*/
+        // Funcionalidad: Asignar notas en cuadernos tipo PROCEDIMIENTOS
         $('body').on('click', '.update_calalum2_data', function (e) {
             e.preventDefault();
             
@@ -521,9 +474,10 @@
             $("th.selected").removeClass("selected");
         });
 
-        /** Fin Nueva forma meter notas*/
 
-
+        //DEPRECATED: PARA PASAR DE ALUMNO UNA VEZ INTRODUCIDO UNA PRESIONADO ENTER
+        
+        /**
         $(window).keydown(function (e) {
             var element = $('#id_alumno');
             var alumno = element.val();
@@ -538,7 +492,7 @@
                 element.val(prox_alumno);
                 set_update_calalum();
             }
-        });
+        });Ç*/
 
         $('body').on('click', '.update_esvcl', function (e) {
             e.preventDefault();
@@ -588,7 +542,6 @@
         });
 
 
-        /* Nueva forma meter notas*/
         $('body').on('click', '.update_esvcn', function (e) {
             var element = $(this);
             let cuaderno = element.data('cuaderno');
@@ -743,6 +696,8 @@
             }, 750);
         });
 
+
+        // Funcionalidad: Asignar notas en cuadernos tipo CRITERIOS y COMPETENCIAS
         $('body').on('change keyup', '.update_calalumce', function (e) {
             e.preventDefault();
             var element = $(this);
@@ -915,6 +870,10 @@
             $(this).find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
             $(this).find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono
         });
+
+
     </script>
 
 {% endblock %}
+
+
