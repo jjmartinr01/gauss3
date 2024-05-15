@@ -36,15 +36,6 @@ ENV LC_ALL es_ES.UTF-8
 COPY --from=builder /usr/local/lib/python3.7/site-packages/ /usr/local/lib/python3.7/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
-# Copy application code
-COPY / /var/www/python/gauss3
-
-# Set up directories
-RUN mkdir -p /var/www/python/gauss3/log \
-    && touch /var/www/python/gauss3/log/logGaussDomotica.log \
-    && mkdir -p /var/www/python/gauss3/sitestatic \
-    && mkdir -p /var/www/python/gauss3/media
-
 # Copy scripts and set permissions
 COPY ./scripts/cleanMigration.sh /usr/local/bin/cleanMigration.sh
 COPY ./scripts/re_migrations.sh /usr/local/bin/re_migrations.sh
@@ -60,9 +51,7 @@ RUN sed -i 's/\r$//g' /usr/local/bin/cleanMigration.sh \
     /usr/local/bin/start-celeryworker.sh \
     /usr/local/bin/start-django.sh
 
-# Copy settings file
-COPY gauss/settings.py /var/www/python/gauss3/gauss/settings.py
-
+RUN mkdir -p /var/www/python/gauss3/
 # Switch to non-root user
 RUN adduser -u 5678 --disabled-password --gecos "" appuser \
     && chown -R appuser /var/www/python/gauss3/
@@ -74,9 +63,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Expose port
 EXPOSE 8000
-
-# Run Django collectstatic
-RUN python /var/www/python/gauss3/manage.py collectstatic --noinput
 
 # Set working directory
 WORKDIR /var/www/python/gauss3

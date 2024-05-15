@@ -1,7 +1,6 @@
 services:
   postgres-gauss:
-    #TODO Which Version?
-    image: postgres
+    image: postgres:16-alpine
     container_name: postgres-gauss
     volumes:
       - postgres-gauss:/var/lib/postgresql/data
@@ -66,6 +65,7 @@ services:
       - gauss_network
     volumes:
       - media_volume:/var/www/python/gauss3/media
+      - .:/var/www/python/gauss3/
     deploy:
       mode: replicated
       replicas: 3 #change number depending number of istances
