@@ -23,6 +23,10 @@
             color: #333333;
         }
 
+        .cuadernos a.borrado {
+            background-color: rgb(255, 204, 204);
+        }
+
         .cuadernos a:hover {
             background-color: #EFEFEF;
             color: #008CBA;
@@ -54,7 +58,7 @@
         {# $('#tabla11').animate({scrollLeft: $('#sb1').position().left - $('#fixed_column11').width() - 30}, 200); #}
         {# Mover horizontalmente la tabla#}
         {% if g_e|has_permiso:"crea_programaciones" %}
-            habilita(['s_plus']);
+            habilita(['s_plus', 's_eye']);
             $('#plus_sign').click(function (event) {
                 console.log("trato de crear cuaderno");
                 event.preventDefault();

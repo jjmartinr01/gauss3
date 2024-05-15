@@ -131,6 +131,7 @@
                 diferentes cantidades.</p>
         </div>
     </div>
+
     <div class="row">
         <div class="columns large-12" id="tabla_ecp">
             <table style="width: 100%;">
@@ -220,24 +221,30 @@
     <div class="row">
         <div class="columns large-12">
             <p style="color: grey;">Con este tipo de valoración solo deberás introducir una cantidad numérica para
-                calificar, o hacer click sobre alguna de las cantidades indicadas.</p>
+                calificar.</p>
         </div>
     </div>
 
-    {% for ecpv in ecp.escalacpvalor_set.all %}
-        <div class="columns large-1">
+
+    {# for ecpv in ecp.escalacpvalor_set.all #}
+        <!--- div class="columns large-1">
             <a type="text" data-ecp="{{ ecp.id }}" class="button tiny update_esvcn"
             data-cieval=""><b>{{ ecpv.valor }}</b></a>
-        </div>
-    {% endfor %}
+        </div -->
+    {# endfor #}
 
-    <div class="row">
+    <!-- 
+        
+        ¿QUÉ SENTIDO TIENE ESTA ACCIÓN. ES ALGO GENÉRICO A NIVEL DE PROCEDIMIENTO. 
+
+        div class="row">
         <div class="columns large-12">
             <label>Calificación numérica asignada
                 <input type="text" data-ecp="{{ ecp.id }}" value="" data-cieval="" class="update_esvcn">
             </label>
         </div>
-    </div>
+    </div -->
+
     <div class="row">
         <div class="columns large-5">
             &nbsp;

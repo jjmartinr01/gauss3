@@ -12,6 +12,14 @@
         font-weight: bold;
     }
 
+    .materia-curso {
+        color: #f08a24;
+        border-radius: 3px;
+        font-size: 1.1em;
+        font-weight: bold;
+        display: inline-block;
+    }
+
     /* First column and header table fixed */
     .tabla_cuaderno {
         white-space: nowrap;
@@ -19,7 +27,7 @@
         width: 100%;
         overflow-x: auto;
         display: block;
-        height: 600px;
+        max-height: 500px;
         
     }
 
@@ -35,33 +43,60 @@
         z-index: 5 !important;
         background: #F5F5F5;
     }
+
+
+    .tabla_cuaderno tr.tr_color_actividades th:nth-child(odd) {
+        background-color: #b4e9fb;
+    }
+    .tabla_cuaderno tr.tr_color_actividades th:nth-child(even) {
+        background-color: #7edfff;
+    }
+
     /* First column and header table fixed */
 
      
     .tabla_cuaderno th, .tabla_cuaderno td {
         text-align: center !important;
+        width: 120px;
+    }
+
+    .tabla_cuaderno th {
+        font-size: 0.8em;
+        padding: 6px 6px;
     }
 
     .tabla_cuaderno td.alumno {
         text-align: left !important;
+        font-size: 0.9em !important;
     }
+
 
     .tabla_cuaderno td.alumno span.firstname {
         color: gray;
     }
 
-    /* Nueva forma d emeter notas */
-    .update_calalum2 {
+    /*  Nueva forma de emeter notas 
+        Estilos de : 'cuadernodocente_accordion_content_calalum_2.html'
+    */
+    .edit_calalumn {
         padding: 0;
+        margin: 0;
     }
 
-    .update_calalum2_data{
+    .edit_calalumn.editing  > .edit_calalumn_data {
+        background-color: #fac289;
+        border: 2px solid #f08a24;
+        
+    }
+
+    .edit_calalumn_data{
         height: 40px;
         padding: 10px;
         position: relative;
+        transition: background-color 0.5s ease;
     }
 
-    .update_calalum2_data span.icon-obs {
+    .edit_calalumn_data span.icon-obs {
         font-size: 0.8em;
         position: absolute;
         top: 3px; 
@@ -69,90 +104,23 @@
         color: #008CBA;
     }
 
-    .update_calalum2_data span.hidden {
+    .edit_calalumn_data span.hidden {
         display: none;
     }
 
-    .update_calalum2_data:hover {
+    .edit_calalumn_data:hover {
         cursor: pointer;
-        background-color: #f08a24;
-        transition: background-color 0.5s ease;
-    }
-
-    .update_calalum2_form input{
-        text-align: center;
-    }
-
-    .update_calalum2{
-        position: relative;
-    }
-
-    .update_calalum2_form {
-        width: 300px;
-        position: absolute;
-        top: -3px; left: -3px;
-        z-index: 11;
         background-color: #fac289;
-        padding: 10px;
-        border-radius: 3px;
+        
     }
 
-    .update_calalum2_form_block {
-        margin-bottom: 3px;
-        overflow: hidden;
-    }
-    .update_calalum2_form_block > span,  .update_calalum2_form_block > input {
-        float: left;
-    }
-
-    .update_calalum2_form input {
-        width: 120px;
-        border: 3px solid #f08a24;
-        margin-right: 10px;
-    }
-
-    .update_calalum2_form span {
-        width: 30px;
-    }
-    .update_calalum2_form textarea {
-        width: 100%;
-    }
-
-    .update_calalum2_form span.postfix {
-        cursor: pointer;
-        transition: color 1s ease;
-        transition: background-color 0.5s ease;
-    }
-
-    .update_calalum2_form span.calificar {
-        background-color: #007095;
-        color: white;
-        width: 60px;
-    }
-
-    .update_calalum2_form span.calificar:hover {
-        background-color: #024b63;
-    }
-
-    .update_calalum2_form span.delete {
-        margin-left: 20px;
-    }
-    .update_calalum2_form span.delete:hover {
-        background-color: #cf2a0e;
-        color: white;
-    }
-
-    .update_calalum2_form span.cerrar {
-        float: right;
-        cursor: pointer;
-        border: 1px solid #cccccc;
-    }
-
-    .update_calalum2_data.highlight {
+    .edit_calalumn_data.highlight {
         background-color: white;
         animation-name: data_updated;
         animation-duration: 2s;
-     }
+    }
+
+
     
     @keyframes data_updated {
       from { background-color: #fac289; }
@@ -174,10 +142,15 @@
         margin-bottom: 6px;
         margin-right: 6px;
         display: inline-block;
-        padding: 6px 8px;
+        padding: 4px 6px;
         border-radius: 3px;
         background-color: #008CBA !important;
         color: white !important;
+        transition: background 0.3s ease;
+    }
+
+    .ver_ocultar_sb span:hover {
+        background-color: #00485f !important;
     }
     .ver_ocultar_sb span.disabled {
         background-color: white !important;
@@ -185,37 +158,49 @@
         color: #222222 !important;
     }
 
-    .modal{
-        width: 500px;
-        height: 300px;
-        background-color: green;
-        position: absolute;
-        top: 0px;
-        z-index: 10;
-        display: none;
-    }
 </style>
 
-<div class="modal" id="modal">
-    <h1>MODAL NOTAS</h2>
+{% include 'cuadernodocente_content_modal.html' %}
 
-
-
-</div>
-
-<div class="row">
-    <div class="columns large-6">
-        <span class="label warning radius" style="font-weight: bold;">
+<div class="row" style="max-width: 100%;">
+    <div class="columns large-6" style="padding: 0;">
+        <span class="materia-curso">
             {{ cuaderno.psec.areamateria.nombre }} ({{ cuaderno.psec.areamateria.get_curso_display }})
         </span>
     </div>
     <div class="columns large-6">
         <ul class="button-group right">
-            <li><a title="Asignar el cuaderno a otro docente"
-                   class="button asignar_cuadernoprof tiny"><i class="fa fa-user"></i><i
-                    class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar</a></li>
-            <li><a title="Borrar este cuaderno docente de la base de datos"
-                   class="button alert borrar_cuadernoprof tiny"><i class="fa fa-trash-o"></i> Borrar</a></li>
+            <li style="margin-right: 20px;">
+                <a class="button tiny cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa">
+                    <span><i class="fa fa-external-link"></i> Pantalla completa</span>
+                    <span style="display: none;"><i class="fa fa-compress" aria-hidden="true"></i></i> Ajustar pantalla</span>
+             </a>
+            </li>
+
+            <li style="margin-right: 20px;">
+                {% if cuaderno.vista == "NOR" %}
+                    <a class="button tiny cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM" title="Ir a la vista de calificaciones por competencias específicas">
+                        <i class="fa fa-exchange"></i> Competencias
+                    </a>
+                {% else %}
+                    <a class="button tiny cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR" title="Ir a la vista de calificaciones por competencias específicas">
+                        <i class="fa fa-exchange"></i> Notas
+                    </a>
+                {% endif %}
+            </li>
+
+
+            <li>
+                <a title="Asignar el cuaderno a otro docente" class="button asignar_cuadernoprof tiny"><i class="fa fa-user"></i><i class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar
+                </a>
+            </li>
+            
+            <li>
+                <a title="Borrar este cuaderno docente de la base de datos" class="button alert borrar_cuadernoprof tiny" accion="{% if cuaderno.borrado %}recuperar{% else %}borrar{% endif %}">
+                <i class="fa fa-trash-o"></i> 
+                    {% if cuaderno.borrado %} Recuperar {% else %} Borrar {% endif %}
+                </a>
+            </li>
             {#                <li><a title="Hacer una copia (un duplicado) de este cuaderno docente"#}
             {#                       class="button copiar_cuadernoprof tiny"><i class="fa fa-copy"></i> Copiar</a></li>#}
             {#                <li><a class="button pdf_ie tiny" data-id="{{ ie.id }}"#}
@@ -451,7 +436,16 @@
     {% elif cuaderno.tipo == 'PRO' %}
         {% if cuaderno.vista == 'NOR' %}
             {#{% elif cuaderno %}#}
+           
             {% with estructura_cuaderno=cuaderno.estructura_cuaderno %}
+                <div class="ver_ocultar_sb_group">
+                    <a class="ver_ocultar_sb ver_ocultar_all" data-toggle="show-all"
+                           title="Mostrar/ocultar todos">
+                                <span class="label info" style="font-weight: bold;">
+                                    <i class="fa fa-eye"></i> TODOS
+                                </span>
+                    </a>
+                
                 {% for sb in estructura_cuaderno %}
                     <a class="ver_ocultar_sb" data-toggle="sb__{{ sb.sb.id }}"
                        title="Mostrar/ocultar {{ sb.sb.nombre }}">
@@ -460,6 +454,8 @@
                             </span>
                     </a>
                 {% endfor %}
+                </div>
+
                 <div class="div_table{{ cuaderno.id }}">
                     <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
                         <thead>
@@ -482,11 +478,11 @@
                             </th>
                             {% for sb in estructura_cuaderno %}
                                 <th colspan="{{ sb.sb_columns }}" id="sb{{ forloop.counter }}"
-                                    class="sb__{{ sb.sb.id }}"
+                                    class="sb__{{ sb.sb.id }} th_color_saberes"
                                     title="{{ sb.sb.nombre }}">{{ sb.sb.nombre|truncatechars:160 }}</th>
                             {% endfor %}
                         </tr>
-                        <tr>
+                        <tr class="tr_color_saps">
                             {% for sb in estructura_cuaderno %}
                                 {% for sap in sb.saps %}
                                     <th colspan="{{ sap.sap_columns }}" class="sb__{{ sb.sb.id }}"
@@ -494,7 +490,7 @@
                                 {% endfor %}
                             {% endfor %}
                         </tr>
-                        <tr>
+                        <tr class="tr_color_actividades">
                             {#                <th class="fixed_column"></th>#}
                             {% for sb in estructura_cuaderno %}
                                 {% for sap in sb.saps %}
@@ -516,6 +512,12 @@
                                                    data-cuaderno="{{ cuaderno.id }}">
                                                     {{ ieval.ieval.nombre|truncatechars:20 }}
                                                 </a>
+                                                {% with ecp=ieval.ieval|escala_del_instrumento_en_el_cuaderno:cuaderno %}
+                                                    {% if ecp|tiene_rubrica %}
+                                                        {% include 'cuadernodocente_content_rubrica.html' %}
+                                                    {% endif %}
+                                                {% endwith %}
+
                                             </th>
                                         {% endfor %}
                                     {% endfor %}
@@ -529,8 +531,12 @@
                                         {% for ieval in asap.ievals %}
                                             {% for cieval in ieval.cievals %}
                                                 {% if cieval %}
-                                                    <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
-                                               {{ cieval.cevps.cev.texto }}" class="sb__{{ sb.sb.id }} cieval__{{ cieval.id }}">
+                                                    <th 
+                                                    title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-{{ cieval.cevps.cev.texto }}"
+                                                    data-cieval-id="{{ cieval.id }}"
+                                                    data-cieval-numero="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}"
+                                                    data-cieval-texto="{{ cieval.cevps.cev.texto }}"
+                                                    class="sb__{{ sb.sb.id }} cieval__{{ cieval.id }}">
                                                         {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
                                                         {{ cieval.cevps.cev.texto|truncatechars:10 }}
                                                     </th>
@@ -546,7 +552,10 @@
                         </thead>
                         <tbody id="tbody_cuaderno{{ cuaderno.id }}">
                         {% for alumno in cuaderno.alumnos.all %}
-                            <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                            <tr id="tr_alumno{{ alumno.id }}" 
+                                    data-alumno="{{ alumno.id }}"
+                                    data-alumno-firstname="{{ alumno.gauser.first_name }}"
+                                    data-alumno-lastname="{{ alumno.gauser.last_name }}">
                                 <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
                                     <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</</b>
                                 </td>
@@ -555,44 +564,10 @@
                                         {% for asap in sap.asaps %}
                                             {% for ieval in asap.ievals %}
                                                 {% for cieval in ieval.cievals %}
-                                                    {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
-                                                        <td datas class="update_calalum2 sb__{{ sb.sb.id }} cieval__{{ cieval.id }}"
-                                                            title="{{ calalum.obs }}"
-                                                                {# id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
-                                                            id="valor_calalum{{ cieval.id }}_{{ alumno.id }}">
-                    
-                    <!-- nueva forma meter calificaciones-->
-                    <div class="update_calalum2_data">
-                        <span class="data-valor">{{ calalum.cal }}</span>
-                        <span class="icon-obs {% if not calalum.obs %}hidden{% endif %}">
-                            <i class="fa fa-commenting-o" aria-hidden="true"></i>
-                        </span>
-                        
-                    </div>
-                    <div class="update_calalum2_form" style="display: none;">
-                        <div class="update_calalum2_form_block">
-                            <input data-valor type="text" value="{{ calalum.cal }}" id="cal_esvcn_text{{ calalum.id }}" />   
-                            <span class="postfix calificar update_esvcn" 
-                                data-calalum="{{ calalum.id }}" 
-                                data-ecpv="empty" 
-                                data-cieval="{{ cieval.id }}"
-                                data-calalum="{{ calalum.id }}"
-                                data-cuaderno="{{ cuaderno.id }}"
-                                data-alumno="{{ alumno.id }}">
-                                <i class="fa fa-check"></i>
-                            </span>
-                            <span data-calalum="{{ calalum.id }}" class="postfix delete delete_calalum_valores"><i class="fa fa fa-trash-o"></i></span>
-                            
-                            <span class="postfix cerrar update_calalum2_close"><i class="fa fa-times"></i></span>
-                        </div>
-                        <div class="update_calalum2_form_block">
-                            <textarea data-obs placeholder="Observacaciones ...">{{ calalum.obs }}</textarea>
-                        </div>
-                    </div>
-
-
-
-                                                        </td>
+                                                    {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno ecp=ieval.ieval|escala_del_instrumento_en_el_cuaderno:cuaderno %}
+                                                        {% with tipo_ecp=ecp|tipo_de_escala_del_instrumento_en_el_cuaderno %}
+                                                            {% include 'cuadernodocente_content_calalum.html' %}
+                                                        {% endwith %}
                                                     {% endwith %}
                                                 {% endfor %}
                                             {% endfor %}
@@ -694,7 +669,3 @@
         {% endif %}
     {% endif %}
 {% endif %}
-
-{#<script>#}
-{#$('.sb___').hide();#}
-{#</script>#}

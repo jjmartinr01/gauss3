@@ -59,6 +59,55 @@
         line-height: inherit;
 
     }
+
+
+    /* <div class="bar-loader" id="ajax-loader"><div class="bar-loader-animation"></div></div>*/
+    .bar-loader { 
+        height: 6px;
+        width:100%;
+    }
+    .bar-loader-animation {
+        height: 6px;
+        width: 100%;
+        --c:no-repeat linear-gradient(#8ac8dd 0 0);
+        background: var(--c),var(--c),#008CBA;
+        background-size: 60% 100%;
+        animation: l16 3s infinite;
+    }
+    @keyframes l16 {
+      0%   {background-position:-150% 0,-150% 0}
+      66%  {background-position: 250% 0,-150% 0}
+      100% {background-position: 250% 0, 250% 0}
+    }
+
+    .update_icon {
+        background-color: white;
+        border-radius: 50px;
+        font-size: 0.9em;
+        height: 100px;
+        width: 100px;
+        padding-top: 10px;
+        webkit-box-shadow: -1px 2px 64px 0px rgba(0,0,0,0.75);
+        -moz-box-shadow: -1px 2px 64px 0px rgba(0,0,0,0.75);
+        box-shadow: -1px 2px 64px 0px rgba(0,0,0,0.75);
+        text-align: center;
+        position:fixed;
+        right: 20px;
+        top:40px;
+        display: none;
+    }
+
+    #update_ok {
+        color: green;
+        border: 3px solid green;
+    }
+    #update_error {
+        color: red;
+        border: 3px solid red;
+        font-size: 0.8em;
+    }
+
+        
 </style>
 <input type="hidden" name="hay_avisos" id="hay_avisos" value="0">
 <input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">
@@ -72,19 +121,24 @@
                     <i class="fa fa-male fa-fw"></i>
                 {% else %}
                     <i class="fa fa-female fa-fw"></i>
-                {% endif %}{{ request.session.gauser_extra.gauser.get_full_name }}</p>
+                {% endif %}{{ request.session.gauser_extra.gauser.get_full_name }}
+                
+                {% if request.session.is_superuser %}<i class="fa fa-bolt"></i>{% endif %}
+            </p>
 
             <p class="cabecera" title="{% for subentidad in request.session.gauser_extra.subentidades.all %}
                 {{ subentidad.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}"><i
                     class="fa fa-users fa-fw"></i>
                 {{ request.session.gauser_extra.subentidades.all.0.nombre }}
-                {% if request.session.gauser_extra.subentidades.all|length > 1 %}...{% endif %}</p>
+                {% if request.session.gauser_extra.subentidades.all|length > 1 %}...{% endif %}
+            </p>
 
             {% if request.session.gauser_extra.cargos.all|length > 0 %}
                 <p class="cabecera" title="{% for cargo in request.session.gauser_extra.cargos.all %}
                     {{ cargo.cargo }}{% if not forloop.last %}, {% endif %}{% endfor %}">
                     <i class="fa fa-briefcase fa-fw"></i> {{ request.session.gauser_extra.cargos.all.0.cargo }}
-                    {% if request.session.gauser_extra.cargos.all|length > 1 %}...{% endif %}</p>
+                    {% if request.session.gauser_extra.cargos.all|length > 1 %}...{% endif %}
+                </p>
             {% endif %}
         </div>
         <div class="columns large-6 medium-6 small-6 cabecera_gauss2" style="padding-top:3px;height:43px;">
@@ -212,6 +266,19 @@
             </section>
         </nav>
     </div>
+
+    <!-- Loader elements-->
+    <div class="bar-loader"><div class="bar-loader-animation" id="ajax-loader"></div></div>
+
+    <div id="update_ok" class="update_icon">
+        <i class="fa fa-check fa-5x"></i>
+    </div>
+
+    <div id="update_error" class="update_icon">
+        <i class="fa fa-warning fa-5x"></i>
+    </div>
+    <!-- Fin Loader elements-->
+
 
     <div class="inner-wrap">
         <aside class="left-off-canvas-menu">
@@ -357,15 +424,18 @@
     <a class="close-reveal-modal">&#215;</a>
 </div>
 
-<div style="color:red;position:fixed;right: 20px;top:40px;display: none;" id="update_error">
+<!--div style="color:red;position:fixed;right: 20px;top:40px;display: none;" id="update_error">
     <i class="fa fa-warning fa-5x"></i>
 </div>
 <div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="update_ok">
     <i class="fa fa-check fa-5x"></i>
-</div>
-<div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="ajax-loader">
+</div-->
+<!-- div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="ajax-loader">
     <i class="fa fa-spinner fa-pulse fa-5x"></i>
-</div>
+</div 
+ Cambiado por:  <div class="bar-loader" id="ajax-loader"></div>
+-->
+
 
 <!-- Footer -->
 

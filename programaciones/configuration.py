@@ -2,6 +2,25 @@
 from __future__ import unicode_literals
 
 # El code_menu debe ser único y se configurará como un permiso del sistema
+# 
+# Nota:
+# g_e.has_permiso('ve_cuadernos_borrados_por_usuario'):
+#   
+#  0) Añado el siguiente permiso en el array de PERMISOS de abajo
+#   {'code_nombre': 've_cuadernos_borrados_por_usuario',
+#    'nombre': 'Puede ver cuadernos borrados por el usuario',
+#    'menu': 'acceso_cuaderno_docente'
+#    }
+#  1) Voy a Gauss > Actualizar los configuration.py
+#  2) Seleccionar la configuración PROGRAMACIONES para que se actualicen los campos a nivel de BBDD      
+#  3) Ahora en Configuración > Establecer perfiles y permisos de usuarios
+#   SECCIÓN PROGRAMACIONES DIDÁCTICAS
+#       CUADERNOS DOCENTES
+#           Aparece > Puede ver cuadernos borrados por el usuario
+#  4) En esta sección asigno el permiso
+#  5) En las views puedo chequear el permiso así: g_e.has_permiso('ve_cuadernos_borrados_por_usuario'):
+#  6) En las templates tengo que utilizar filtros: ge|has_permiso:"ve_cuadernos_borrados_por_usuarios"
+
 MENU_DEFAULT = [
     {'code_menu': 'acceso_programaciones_didacticas',
      'texto_menu': 'Programación General Anual',
