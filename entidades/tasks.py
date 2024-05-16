@@ -84,7 +84,6 @@ def crear_nombre_usuario(nombre, apellidos):
             valid_usuario = True
     return username
 
-
 # 'username_tutor2': '', 'username_tutor1': '', 'username': ''
 def create_usuario(datos, ronda, tipo):
     dni = genera_nie(datos['dni' + tipo]) if len(datos['dni' + tipo]) > 6 else 'DNI inventado generar error en el try'
@@ -123,24 +122,22 @@ def create_usuario(datos, ronda, tipo):
         except ObjectDoesNotExist:
             logger.warning('No existe Gauser con dni %s' % dni)
             try:
-                gauser_extra = Gauser_extra.objects.get(id_entidad=datos['id_socio'], ronda=ronda)
-                gauser = gauser_extra.gauser
-                # if username != username_inventado:
-                #     gauser.username = username
-                # Si username es igual a username_inventado es porque Racima no ha generado un usuario,
-                # por tanto, asignaremos uno que no tenga la estructura de Racima y evitar confusiones.
-                logger.warning('Encontrado Gauser y Gauser_extra con id_socio %s' % (datos['id_socio']))
-                try:
-                    gauser.username = username
-                    gauser.dni = dni
-                    if not tipo:
-                        gauser.educa_pk = datos['id_socio']
-                    gauser.save()
-                except:
-                    m1 = 'Encontrado Gauser y Gauser_extra con id_socio %s. ' % (datos['id_socio'])
-                    m2 = 'Error username %s ya esta en uso y no puede volver a asignarse' % username
-                    return m1 + m2
-
+                if not tipo:
+                    gauser_extra = Gauser_extra.objects.get(id_entidad=datos['id_socio'], ronda=ronda)
+                    gauser = gauser_extra.gauser    
+                    logger.warning('Encontrado Gauser y Gauser_extra con id_socio %s' % (datos['id_socio']))
+                    try:
+                        gauser.username = username
+                        gauser.dni = dni
+                        if not tipo:
+                            gauser.educa_pk = datos['id_socio']
+                        gauser.save()
+                    except:
+                        m1 = 'Encontrado Gauser y Gauser_extra con id_socio %s. ' % (datos['id_socio'])
+                        m2 = 'Error username %s ya esta en uso y no puede volver a asignarse' % username
+                        return m1 + m2
+                else:
+                    gauser = None
             except ObjectDoesNotExist:
                 gauser = None
                 logger.warning('No existe Gauser con id_socio %s' % (datos['id_socio']))
@@ -210,30 +207,39 @@ def create_usuario(datos, ronda, tipo):
     else:
         gauser_extra = None
 
-    if not gauser:
+    '''
+    Sobreescribimos los datos del Gauser con los del excel para estar lo más actualizados posibles con racima. 
+    Esto se hace para que Gauss tenga en cuenta cambios de NIE a DNI, usuario que antes no tenía username en racima, etc.
+    '''
+    try: 
         if datos['nombre' + tipo] and datos['apellidos' + tipo]:
             nombre = datos['nombre' + tipo]
             apellidos = datos['apellidos' + tipo]
             # if username == username_inventado:
             #     username = crear_nombre_usuario(nombre, apellidos)
             dni = genera_nie(datos['dni' + tipo])
-            gauser = Gauser.objects.create_user(username, email=datos['email' + tipo].lower(),
-                                                password=pass_generator(), last_login=now())
+            if not gauser:
+                gauser = Gauser.objects.create_user(username, email=datos['email' + tipo].lower(),
+                                                    password=pass_generator(), last_login=now())
             gauser.first_name = string.capwords(nombre.title()[0:28])
             gauser.last_name = string.capwords(apellidos.title()[0:28])
-            gdata = {'dni': dni, 'telfij': datos['telefono_fijo' + tipo], 'sexo': datos['sexo' + tipo],
-                     'telmov': datos['telefono_movil' + tipo], 'localidad': datos['localidad' + tipo],
-                     'address': datos['direccion' + tipo], 'provincia': get_provincia(datos['provincia' + tipo]),
-                     'nacimiento': devuelve_fecha(datos['nacimiento' + tipo]), 'postalcode': datos['cp' + tipo],
-                     'fecha_alta': devuelve_fecha(datos['fecha_alta' + tipo])}
+            gdata = {'username':username,'email':datos['email' + tipo].lower(),
+                     'dni': dni, 'telfij': datos['telefono_fijo' + tipo], 'sexo': datos['sexo' + tipo],
+                        'telmov': datos['telefono_movil' + tipo], 'localidad': datos['localidad' + tipo],
+                        'address': datos['direccion' + tipo], 'provincia': get_provincia(datos['provincia' + tipo]),
+                        'nacimiento': devuelve_fecha(datos['nacimiento' + tipo]), 'postalcode': datos['cp' + tipo],
+                        'fecha_alta': devuelve_fecha(datos['fecha_alta' + tipo])}
             for key, value in gdata.items():
                 setattr(gauser, key, value)
             if not tipo:
                 gauser.educa_pk = datos['id_socio']
             gauser.save()
+
         else:
-            mensaje = 'No se ha podido crear un usuario porque no se han indicado nombre y apellidos'
-            logger.warning(mensaje)
+            logger.warning('No se ha podido crear un usuario porque no se han indicado nombre y apellidos')
+    except:         
+        logger.warning('Error al sobreescribir los datos del gausser %s' % (gauser))
+       
     if gauser and not gauser_extra:
         if 'id_organizacion' + tipo in datos:
             id_organizacion = datos['id_organizacion' + tipo]
