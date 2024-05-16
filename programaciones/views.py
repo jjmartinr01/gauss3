@@ -2099,6 +2099,7 @@ def progsecundaria(request):
                 #     return JsonResponse({'ok': False, 'msg': msg})
                 if (permiso == 'X' or progsec.gep.ge == g_e):
                     if progsec.es_borrable:
+                        progsec.tipo = "BOR" 
                         progsec.borrado = True
                         progsec.save()
                         return JsonResponse({'ok': True})

@@ -14,10 +14,12 @@
             <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
             {% if progsec.nombre %}
                 <b>{{ progsec.pga.ronda.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
-                    {{ progsec.nombre }}</span></b>
+                    {{ progsec.nombre }} ({{ progsec.tipo }})</span> </b>
         {% else %}
             <b>{{ progsec.pga.ronda.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
-                {{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}</span></b>
+                {{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}
+                ({{ progsec.tipo }})
+                </span></b>
         {% endif %}
         -- ({{ progsec.creado|date:"d-m-Y" }})
                 Creado por: <span style="color: green; padding-right: 20px;"><i
