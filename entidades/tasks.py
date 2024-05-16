@@ -122,6 +122,7 @@ def create_usuario(datos, ronda, tipo):
         except ObjectDoesNotExist:
             logger.warning('No existe Gauser con dni %s' % dni)
             try:
+                #Solo buscamos por PK en caso de ser alumno
                 if not tipo:
                     gauser_extra = Gauser_extra.objects.get(id_entidad=datos['id_socio'], ronda=ronda)
                     gauser = gauser_extra.gauser    
