@@ -53,11 +53,6 @@ RUN sed -i 's/\r$//g' /usr/local/bin/cleanMigration.sh \
 
 RUN mkdir -p /var/www/python/gauss3
 
-# Switch to non-root user
-RUN adduser -u 5678 --disabled-password --gecos "" appuser \
-    && chown -R appuser /var/www/python/gauss3/
-USER appuser
-
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
