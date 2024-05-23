@@ -51,6 +51,8 @@ RUN sed -i 's/\r$//g' /usr/local/bin/cleanMigration.sh \
     /usr/local/bin/start-celeryworker.sh \
     /usr/local/bin/start-django.sh
 
+RUN mkdir -p /var/www/python/gauss3
+
 # Switch to non-root user
 RUN adduser -u 5678 --disabled-password --gecos "" appuser \
     && chown -R appuser /var/www/python/gauss3/
