@@ -1990,10 +1990,13 @@ def progsecundaria(request):
         dps.save()
     # Fin de las líneas que aseguran que el propietario tiene permiso 'X'
     if g_e.has_permiso('ve_todas_programaciones'):
-        progsecs = ProgSec.objects.filter(pga=pga, borrado=False)
+        progsecs = ProgSec.objects.filter(pga=pga, borrado=False).order_by('areamateria__curso')
+        #progsecs = ProgSec.objects.filter(pga=pga, borrado=False)
+        
     else:
         progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
-        progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
+        progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False).order_by('areamateria__curso')
+        #progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
     if request.method == 'POST' and request.is_ajax() and not ies:
         action = request.POST['action']
         if action == 'get_areasmaterias':
@@ -2099,6 +2102,7 @@ def progsecundaria(request):
                 #     return JsonResponse({'ok': False, 'msg': msg})
                 if (permiso == 'X' or progsec.gep.ge == g_e):
                     if progsec.es_borrable:
+                        progsec.tipo = "BOR" 
                         progsec.borrado = True
                         progsec.save()
                         return JsonResponse({'ok': True})
