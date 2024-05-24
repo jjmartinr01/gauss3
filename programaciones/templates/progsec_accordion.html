@@ -76,7 +76,7 @@
                 {% else %}
                     <span class="progsec-nombre" id="accordion_nombre{{ progsec.id }}">{{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}</span>
                 {% endif %}
-                <span class="progsec-tipo">({{ progsec.tipo }})</span>
+                <span class="progsec-tipo">({{ progsec.get_tipo_display }})</span>
                 <span class="progsec-id">Id:{{ progsec.id }}</span>
             </div>
             <div class="progsec-accordion">
