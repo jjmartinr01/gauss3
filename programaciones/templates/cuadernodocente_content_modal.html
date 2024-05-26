@@ -195,6 +195,7 @@
         width: 100%;
         border-radius: 5px;
         margin: 10px 0px;
+        min-height: 80px;
     }
 
     /* Crieterios */
@@ -238,7 +239,7 @@
                 
                 <div class="edit_calalumn_form_buttons">
                     <input data-calalum-cal type="text" value="" />
-                    <span class="buttonform calificar update_esvcn"
+                    <span class="buttonform calificar update_esvcn" 
                         data-cieval-id=""
                         data-calalum-id=""
                         data-cuaderno-id=""
@@ -279,7 +280,9 @@
             </div>
             
             <div class="edit_calalumn_form_textarea">
-                <textarea data-calalum-obs data-calalum-obs-autosave="false" placeholder="Observaciones ..."></textarea>
+                <textarea class="update_obs"
+                    data-calalum-obs data-cuaderno-id data-cieval-id data-alumno-id data-calalum-id  
+                  placeholder="Introduce aquí las observaciones a la calificación otorgada"></textarea>
             </div>
     
         </div>

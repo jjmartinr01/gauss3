@@ -33,8 +33,9 @@
     </style>
 
     <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="{{cuaderno.id}}">
-    <!--input type="hidden" id="id_cieval" name="id_cieval" value="">
-    <input type="hidden" id="id_alumno" name="id_alumno" value=""-->
+    <!--input type="hidden" id="id_cieval" name="id_cieval" value=""-->
+
+    <input type="hidden" id="id_alumno" name="id_alumno" value="">
 
 
     <div id="title_page_cuadernos_docentes">
@@ -281,6 +282,7 @@
             var id = element.data('id');
             var campo = element.data('campo');
             var clase = element.data('clase');
+            
             var antiguo_texto = get_texto_from_element(element);
             setTimeout(function () {
                 var nuevo_texto = get_texto_from_element(element);
@@ -302,6 +304,13 @@
                             clase: clase, cuaderno: $('#id_cuaderno').val()
                         },
                         function (data) {
+
+                            if(clase == "EscalaCPvalor") {
+                                // Cambiamos la posible rúbrica escondida en el instrumento
+                                let th_ieval = $("[data-th-ieval-id='"+data.ieval_id+"']");
+                                th_ieval.find("[data-th-ieval-escala]").html(data.rubrica);
+                            }
+
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
@@ -319,24 +328,71 @@
             var campo = element.data('campo');
             var clase = element.data('clase');
             var valor = element.val();
+            
+            let ieval_id = element.attr("data-ieval-id");
+
             $.post('/cuadernodocente/', {
                     action: 'update_select', id: id, valor: valor, campo: campo, clase: clase,
                     cuaderno: $('#id_cuaderno').val()
                 },
                 function (data) {
+    
                     if (data.ok) {
-                        location.href = data.redirect;
-                        /*if (clase == 'EscalaCP') {
+                        if (clase == 'EscalaCP') {
+                            // Cambiamos el html en el modal
                             $('#content_ecp').html(data.html);
+
+                            // Cambiamos la posible rúbrica escondida en el instrumento
+                            let th_ieval = $("[data-th-ieval-id='"+ieval_id+"']");
+                            th_ieval.find("[data-th-ieval-escala]").html(data.rubrica);
+                            th_ieval.find("[data-th-ieval-escala-tipo]").html(data.ecp_tipo_display);
+
+                            // Cambiamos el tipo de escala para todas las celdas que tenga el instrumento ieval
+                            $(".edit_calalumn_ieval__"+ieval_id).attr("data-tipo-ecp", data.ecp_tipo);
+
                         }
-                        $("#update_ok").show().delay(1500).fadeOut();*/
+                        $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
 
-        $('body').on('click', '.add_row_ecp', function (e) {
+        $('body').on('click', '[modify-ecp-action]', function (e) {
+            e.preventDefault();
+            let action = $(this).attr("modify-ecp-action");
+            let ecp = $(this).data('ecp');
+            let cuaderno = $('#id_cuaderno').val();
+            
+            let datas = {};
+            if(action == "add_row_ecp" || action == "add_column_ecp") {
+                datas = { action: action, ecp: ecp, cuaderno: cuaderno }
+            }else if(action == "del_rc_ecp") {
+                let i = $(this).data('i');
+                let borrar = $(this).data('borrar');
+                datas = { action: action, ecp: ecp, i: i, borrar: borrar, cuaderno: cuaderno }
+            }
+            
+            $.post('/cuadernodocente/', datas,
+                function (data) {
+                    if (data.ok) {
+                        
+                        $('#content_ecp').html(data.html);
+
+                        // Cambiamos la posible rúbrica escondida en el instrumento
+                        let th_ieval = $("[data-th-ieval-id='"+data.ieval_id+"']");
+                        th_ieval.find("[data-th-ieval-escala]").html(data.rubrica);
+
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        //DEPRECATED
+        $('body').on('click', '.add_row_ecpOLD', function (e) {
             e.preventDefault();
             var ecp = $(this).data('ecp');
             $.post('/cuadernodocente/', {action: 'add_row_ecp', ecp: ecp, cuaderno: $('#id_cuaderno').val()},
@@ -349,7 +405,9 @@
                     }
                 });
         });
-        $('body').on('click', '.add_column_ecp', function (e) {
+        
+        //DEPRECATED
+        $('body').on('click', '.add_column_ecpOLD', function (e) {
             e.preventDefault();
             var ecp = $(this).data('ecp');
             $.post('/cuadernodocente/', {action: 'add_column_ecp', ecp: ecp, cuaderno: $('#id_cuaderno').val()},
@@ -363,7 +421,8 @@
                 });
         });
 
-        $('body').on('click', '.del_rc_ecp', function (e) { {# borrar row o column #}
+        //DEPRECATED
+        $('body').on('click', '.del_rc_ecpOLD', function (e) { {# borrar row o column #}
             e.preventDefault();
             var ecp = $(this).data('ecp');
             var i = $(this).data('i');
@@ -469,11 +528,11 @@
         $('body').on('click', '.edit_calalumn', function (e) {
             e.preventDefault();
 
-            if($(this).hasClass("edit_calalumn_ESVCN")) {
+            let tipo_ecp = $(this).attr("data-tipo-ecp");
+
+            if(tipo_ecp == "ESVCN") {
                 edit_calalumn_ESVCN($(this));
-            }else if($(this).hasClass("edit_calalumn_ESVCL")) {
-                edit_calalumn_RUBRICA($(this));
-            }else if($(this).hasClass("edit_calalumn_LCONT")) {
+            }else if(tipo_ecp == "ESVCL" || tipo_ecp == "LCONT") {
                 edit_calalumn_RUBRICA($(this));
             }
             
@@ -561,7 +620,10 @@
             
             // Rellenamos el modal
             // Copiamos la rúbricas
-            let rubrica = $("[data-tabla-rubrica-id='"+datas.attr("data-ecp-id")+"']");
+            //let rubrica = $("[data-tabla-escala-ieval-id='"+datas.attr("data-ieval-id")+"']");
+
+            let th_ieval = $("[data-th-ieval-id='"+datas.attr("data-ieval-id")+"']");
+            let rubrica = th_ieval.find("[data-th-ieval-escala]").html();
 
             $("#modal_calalumn_body").find(".edit_calalumn_form_tipo_RUBRICA").find("[data-rubrica]").html(rubrica);
 
@@ -578,10 +640,11 @@
             $("#modal_calalumn_body").find("#edit_calalumn_cal").html(nota);
             
             // Activamos los valores de la rúbrica seleccionados
-            let ecpvs_selected = datas.attr("data-ecpvs-selected").replace("[", "").replace("]", "").replace(" ", "").split(",");
-            for(let i = 0; i < ecpvs_selected.length; i++) {
+            let ecpvs_selected = datas.attr("data-ecpvs-selected").replace("[", "").replace("]", "").replace(/ /g, "").split(",");
+        
+            for(let i = 0; i < ecpvs_selected.length; i++) {        
                 let ecpv_id = ecpvs_selected[i];
-                $("#modal_calalumn_body").find(".edit_calalumn_form_tipo_RUBRICA").find("[data-ecpv-id='"+ecpv_id+"']").addClass("ecpv_selected");
+                $("#modal_calalumn_body").find("[data-ecpv-id='"+ecpv_id+"']").addClass("ecpv_selected");
             }
 
             // Textarea
@@ -644,8 +707,6 @@
             let next_celda;
             if(direccion == "down"){
                 next_celda =celda_actual.closest("tr").next("tr").find("."+cieval);
-                console.log(celda_actual.outerWidth(true));
-                console.log(celda_actual.outerHeight(true));
                 $('.tabla_cuaderno').animate({scrollTop: "+="+celda_actual.outerHeight(true)},200, 'swing');
             }else if(direccion == "up"){
                 next_celda =celda_actual.closest("tr").prev("tr").find("."+cieval);
@@ -690,7 +751,11 @@
             } else if (e.keyCode == '39') { // right arrow
                 me_muevo_alegre_por_la_tabla("right");      
              }else if (e.keyCode == '13') { // enter
-                guarda_valor_ecvcn_y_pasa_al_siguiente();
+                // Si el foco es un textarea, no hacemos nada.
+                if(!$(document.activeElement).is("textarea"))  {
+                    guarda_valor_ecvcn_y_pasa_al_siguiente();
+                }
+                
              }
         
         }
@@ -704,12 +769,23 @@
         // Enviamos calalum de notas simples (ECVCN)
         $('body').on('click', '.update_esvcn', function (e) {
             let element = $(this);
-            let cuaderno_id = element.data('cuaderno-id');
-            let cieval_id = element.data('cieval-id');
-            let alumno_id = element.data('alumno-id');
 
-            let calalum_id = element.data('calalum-id');
-            let ecpv = element.data('ecpv');
+            // Cuidado con el uso de .data
+            // let calalum_id = element.data('calalum-id');
+            // Al ponerlo de esta manera, los datos se fijaban y aunque cambiara 
+            // los detos en el modal y los atributos cambiaran, el estado insterno 
+            // gobernado por .data permanecía igual
+            // Solución:
+            // let calalum_id = element.attr('data-calalum-id');
+
+
+            let cuaderno_id = element.attr('data-cuaderno-id');
+            let cieval_id = element.attr('data-cieval-id');
+            let alumno_id = element.attr('data-alumno-id');
+
+            let calalum_id = element.attr('data-calalum-id');
+            
+            let ecpv = element.attr('data-ecpv');
 
             let celda_editada = $(".editing");
             let form_modal = element.closest(".edit_calalumn_form");
@@ -773,16 +849,16 @@
         // Enviamos calalum de rúbricas (ESCVL o LCONT)
         $('body').on('click', '.update_rubrica', function (e) {
             
-            e.preventDefault();
+            //e.preventDefault();
             let element = $(this);
             
-            let cuaderno_id = element.data('cuaderno-id');
-            let cieval_id = element.data('cieval-id');
-            let alumno_id = element.data('alumno-id');
+            let cuaderno_id = element.attr('data-cuaderno-id');
+            let cieval_id = element.attr('data-cieval-id');
+            let alumno_id = element.attr('data-alumno-id');
 
-            let calalum_id = element.data('calalum-id');
-            let ecpv_id = element.data('ecpv-id');
-
+            let calalum_id = element.attr('data-calalum-id');
+            let ecpv_id = element.attr('data-ecpv-id');
+            
             let obs = $("#modal_calalumn_body").find("[data-calalum-obs]").val();
             let celda_editada = $(".editing");
             
@@ -915,27 +991,50 @@
 
 
   
-        // DEPRECATED
+        
         var funcion_tiempo_espera_update_texto;
         $('body').on('keyup change', '.update_obs', function () {
+
+            // Si tenemos el modal ESCVN visible, al guardar las observaciones debemos también 
+            // guardar la nota. Por lo tanto simplificamos haciendo un click en update_esvcn
+            // Emulamos pulsar el botón "v" azul
+            if($("#modal_calalumn").find(".edit_calalumn_form_tipo_ESVCN").is(":visible")) {
+                $("#modal_calalumn").find(".update_esvcn").click();
+                return;
+            }
+            
+            // Si estamos en el campo de observaciones de una rúbrica, guardamos solo las observaciones
+            // por el camino tradicional
             clearTimeout(funcion_tiempo_espera_update_texto);
-            var element = $(this);
+
+            let element = $(this);
             funcion_tiempo_espera_update_texto = setTimeout(function () {
-                var calalum = element.data('calalum');
-                var ecpv = element.data('ecpv');
-                var texto = element.val();
+                let calalum_id = element.attr('data-calalum-id');
+                let cuaderno_id = element.attr('data-cuaderno-id');
+                let cieval_id = element.attr('data-cieval-id');
+                let alumno_id = element.attr('data-alumno-id');
+                let obs = element.val();
+                let celda_editada = $(".editing");
                 $.post("/cuadernodocente/", {
-                        action: 'update_obs', texto: texto, calalum: calalum,
-                        ecpv: ecpv, cuaderno: $('#id_cuaderno').val()
+                    action: 'update_obs', 
+                    cuaderno: cuaderno_id, // Necesario cuando no hay calalum
+                    cieval: cieval_id,     // Necesario cuando no hay calalum
+                    alumno: alumno_id,     // Necesario cuando no hay calalum 
+                    
+                    calalum: calalum_id,
+                    obs: obs,    
+                       
                     },
                     function (data) {
                         if (data.ok) {
+                            actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, null, tipo="UPDATE_OBS", cerrar_modal=false)
+
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });
-            }, 750);
+            }, 1000);
         });
 
 
@@ -990,7 +1089,8 @@
             $.post('/cuadernodocente/', {action: 'gestionar_alumnos', cuaderno: cuaderno},
                 function (data) {
                     if (data.ok) {
-                        $('#panel' + cuaderno).html(data.html);
+                        $('#gestionar-alumnos-seccion').html(data.html);
+                        $('#cuaderno-seccion').hide();
                         setTimeout(function () {
                             $(".alumnos_cuaderno").select2(
                                 conf_select2({
@@ -1029,8 +1129,8 @@
         });
 
         $('body').on('click', '.borrar_alumno_cuaderno', function (e) {
-            {#var cuaderno = $(this).data('cuaderno');#}
-            $('#id_alumno').val($(this).data('alumno'));
+            
+            $('#id_alumno').val($(this).data('alumno-id'));
             show_mensajes({
                 title: '<i class="fa fa-warning"></i> ¿Borrar a este alumno del cuaderno?',
                 texto: 'Si aceptas, todas las calificaciones del alumno/a anotadas en este cuaderno se borrarán por completo de la base de datos.',
@@ -1059,7 +1159,7 @@
             });
         });
 
-
+        //DEPRECATED
         $('body').on('click', '.go_vista_cuaderno', function (e) {
             var id = $('#id_cuaderno').val();
             $('#panel' + id).css('opacity', 0.4);

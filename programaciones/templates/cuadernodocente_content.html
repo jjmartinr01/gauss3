@@ -75,6 +75,15 @@
         color: gray;
     }
 
+    a.define_ecp{
+        display: block;
+        transition: background 0.3s ease;
+        border-radius: 5px;
+    }
+    a.define_ecp:hover {
+        background-color: #fac289;
+    }
+
     /*  Nueva forma de emeter notas 
         Estilos de : 'cuadernodocente_accordion_content_calalum_2.html'
     */
@@ -160,6 +169,8 @@
 
 </style>
 
+
+<div id="cuaderno-seccion" class="cuaderno">
 {% include 'cuadernodocente_content_modal.html' %}
 
 <div class="row" style="max-width: 100%;">
@@ -285,14 +296,14 @@
                 específicas asociadas a una asignatura.
                 <li style="font-weight: bold;">Nivel de detalle: Criterios de evaluación</li>
                 En este caso, el docente proporciona calificaciones únicamente a los criterios de evaluación. Estas
-                calificaciones las habrá obtenido tras la aplicación de los procedimientos de evaluación al
+                calificaciones las habrá obtenido tras la aplicación de lo.th_s de evaluación al
                 alumnado.
                 Solo hay que introducir por alumno un número de calificaciones igual al número de criterios de
                 evaluación asociados a una asignatura.
                 <li style="font-weight: bold;">Nivel de detalle: Procedimientos de evaluación</li>
                 El cuaderno docente tiene tantos campos
                 para introducir calificaciones como criterios de evaluación se han definido en cada uno de los
-                procedimientos de evaluación.
+        .th_s de evaluación.
             </ul>
             </p>
         </div>
@@ -506,16 +517,19 @@
                                 {% for sap in sb.saps %}
                                     {% for asap in sap.asaps %}
                                         {% for ieval in asap.ievals %}
-                                            <th colspan="{{ ieval.ieval_columns }}" class="sb__{{ sb.sb.id }}"
+                                            <th data-th-ieval-id="{{ ieval.ieval.id }}" colspan="{{ ieval.ieval_columns }}" class="sb__{{ sb.sb.id }}"
                                                 title="{{ ieval.ieval.nombre }}">
-                                                <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp"
-                                                   data-cuaderno="{{ cuaderno.id }}">
-                                                    {{ ieval.ieval.nombre|truncatechars:20 }}
-                                                </a>
+                                                
                                                 {% with ecp=ieval.ieval|escala_del_instrumento_en_el_cuaderno:cuaderno %}
+                                                    <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp" data-cuaderno="{{ cuaderno.id }}">
+                                                    <div>{{ ieval.ieval.nombre|truncatechars:30 }}</div>
+                                                    <div><span data-th-ieval-escala-tipo="{{ ecp.tipo }}" style="font-size: 0.7em; color: #f08a24; ">{{ ecp.get_tipo_display }}</span></div>
+                                                    </a>
+                                                    <div data-th-ieval-escala style="display: none;">
                                                     {% if ecp|tiene_rubrica %}
                                                         {% include 'cuadernodocente_content_rubrica.html' %}
                                                     {% endif %}
+                                                    </div>
                                                 {% endwith %}
 
                                             </th>
@@ -669,3 +683,8 @@
         {% endif %}
     {% endif %}
 {% endif %}
+
+</div>
+
+
+<div id="gestionar-alumnos-seccion"></div>
