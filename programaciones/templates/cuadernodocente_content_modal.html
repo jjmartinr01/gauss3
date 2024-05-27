@@ -1,0 +1,344 @@
+{% load programaciones_extras %}
+<style>
+
+    
+    /* Draggable div para las rúbricas*/
+    .modal_calalumn {
+        position: fixed;
+        top: 30px;
+        left: 50%;
+        //min-width: 500px;
+        z-index: 100;
+        background-color: #fac289;
+        border: 1px solid #f08a24;
+        border-radius: 4px;
+        -webkit-box-shadow: 1px -1px 199px -6px rgba(0,0,0,1);
+        -moz-box-shadow: 1px -1px 199px -6px rgba(0,0,0,1);
+        box-shadow: 1px -1px 199px -6px rgba(0,0,0,1);
+        display: none;
+    }
+      
+    .modal_calalumn_header {
+        padding: 10px 20px;
+        cursor: move;
+        z-index: 10;
+        background-color: #f08a24;
+        transition: background-color 0.5s ease;
+        color: #fff;
+    }
+
+    .modal_calalumn_header span.cerrar {
+        cursor: pointer;
+        transition: color 1s ease;
+        transition: background-color 0.5s ease;
+        float: right;
+    }
+
+    .modal_calalumn_header {
+        font-weight: bold;
+    }
+
+    .modal_calalumn_header span{
+        color: #eae9e9;
+    }
+
+    .modal_calalumn_header:hover {
+        background-color: #d66e06;
+    }
+
+    .modal_calalumn_body {
+        padding: 5px 20px;
+    }
+
+    .edit_calalumn_form {
+        width: 100%;
+        //position: absolute;
+        //top: -3px; left: -3px;
+        //z-index: 11;
+        background-color: #fac289;
+        border-radius: 3px;
+    }
+
+    .edit_calalumn_form_tipo_ESVCN {
+        min-width: 500px;
+    }
+
+    .edit_calalumn_form_tipo_RUBRICA {
+        min-width: 500px;
+    }
+    
+    /* Botones */
+    .edit_calalumn_form_buttons {
+        overflow: hidden;
+        margin: 10px 0px;
+    }
+
+    .edit_calalumn_form_buttons .edit_calalumn_cal {
+        border: 2px solid #f08a24;
+        color: #f08a24;
+        background-color: white;
+        border-radius:3px;
+        font-weight: bold;
+        font-size: 1.3em;
+        float: left;
+        padding: 4px 15px;
+        width: 100px;
+        text-align: center;
+        height: 40px;
+    }
+
+    .edit_calalumn_form_buttons input {
+        border: 2px solid #f08a24;
+        background-color: white;
+        border-radius:3px;
+        font-weight: bold;
+        font-size: 1.3em;
+        float: left;
+        padding: 4px 15px;
+        width: 100px;
+        text-align: center;
+        float: left;
+        height: 40px;
+    }
+
+    .edit_calalumn_form_buttons span.help {
+        cursor: pointer;
+        transition: color 1s ease;
+        transition: background-color 0.5s ease;
+        background-color: #f08a24;
+        color: #fac289;
+        padding: 8px;
+        border-radius: 20px;
+        font-size: 1.2em;
+        line-height: 1.2em; 
+        text-align: center;
+        float: right;   
+        margin-right: 10px;
+    }
+    
+    .edit_calalumn_form_buttons span.buttonform {
+        cursor: pointer;
+        transition: color 1s ease;
+        transition: background-color 0.5s ease;
+        background-color: #f2f2f2;
+        padding: 8px;
+        font-size: 1.2em;
+        line-height: 1.2em; 
+        text-align: center;
+        float: right;   
+    }
+
+    .edit_calalumn_form_buttons span.buttonform:hover {
+        background-color: #007095;
+        color: white;
+    }
+
+    .edit_calalumn_form_buttons span.calificar {
+        background-color: #007095;
+        color: white;
+        width: 60px;
+        float: left;
+        margin-left: 30px;
+    }
+
+    .edit_calalumn_form_buttons span.calificar:hover {
+        background-color: #024b63;
+    }
+
+    .edit_calalumn_form_buttons span.delete {
+        margin-right: 30px;
+    }
+    .edit_calalumn_form_buttons span.delete:hover {
+        background-color: #cf2a0e;
+        color: white;
+    }
+    
+
+    /* RUBRICA */
+
+    .edit_calalumn_form_rubrica table {
+        border-radius: 4px; 
+        margin: 20px 0px;
+        padding: 3px;
+        border-spacing: 10px;
+        width: 100%;
+    }
+
+    .edit_calalumn_form_rubrica table td.selectable:hover {
+        cursor: pointer;
+        background-color: #fac289;
+    }
+
+    .edit_calalumn_form_rubrica table td, .edit_calalumn_form_rubrica table th{
+        border-radius: 2px;
+        font-size: 1em;
+        padding: 8px 10px;
+        background-color: #f2f2f2;
+    }
+
+    .edit_calalumn_form_rubrica td.texto_cualitativo{
+        font-size: 0.8em;
+        max-width: 300px;
+        font-weight: bold;
+    }
+
+    .edit_calalumn_form_rubrica td {
+        transition: background-color 0.3s ease;
+    }
+
+    .edit_calalumn_form_rubrica table td.ecpv_selected {
+        background-color: #f08a24;
+    }
+
+    /* Observaciones */
+    .edit_calalumn_form_textarea textarea {
+        width: 100%;
+        border-radius: 5px;
+        margin: 10px 0px;
+        min-height: 80px;
+    }
+
+    /* Crieterios */
+
+    .edit_calalumn_form_criterio {
+        font-weight: bold; 
+        font-size: 0.8em;
+        border-bottom: 1px solid #f08a24;
+        padding-bottom: 5px;
+        transition: color 1s ease;
+        word-wrap: break-word;
+        width: 100%;
+    }
+
+    .edit_calalumn_form_criterio:hover {
+        cursor: pointer;
+        color: #f08a24;
+    }
+
+
+</style>
+
+
+<!-- Draggable DIV para las rúbricas-->
+<div id="modal_calalumn" class="modal_calalumn">
+    <div class="modal_calalumn_header" id="modal_calalumn_header">
+        <span id="modal_calalumn_header_alumno"></span>
+        <span class="cerrar edit_calalumn_close"><i class="fa fa-times"></i></span>
+    </div>
+    <div id="modal_calalumn_body" class="modal_calalumn_body">
+
+        <div class="edit_calalumn_form">
+
+            <div class="edit_calalumn_form_criterio">
+                <div data-cieval-short></div>
+                <div data-cieval-long></div>
+            </div>
+            
+            <!-- Form ESVCN-->
+            <div class="edit_calalumn_form_tipo_ESVCN" style="display: none;">
+                
+                <div class="edit_calalumn_form_buttons">
+                    <input data-calalum-cal type="text" value="" />
+                    <span class="buttonform calificar update_esvcn" 
+                        data-cieval-id=""
+                        data-calalum-id=""
+                        data-cuaderno-id=""
+                        data-alumno-id="">
+                        <i class="fa fa-check"></i>
+                    </span>
+                    
+                    <span data-calalum-id="" class="buttonform" move-calalum="down" title="Siguiente"><i class="fa fa-chevron-down"></i></span>
+                    <span data-calalum-id="" class="buttonform" move-calalum="up" title="Anterior"><i class="fa fa-chevron-up"></i></span>
+                    <span data-calalum-id="" class="buttonform" move-calalum="right" style="margin-right: 10px;" title="Derecha"><i class="fa fa-chevron-right"></i></span>
+                    <span data-calalum-id="" class="buttonform" move-calalum="left"  title="Izquierda"><i class="fa fa-chevron-left"></i></span>
+
+                    <span data-calalum-id="" class="help" title="Desplázate por la tabla con las flechas del teclado.&#10;Pulsa 'enter' para guardar y pasar al siguiente en las notas numéricas"><i class="fa fa-info"></i></span>
+
+                    <span data-calalum-id="" data-delete-tipo="ESVCN" class="buttonform delete delete_calalum_valores" title="Eliminar nota"><i class="fa fa-trash-o"></i></span>
+                </div>
+                
+            </div>
+
+            <!-- Form Rúbrica (ESVCL o LCONT)-->
+            <div class="edit_calalumn_form_tipo_RUBRICA" style="display: none;">
+                
+                <div class="edit_calalumn_form_buttons">
+                    <div class="edit_calalumn_cal" id="edit_calalumn_cal"></div>
+
+                    <span data-calalum-id="" class="buttonform" move-calalum="down" title="Siguiente"><i class="fa fa-chevron-down"></i></span>
+                    <span data-calalum-id="" class="buttonform" move-calalum="up" title="Anterior"><i class="fa fa-chevron-up"></i></span>
+                    <span data-calalum-id="" class="buttonform" move-calalum="right" style="margin-right: 10px;" title="Derecha"><i class="fa fa-chevron-right"></i></span>
+                    <span data-calalum-id="" class="buttonform" move-calalum="left"  title="Izquierda"><i class="fa fa-chevron-left"></i></span>
+                    
+                    <span data-calalum-id="" class="help" title="Desplázate por la tabla con las flechas del teclado.&#10;Pulsa 'enter' para guardar y pasar al siguiente en las notas numéricas"><i class="fa fa-info"></i></span>
+
+                    <span data-calalum-id="" data-delete-tipo="RUBRICA" class="buttonform delete delete_calalum_valores" title="Eliminar nota"><i class="fa fa-trash-o"></i></span>
+                </div>
+
+                <div class="edit_calalumn_form_rubrica" data-rubrica></div>
+
+            </div>
+            
+            <div class="edit_calalumn_form_textarea">
+                <textarea class="update_obs"
+                    data-calalum-obs data-cuaderno-id data-cieval-id data-alumno-id data-calalum-id  
+                  placeholder="Introduce aquí las observaciones a la calificación otorgada"></textarea>
+            </div>
+    
+        </div>
+        
+    </div>
+</div>
+
+
+<script>
+    
+    // Draggable div para las rúbricas
+
+    function dragElement(elmnt) {
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        if (document.getElementById(elmnt.id + "_header")) {
+          // if present, the header is where you move the DIV from:
+          document.getElementById(elmnt.id + "_header").onmousedown = dragMouseDown;
+        } else {
+          // otherwise, move the DIV from anywhere inside the DIV:
+          elmnt.onmousedown = dragMouseDown;
+        }
+      
+        function dragMouseDown(e) {
+          e = e || window.event;
+          e.preventDefault();
+          // get the mouse cursor position at startup:
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          document.onmouseup = closeDragElement;
+          // call a function whenever the cursor moves:
+          document.onmousemove = elementDrag;
+        }
+      
+        function elementDrag(e) {
+          e = e || window.event;
+          e.preventDefault();
+          // calculate the new cursor position:
+          pos1 = pos3 - e.clientX;
+          pos2 = pos4 - e.clientY;
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          // set the element's new position:
+          elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+          elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        }
+      
+        function closeDragElement() {
+          // stop moving when mouse button is released:
+          document.onmouseup = null;
+          document.onmousemove = null;
+        }
+    }
+
+    // Make the DIV element draggable:
+    if(document.getElementById("modal_calalumn")) {
+        dragElement(document.getElementById("modal_calalumn"));
+    }
+    
+</script>
