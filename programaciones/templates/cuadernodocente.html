@@ -215,6 +215,7 @@
                 $('#cabecera_gauss2').removeClass('hide-for-large hide-for-xlarge');
                 $('#barra_iconos_menu').removeClass('hide-for-large hide-for-xlarge');
                 $('#title_page_cuadernos_docentes').removeClass('hide-for-large hide-for-xlarge');
+                $('.tabla_cuaderno').removeClass("fullscreen");
 
                 cuaderno_full_screen = false;
             } else {
@@ -224,6 +225,7 @@
                 $('#title_page_cuadernos_docentes').addClass('hide-for-large hide-for-xlarge');
 
                 $('#Principal').removeClass('large-10').addClass('large-12');
+                $('.tabla_cuaderno').addClass("fullscreen");
                 cuaderno_full_screen = true;
             }
         });
