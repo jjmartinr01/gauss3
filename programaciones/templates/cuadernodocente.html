@@ -193,6 +193,7 @@
                     action: 'configura_cuaderno', cuaderno: cuaderno, psec: psec, grupo: grupo, tipo: tipo
                 },
                 function (data) {
+                    console.log(data);
                     if (data.ok) {
                         location.href = data.redirect;
                     } else {
@@ -815,6 +816,7 @@
                     
                     if (data.ok) {
                         actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, null);
+                        $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
@@ -885,7 +887,7 @@
                         }
                         
                         actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, data.ecpvs_selected, tipo="RUBRICA", cerrar_modal=false)
-
+                        $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
@@ -1040,16 +1042,18 @@
 
         // Funcionalidad: Asignar notas en cuadernos tipo CRITERIOS y COMPETENCIAS
         $('body').on('change keyup', '.update_calalumce', function (e) {
+            console.log("estoy");
             e.preventDefault();
             var element = $(this);
             var calalumce = element.data('calalumce');
-            {#var cuaderno = element.data('cuaderno');#}
-            var valor = element.val();
+            var valor = parseFloat(element.val().replace(",",".")).toFixed(2);
+            
             $.post("/cuadernodocente/", {
                         action: 'update_calalumce', valor: valor, calalumce: calalumce,
                         cuaderno: $('#id_cuaderno').val()
                     },
                     function (data) {
+                        console.log(data);
                         if (data.ok) {
                             $('#cal_am_' + data.asignatura + '_' + data.alumno).html(data.cal_am);
                             $("#update_ok").show().delay(1500).fadeOut();
@@ -1063,8 +1067,8 @@
             e.preventDefault();
             var element = $(this);
             var calalumcev = element.data('calalumcev');
-            {#var cuaderno = element.data('cuaderno');#}
-            var valor = element.val();
+            var valor = parseFloat(element.val().replace(",",".")).toFixed(2);
+            
             $.post("/cuadernodocente/", {
                         action: 'update_calalumcev', valor: valor, calalumcev: calalumcev,
                         cuaderno: $('#id_cuaderno').val()

@@ -3463,7 +3463,7 @@ def cuadernodocente(request, id=None):
                         calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cep)
                         for cevp in cep.cevprogsec_set.all():
                             CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevp)
-                html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
+                html = render_to_string('cuadernodocente_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre, 'redirect': '/cuadernodocente/%s/'%(cuaderno.id)})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})

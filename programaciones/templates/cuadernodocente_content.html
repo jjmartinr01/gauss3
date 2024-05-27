@@ -354,8 +354,8 @@
                                 {#                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" contenteditable="true">#}
                                 {#                                {{ calalumce.valor }}#}
                                 {#                            </td>#}
-                                <td><input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="number"
-                                           data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
+                                <td><input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="text"
+                                           data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" 
                                            data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
                                            id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}"
                                            value="{{ calalumce.valor|float2stringpoint }}">
@@ -425,9 +425,8 @@
                             {% for cevp in cep.cevprogsec_set.all %}
                                 {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}
                                     <td><input class="update_calalumcev" data-calalumcev="{{ calalumcev.id }}"
-                                               type="number"
-                                               data-cevp="{{ cevp.id }}" data-cuaderno="{{ cuaderno.id }}" min="0"
-                                               max="10"
+                                               type="text"
+                                               data-cevp="{{ cevp.id }}" data-cuaderno="{{ cuaderno.id }}" 
                                                data-alumno="{{ alumno.id }}" title="{{ calalumcev.obs }}" step="0.01"
                                                id="valor_calalumcev{{ calalumcev.id }}_{{ alumno.id }}"
                                                value="{{ calalumcev.valor|float2stringpoint }}">
