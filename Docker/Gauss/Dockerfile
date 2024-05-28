@@ -9,7 +9,6 @@ RUN apt-get update && \
     libpq-dev \
     locales \
     locales-all \
-    wkhtmltopdf \
     build-essential \
     libattr1-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -25,7 +24,7 @@ RUN pip install --no-cache-dir -r /requirements.txt
 # Stage 2: Final image
 FROM python:3.12-slim-bullseye
 
-RUN apt-get update && apt-get install -y locales locales-all && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y wkhtmltopdf locales locales-all && rm -rf /var/lib/apt/lists/*
 
 # Set locale
 RUN locale-gen es_ES.UTF-8
