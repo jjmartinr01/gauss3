@@ -25,7 +25,12 @@ urlpatterns = [
     path('pgajson/<int:code>/', views.pgajson),
     path('progsecundaria/', views.progsecundaria),
     path('progsecundaria_sb/<int:id>/', views.progsecundaria_sb),
-    path('cuadernodocente/', views.cuadernodocente),
+    
+    path('cuadernosdocentes/', views.cuadernosdocentes),        # Index get
+    path('cuadernodocente/', views.cuadernodocente),            # Post ajax
+    path('cuadernodocente/<int:id>/', views.cuadernodocente),   # Show get
+    
+    
     path('verprogramacion/<str:secret>/<int:id>/', views.verprogramacion),
     path('verprogramaciones/<str:secret>/', views.verprogramaciones),
     path('repositorio_sap/', views.repositorio_sap),

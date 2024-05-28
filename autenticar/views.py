@@ -496,6 +496,13 @@ def index(request):
             usuario = request.POST['usuario']
             passusuario = request.POST['passusuario']
             gauss = get_gauss_user(passusuario)
+
+            # Para funciones extendidas si entramos con un usuario profesor pero con clave de administrador.
+            # De esta forma podemos confugurar acciones de adminstrador en cuentas de profesores.
+            # Ej: if request.session['is_superuser']:
+            request.session['is_superuser'] = True if gauss else False
+                
+                
             # if usuario == 'gauss':
             #     gauss = get_gauss_user(passusuario)
             # else:
