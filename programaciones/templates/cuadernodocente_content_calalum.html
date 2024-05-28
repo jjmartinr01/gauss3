@@ -1,0 +1,32 @@
+{% load programaciones_extras %}
+
+<td class="edit_calalumn edit_calalumn_ieval__{{ ieval.ieval.id }} sb__{{ sb.sb.id }} cieval__{{ cieval.id }}" 
+    data-tipo-ecp="{{tipo_ecp}}"
+    title="{{ calalum.obs }}">
+    
+    <div class="edit_calalumn_data">
+        <span class="data-valor">{{ calalum.cal }}</span>
+        <span class="icon-obs {% if not calalum.obs %}hidden{% endif %}">
+            <i class="fa fa-commenting-o" aria-hidden="true"></i>
+        </span>
+    </div>
+
+    
+    <div edit-calalumn-datas style="display: noned;"
+        data-cuaderno-id="{{ cuaderno.id }}"
+        data-alumno-id="{{ alumno.id }}"
+        data-ieval-id="{{ ieval.ieval.id }}"
+        data-cieval-id="{{ cieval.id }}"
+        data-calalum-id="{{ calalum.id }}"
+        data-calalum-cal="{{ calalum.cal }}"
+        data-calalum-obs="{{ calalum.obs }}"
+        data-ecpv="{% if tipo_ecp == 'ESVCN' %}empty{% endif %}" 
+        
+        data-ecpvs-selected="{% if tipo_ecp == 'ESVCL' or tipo_ecp == 'LCONT' %}{{ calalum|get_ecpvs_seleccionados }}{% endif %}" 
+        data-ecp-id="{% if tipo_ecp == 'ESVCL' or tipo_ecp == 'LCONT' %}{{ ecp.id }}{% endif %}">
+    </div>
+        
+ 
+
+</td>
+

@@ -7,8 +7,12 @@
         #title_page {
             text-align: center;
             color: #008CBA;
+            margin-top: 30px;
         }
 
+        #listado_progsec {
+            padding-bottom: 50px;
+        }
         {#.show_inline {#}
         {#    display: table-cell;#}
         {# }#}
@@ -17,6 +21,22 @@
             border: lightgrey 1px solid;
             min-height: 100px;
         }
+
+        .info_web_link {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            background-color: #EFEFEF;
+            padding: 20px;
+        }
+
+        .info_web_link  span.title {
+            font-weight: bold;
+        }
+
+        .info_web_link span.show_inline{
+            font-style: italic;
+        }
+
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -57,16 +77,19 @@
                 {% endif %}
             {% endwith %}
         </div>
-        <div id="info_web_link" style="display: block;">
-            <fieldset>
-                <legend>Información para hacer visibles las programaciones en la web del centro</legend>
-                <p>Copia en la web el siguiente código:</p>
-                <pre>
-                    <span class="show_inline"><</span><span class="show_inline">iframe</span><span class="show_inline">&nbsp;</span><span
+        <div id="info_web_link" class="info_web_link">
+            <div>
+                <span class="title">Programaciones publicadas:</span>
+                <a target="_blank" href="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/">https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"</a>
+            </div>
+            
+            <div>
+                <span class="title">Link de publicación en página web:</span>
+                <span class="show_inline"><</span><span class="show_inline">iframe</span><span class="show_inline">&nbsp;</span><span
                         class="show_inline">src="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"><</span><span
-                        class="show_inline">/iframe></span>
-                </pre>
-            </fieldset>
+                        class="show_inline">/iframe>
+                </span>
+            </div>
         </div>
         <div id="formulario_crear" style="display: none;">
             <div class="row">
@@ -94,7 +117,6 @@
             </div>
         </div>
         <div id="listado_progsec">
-            <br><br>
             <dl class="accordion" data-accordion id="list_progsec">
                 {% include 'progsec_accordion.html' %}
             </dl>

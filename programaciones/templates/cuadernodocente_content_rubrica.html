@@ -1,0 +1,50 @@
+{% load programaciones_extras %}
+{#Trabajamos con las dos rúbricas en una sola plantilla. Los cambios son pocos #}
+
+<table class="maximo_width">
+    {% for y in ecp.get_ecpvys %}
+        {% if y == 0 %}
+            {% if ecp.tipo == 'ESVCL' %}
+            
+            <thead>
+                <tr>
+                    {% for ecpv in ecp|get_ecpv_xs:y %}
+                        <th>
+                            {% if ecp.tipo == 'ESVCL'%}
+                                <span>{{ ecpv.texto_cualitativo }}</span>
+                            {% elif ecp.tipo == 'LCONT'%}
+                                {% if not ecpv.x == 0 %}<span title="Valoración cuantitativa">{{ ecpv.valor }}</span>{% endif %}
+                            {% endif %}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            {% endif %}
+        {% else %}
+            <tr>
+                {% for ecpv in ecp|get_ecpv_xs:y %}
+                    {% if ecpv.x == 0 %}
+                        <td class="texto_cualitativo">
+                            {{ ecpv.texto_cualitativo }}
+                        </td>
+                    {% else %}
+                        <td class="update_rubrica selectable"
+                            data-x={{ecpv.x}}
+                            data-y={{ecpv.y}}
+                            data-calalum-id="" 
+                            data-ecpv-id="{{ ecpv.id }}"
+                            data-cieval-id=""
+                            data-cuaderno-id=""
+                            data-alumno-id="">
+                            {% if ecp.tipo == 'ESVCL'%}{{ ecpv.texto_cualitativo }}<br>{% endif %}
+                            <b>{{ ecpv.valor }}</b>
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+
+

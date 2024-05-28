@@ -1,3 +1,52 @@
+<style>
+
+    .progsec-curso-header {
+        font-size: 1em;
+        font-weight: bold;
+        border-bottom: 1px solid #EFEFEF;
+        color: #f08a24;
+        margin: 20px 0px;
+    }
+    .progsec-accordion-dd {
+        border-bottom: solid 1px white;
+    }
+    .progsec-accordion-dd a {
+        padding: 10px 20px !important;
+        transition: background-color 0.3s ease;
+    }
+    .progsec-nombre{
+        font-weight: bold;
+    }
+
+    .progsec-ronda{
+        font-size: 0.9em;
+
+    }
+
+
+    .progsec-id {
+        float: right;
+        font-weight: bold;
+        font-size: 0.9em;
+        color: #686868;
+    }
+    .progsec-tipo{
+        font-weight: bold;
+        color: #008CBA;
+        font-size: 0.9em;
+    }
+
+    .progsec-fecha{
+        font-size: 0.9em;
+    }
+
+    .progsec-autor {
+        color: green;
+        font-size: 0.9em;
+    }
+</style>
+
+
 {% load entidades_extras %}
 {% if buscadas %}
     {% if progsecs|length == 1 %}
@@ -6,26 +55,38 @@
         <b>Se han encontrado {{ progsecs|length }} programaciones</b>
     {% endif %}
 {% endif %}
-{% for progsec in progsecs %}
-    <input type="hidden" name="progsecs_seleccionados" value="{{ progsec.id }}">
-    <dd class="accordion-navigation" id="accordion{{ progsec.id }}"
-        style="border-bottom: dotted 1px black">
-        <a href="#panel{{ progsec.id }}" title="Última modificación: {{ progsec.modificado|date:"d-m-Y" }}">
-            <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
-            {% if progsec.nombre %}
-                <b>{{ progsec.pga.ronda.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
-                    {{ progsec.nombre }}</span></b>
-        {% else %}
-            <b>{{ progsec.pga.ronda.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
-                {{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}</span></b>
-        {% endif %}
-        -- ({{ progsec.creado|date:"d-m-Y" }})
-                Creado por: <span style="color: green; padding-right: 20px;"><i
-                        class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span>
 
-            {% if buscadas %}
-                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
-            {% endif %}
+
+{% for progsec in progsecs %}
+
+    {% ifchanged progsec.areamateria.curso %}
+    <h2 class="progsec-curso-header">{{ progsec.areamateria.get_curso_display }}</h2>
+    {% endifchanged %}
+
+
+    <input type="hidden" name="progsecs_seleccionados" value="{{ progsec.id }}">
+    <dd class="accordion-navigation progsec-accordion-dd" id="accordion{{ progsec.id }}">
+        <a href="#panel{{ progsec.id }}" title="Última modificación: {{ progsec.modificado|date:"d-m-Y" }}">
+                
+            <div class="progsec-accordion">
+                <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
+                <span class="progsec-ronda">{{ progsec.pga.ronda.nombre }}</span>
+                {% if progsec.nombre %}
+                    <span class="progsec-nombre" id="accordion_nombre{{ progsec.id }}">{{ progsec.nombre }}</span>
+                {% else %}
+                    <span class="progsec-nombre" id="accordion_nombre{{ progsec.id }}">{{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}</span>
+                {% endif %}
+                <span class="progsec-tipo">({{ progsec.get_tipo_display }})</span>
+                <span class="progsec-id">Id:{{ progsec.id }}</span>
+            </div>
+            <div class="progsec-accordion">
+                <span class="progsec-fecha">({{ progsec.creado|date:"d-m-Y" }})</span>
+                <span class="progsec-autor">Creado por: <span><i class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span></span>
+                {% if buscadas %}
+                    <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+                {% endif %}
+            </div>
+
         </a>
 
         <div data-id="{{ progsec.id }}" data-prog="{{ prog }}" data-identificador="{{ progsec.identificador }}"

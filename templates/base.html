@@ -71,19 +71,24 @@
                     <i class="fa fa-male fa-fw"></i>
                 {% else %}
                     <i class="fa fa-female fa-fw"></i>
-                {% endif %}{{ request.session.gauser_extra.gauser.get_full_name }}</p>
+                {% endif %}{{ request.session.gauser_extra.gauser.get_full_name }}
+                
+                {% if request.session.is_superuser %}<i class="fa fa-bolt"></i>{% endif %}
+            </p>
 
             <p class="cabecera" title="{% for subentidad in request.session.gauser_extra.subentidades.all %}
                 {{ subentidad.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}"><i
                     class="fa fa-users fa-fw"></i>
                 {{ request.session.gauser_extra.subentidades.all.0.nombre }}
-                {% if request.session.gauser_extra.subentidades.all|length > 1 %}...{% endif %}</p>
+                {% if request.session.gauser_extra.subentidades.all|length > 1 %}...{% endif %}
+            </p>
 
             {% if request.session.gauser_extra.cargos.all|length > 0 %}
                 <p class="cabecera" title="{% for cargo in request.session.gauser_extra.cargos.all %}
                     {{ cargo.cargo }}{% if not forloop.last %}, {% endif %}{% endfor %}">
                     <i class="fa fa-briefcase fa-fw"></i> {{ request.session.gauser_extra.cargos.all.0.cargo }}
-                    {% if request.session.gauser_extra.cargos.all|length > 1 %}...{% endif %}</p>
+                    {% if request.session.gauser_extra.cargos.all|length > 1 %}...{% endif %}
+                </p>
             {% endif %}
         </div>
         <div class="columns large-6 medium-6 small-6 cabecera_gauss2" style="padding-top:3px;height:43px;">

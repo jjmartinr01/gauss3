@@ -9,7 +9,7 @@
 <div class="row" style="padding-bottom: 2px;">
     <div class="columns large-12" id="div_alumnos_cuaderno{{ cuaderno.id }}">
         {% for alumno in cuaderno.alumnos.all %}
-            {% include "cuadernodocente_accordion_content_ga_alumno.html" %}
+            {% include "cuadernodocente_content_ga_alumno.html" %}
         {% endfor %}
     </div>
 </div>
@@ -21,6 +21,6 @@
 <br>
 <div class="row">
     <div class="columns large-12">
-        <a class="button go_vista_cuaderno center"><i class="fa fa-reply-all"></i> Volver</a>
+        <a href="/cuadernodocente/{{ cuaderno.id}}" class="button center"><i class="fa fa-reply-all"></i> Volver</a>
     </div>
 </div>

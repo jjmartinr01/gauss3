@@ -1,0 +1,7 @@
+<a href="/cuadernodocente/{{ cuaderno.id }}/" {% if cuaderno.borrado %}class="borrado"{% endif %}
+>
+  {% if not cuaderno.grupo and cuaderno.alumnos.all|length == 0 %}<span style="color:red">Nuevo cuaderno sin asignar 
+    <span class="cuaderno-id"> Cuaderno Id: {{ cuaderno.id }}</span> </span>
+  {% else %}{{ cuaderno.nombre }} <span class="cuaderno-id">Cuaderno Id: {{ cuaderno.id }}</span>{% endif %}
+
+</a>

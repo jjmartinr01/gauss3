@@ -1,19 +1,45 @@
 {% load programaciones_extras %}
+
+<style>
+    [contenteditable] {
+        outline: 0px solid transparent;
+        padding: 5px 15px;
+        transition: background 0.3s ease;
+        margin-bottom: 3px;
+        display: inline-block;
+        border-radius: 2px;
+    }
+
+    [contenteditable]:hover {
+        cursor: pointer;
+        background-color: #a1e2f7;
+    }
+
+    [contenteditable="true"]:focus  {
+        border: 1px solid #008CBA;
+        background-color: #a1e2f7;
+    }
+
+    .del_rc_ecp {
+        padding: 5px 15px;
+    }
+</style>
+
 <div class="row">
     <div class="columns large-12">
         <h4 style="text-align: center;">{{ ecp.ieval.nombre }}</h4>
     </div>
 </div>
 <div class="row">
-    <div class="columns large-6">
+    <!--div class="columns large-6">
         <label>Nombre:
             <input type="text" id="nombre_ecp" value="{{ ecp.nombre }}" data-campo="nombre"
                    data-clase="EscalaCP" data-id="{{ ecp.id }}" class="update_texto"></label>
-    </div>
+    </div-->
     <div class="columns large-6">
         <label>Tipo:
             <select id="tipo_ecp" data-campo="tipo"
-                    data-clase="EscalaCP" data-id="{{ ecp.id }}" class="update_select">
+                    data-clase="EscalaCP" data-id="{{ ecp.id }}" data-ieval-id="{{ ecp.ieval.id }}" class="update_select">
                 <option value="">-----------</option>
                 <option value="ESVCL" {% if ecp.tipo == 'ESVCL' %}selected{% endif %}>
                     Escala de valoración cualitativa
@@ -52,12 +78,12 @@
                                     {% if forloop.last %}
                                         <br>
                                         <a data-ecp="{{ ecp.id }}" data-i="{{ ecpv.x }}" data-borrar='x'
-                                           class="del_rc_ecp"><i class="fa fa-trash"></i>
+                                           class="del_rc_ecp" modify-ecp-action="del_rc_ecp"><i class="fa fa-trash"></i>
                                             Borrar</a>
                                     {% endif %}
                                 </th>
                             {% endfor %}
-                            <td><a class="button tiny add_column_ecp" data-ecp="{{ ecp.id }}">
+                            <td><a class="button tiny add_column_ecp" modify-ecp-action="add_column_ecp" data-ecp="{{ ecp.id }}">
                                 <i class="fa fa-plus"></i> </a></td>
                         </tr>
                         </thead>
@@ -72,7 +98,7 @@
                                         {% if forloop.parentloop.last %}
                                             <br>
                                             <a data-ecp="{{ ecp.id }}" data-i="{{ y }}" data-borrar='y'
-                                               class="del_rc_ecp"><i class="fa fa-trash"></i>
+                                               class="del_rc_ecp" modify-ecp-action="del_rc_ecp"><i class="fa fa-trash"></i>
                                                 Borrar</a>
                                         {% endif %}
                                     </th>
@@ -94,7 +120,7 @@
                 {% endfor %}
                 <tr>
                     <td>
-                        <a class="tiny button add_row_ecp" data-ecp="{{ ecp.id }}"><i class="fa fa-plus"></i> </a>
+                        <a class="tiny button add_row_ecp" modify-ecp-action="add_row_ecp" data-ecp="{{ ecp.id }}"><i class="fa fa-plus"></i> </a>
                     </td>
                 </tr>
             </table>
@@ -131,6 +157,7 @@
                 diferentes cantidades.</p>
         </div>
     </div>
+
     <div class="row">
         <div class="columns large-12" id="tabla_ecp">
             <table style="width: 100%;">
@@ -149,13 +176,13 @@
                                         {% if forloop.last %}
                                             <br>
                                             <a data-ecp="{{ ecp.id }}" data-i="{{ ecpv.x }}" data-borrar='x'
-                                               class="del_rc_ecp"><i class="fa fa-trash"></i>
+                                               class="del_rc_ecp" modify-ecp-action="del_rc_ecp"><i class="fa fa-trash"></i>
                                                 Borrar</a>
                                         {% endif %}
                                     </th>
                                 {% endif %}
                             {% endfor %}
-                            <td><a class="button tiny add_column_ecp" data-ecp="{{ ecp.id }}">
+                            <td><a class="button tiny add_column_ecp" modify-ecp-action="add_column_ecp" data-ecp="{{ ecp.id }}">
                                 <i class="fa fa-plus"></i> </a></td>
                         </tr>
                         </thead>
@@ -170,7 +197,7 @@
                                         {% if forloop.parentloop.last %}
                                             <br>
                                             <a data-ecp="{{ ecp.id }}" data-i="{{ y }}" data-borrar='y'
-                                               class="del_rc_ecp"><i class="fa fa-trash"></i>
+                                               class="del_rc_ecp" modify-ecp-action="del_rc_ecp"><i class="fa fa-trash"></i>
                                                 Borrar</a>
                                         {% endif %}
                                     </th>
@@ -187,7 +214,7 @@
                 {% endfor %}
                 <tr>
                     <td>
-                        <a class="tiny button add_row_ecp" data-ecp="{{ ecp.id }}"><i class="fa fa-plus"></i> </a>
+                        <a class="tiny button add_row_ecp" modify-ecp-action="add_row_ecp" data-ecp="{{ ecp.id }}"><i class="fa fa-plus"></i> </a>
                     </td>
                 </tr>
             </table>
@@ -220,24 +247,30 @@
     <div class="row">
         <div class="columns large-12">
             <p style="color: grey;">Con este tipo de valoración solo deberás introducir una cantidad numérica para
-                calificar, o hacer click sobre alguna de las cantidades indicadas.</p>
+                calificar.</p>
         </div>
     </div>
 
-    {% for ecpv in ecp.escalacpvalor_set.all %}
-        <div class="columns large-1">
+
+    {# for ecpv in ecp.escalacpvalor_set.all #}
+        <!--- div class="columns large-1">
             <a type="text" data-ecp="{{ ecp.id }}" class="button tiny update_esvcn"
             data-cieval=""><b>{{ ecpv.valor }}</b></a>
-        </div>
-    {% endfor %}
+        </div -->
+    {# endfor #}
 
-    <div class="row">
+    <!-- 
+        
+        ¿QUÉ SENTIDO TIENE ESTA ACCIÓN. ES ALGO GENÉRICO A NIVEL DE PROCEDIMIENTO. 
+
+        div class="row">
         <div class="columns large-12">
             <label>Calificación numérica asignada
                 <input type="text" data-ecp="{{ ecp.id }}" value="" data-cieval="" class="update_esvcn">
             </label>
         </div>
-    </div>
+    </div -->
+
     <div class="row">
         <div class="columns large-5">
             &nbsp;
