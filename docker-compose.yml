@@ -7,8 +7,6 @@ services:
     hostname: postgres-gauss
     networks:
       - gauss_network
-    ports:
-      - 5432:5432
     env_file: .env
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -19,9 +17,6 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3-management-alpine
     hostname: rabbitmq
-    ports:
-      - 5672:5672
-      - 15672:15672
     env_file: .env
     environment:
       - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
@@ -43,8 +38,6 @@ services:
     build:
       context: .
       dockerfile: ./Docker/Gauss/Dockerfile
-    ports:
-      - 8000:8000
     networks:
       - gauss_network
     volumes:
@@ -74,13 +67,36 @@ services:
     build:
       context: .
       dockerfile: ./Docker/Nginx/Dockerfile
+      args:
+        - USER=${USER_NGINX}
+        - PASSWORD=${PASSWORD_NGINX}
     ports:
-      - 1337:80
+      - 80:80 # Gauss
+      - 9091:9091 # Prometheus
     depends_on:
       - gauss3
     volumes:
       - static_volume:/var/www/python/gauss3/sitestatic
       - media_volume:/var/www/python/gauss3/media
+    networks:
+      - gauss_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - gauss_network
+
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
     networks:
       - gauss_network
 

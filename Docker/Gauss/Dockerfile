@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM python:3.7.17-slim-bullseye AS builder
+FROM python:3.12-slim-bullseye AS builder
 
 # Install system dependencies including build-essential for compilation
 RUN apt-get update && \
@@ -9,6 +9,7 @@ RUN apt-get update && \
     libpq-dev \
     locales \
     locales-all \
+    wkhtmltopdf \
     build-essential \
     libattr1-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -22,7 +23,7 @@ COPY requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
 # Stage 2: Final image
-FROM python:3.7.17-slim-bullseye
+FROM python:3.12-slim-bullseye
 
 RUN apt-get update && apt-get install -y locales locales-all && rm -rf /var/lib/apt/lists/*
 
@@ -33,7 +34,7 @@ ENV LANGUAGE es_ES:es
 ENV LC_ALL es_ES.UTF-8
 
 # Copy built Python dependencies from the previous stage
-COPY --from=builder /usr/local/lib/python3.7/site-packages/ /usr/local/lib/python3.7/site-packages/
+COPY --from=builder /usr/local/lib/python3.12/site-packages/ /usr/local/lib/python3.12/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Copy scripts and set permissions
