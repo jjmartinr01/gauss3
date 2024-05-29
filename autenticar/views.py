@@ -500,7 +500,7 @@ def index(request):
             # Para funciones extendidas si entramos con un usuario profesor pero con clave de administrador.
             # De esta forma podemos confugurar acciones de adminstrador en cuentas de profesores.
             # Ej: if request.session['is_superuser']:
-            request.session['is_superuser'] = True if gauss else False
+            request.session.get['is_superuser'] = True if gauss else False
                 
                 
             # if usuario == 'gauss':
@@ -656,7 +656,7 @@ def logincas(request):
         else:
             nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
             request.session['nexturl'] = '/calendario/'
-        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
+        request.session['service'] = request.scheme+'%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
             url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
