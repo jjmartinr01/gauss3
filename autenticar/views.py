@@ -500,7 +500,7 @@ def index(request):
             # Para funciones extendidas si entramos con un usuario profesor pero con clave de administrador.
             # De esta forma podemos confugurar acciones de adminstrador en cuentas de profesores.
             # Ej: if request.session['is_superuser']:
-            request.session.get['is_superuser'] = True if gauss else False
+            request.session['is_superuser'] = True if gauss else False
                 
                 
             # if usuario == 'gauss':
