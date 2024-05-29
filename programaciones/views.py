@@ -3302,7 +3302,7 @@ def cuadernosdocentes(request):
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
 
-    if request.session['is_superuser']:
+    if request.session.get('is_superuser'):
         cuadernos = CuadernoProf.objects.filter(ge=g_e, psec__borrado=False) | CuadernoProf.objects.filter(ge=g_e, psec=None)
     else:
         cuadernos = CuadernoProf.objects.filter(ge=g_e, borrado=False, psec__borrado=False) | CuadernoProf.objects.filter(ge=g_e, borrado=False, psec=None)

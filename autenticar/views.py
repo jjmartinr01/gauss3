@@ -656,7 +656,7 @@ def logincas(request):
         else:
             nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
             request.session['nexturl'] = '/calendario/'
-        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
+        request.session['service'] = request.scheme+'%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
             url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
