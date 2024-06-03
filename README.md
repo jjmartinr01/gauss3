@@ -20,7 +20,10 @@ cd <repository-directory>
 ### 2. Add settings.py
 Add the settings.py file in the gauss directory
 
-### 3. Configure Environment Variables
+### 3. Add prometheus.yml
+Add the prometheus.yml file in the rootdirectory, it will be used to conecto to Grafana.
+
+### 4. Configure Environment Variables
 
 Create a `.env` file in the project root directory and define environment variables required for your application. 
 
@@ -34,7 +37,7 @@ RABBITMQ_DEFAULT_PASS=your_rabbitmq_password
 
 ```
 
-### 4. Build Docker Images
+### 5. Build Docker Images
 
 Run the following command to build Docker images for your application:
 
@@ -42,7 +45,7 @@ Run the following command to build Docker images for your application:
 docker-compose build
 ```
 
-### 5. Start Docker Containers
+### 6. Start Docker Containers
 
 Once the images are built, start the Docker containers:
 
@@ -52,11 +55,11 @@ docker-compose up -d
 
 This command will start the containers in detached mode, meaning they will run in the background.
 
-### 6. Access Your Application
+### 7. Access Your Application
 
 You can now access your Django application at `http://localhost:1337` in your web browser. 
 
-### 7. Additional Commands
+### 8. Additional Commands
 
 - To stop the containers, run:
 
