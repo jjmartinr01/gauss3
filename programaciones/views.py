@@ -3361,7 +3361,47 @@ def cuadernodocente(request, id=None):
     # CuadernoProf.objects.filter(borrado=True, ge__ronda__fin__lt=g_e.ronda.inicio).delete()
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'crea_cuaderno':
+        
+        if action == 'get_notas_del_saber_basico':
+            try:
+                # Si no llegan valores de cievals, volvemos
+                if request.POST['cievals_ids'] == "[]":
+                    return JsonResponse({'ok': True, 'calalums': []})
+                
+                # Quitamos las comillas, corchestes y convertimos el array de string en enteros
+                cievals_ids = request.POST['cievals_ids'].replace('[', '').replace(']', '').replace('"', '').split(",")
+                cievals_ids_numbers = list(map(int, cievals_ids))
+
+                # Si no hemos obtenidos cievals ids, volvemos para evitar un acceso a bbdd con array vacío
+                if len(cievals_ids_numbers) < 1:
+                    return JsonResponse({'ok': True, 'calalums': []})
+
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                calalums = CalAlum.objects.filter(cp=cuaderno, cie__in=cievals_ids_numbers)
+                
+                calalums_json = []
+
+                for ca in calalums:
+                    # Para escalas tipo Rúbrica (esvcl y lcont)
+                    queryset = ca.calalumvalor_set.all().values_list('ecpv', flat=True)
+                    ecpvs_seleccionados = list(queryset)
+
+                    calalums_json.append({ 
+                        "id": ca.id, 
+                        "cie": ca.cie_id, 
+                        "alumno": ca.alumno.id, 
+                        "cal": str(ca.cal).replace(".", ","), 
+                        "obs": ca.obs, 
+                        "ecpvs_seleccionados": ecpvs_seleccionados,
+                        "nom": ca.alumno.gauser.last_name
+                    })
+
+                return JsonResponse({'ok': True, 'calalums': calalums_json})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+            
+
+        elif action == 'crea_cuaderno':
             
             try:
                 # Comprobamos si el usuario tiene programaciones asociadas.
