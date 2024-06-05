@@ -532,7 +532,7 @@
             e.preventDefault();
 
             let tipo_ecp = $(this).attr("data-tipo-ecp");
-
+            console.log(tipo_ecp);
             if(tipo_ecp == "ESVCN") {
                 edit_calalumn_ESVCN($(this));
             }else if(tipo_ecp == "ESVCL" || tipo_ecp == "LCONT") {
@@ -1246,11 +1246,64 @@
             let sb = element.data('toggle');
             
             if(action == "toggle") {
+                let es_invisible = element.find("span").hasClass("disabled");
+                let cievals_ids = [];
+                $('.' + sb+"[data-cieval-id]").each(function(){
+                    cievals_ids.push($(this).attr("data-cieval-id"));
+                })
+
+                //Llamada ajax para traer los calalum
+                if(es_invisible) {
+                    let cuaderno = $('#id_cuaderno').val();
+                    $.ajax({
+                        url: '/cuadernodocente/',
+                        method: "post",
+                        dataType: "json",
+                        data: { action: 'get_notas_del_saber_basico', cuaderno: cuaderno, 'cievals_ids': JSON.stringify(cievals_ids)},
+                        success: function (data) {
+                            console.log(data);
+                            if (data.ok) {
+
+                                for(let i = 0; i < data.calalums.length; i++) {
+                                    let calalum = data.calalums[i];
+                                    let td = $("#td_"+calalum.cie+"_"+calalum.alumno);
+                                    td.find(".data-valor").html(calalum.cal);
+                                    if(calalum.obs) {
+                                        td.find(".icon-obs").removeClass("hidden");
+                                    }else {
+                                        td.find(".icon-obs").addClass("hidden");
+                                    }
+                                    let datas = td.find("[edit-calalumn-datas]");
+                                    datas.attr("data-calalum-id", calalum.id);
+                                    datas.attr("data-calalum-obs", calalum.obs);
+                                    datas.attr("data-calalum-cal", calalum.cal);
+                                    datas.attr("data-ecpvs-selected", calalum.ecpvs_seleccionados);
+                                }
+
+
+                                $('.' + sb).toggle();
+                                element.find("span").toggleClass("disabled");       //Cambiamos estilo del pill
+                                element.find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
+                                element.find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono
+                                
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        }
+                    });
+
+                    
+
+                }else {
+
+                    $('.' + sb).toggle();
+                                element.find("span").toggleClass("disabled");       //Cambiamos estilo del pill
+                                element.find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
+                                element.find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono 
+                }
                 
-                $('.' + sb).toggle();
-                element.find("span").toggleClass("disabled");       //Cambiamos estilo del pill
-                element.find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
-                element.find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono
+                
 
             }else if(action == "show") {
     
@@ -1279,6 +1332,11 @@
             element.find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
             element.find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono
         }
+
+        $( document ).ready(function() {
+            $("[class^='sb__']").hide();
+            $("#tabla_cuaderno").show();
+        });
 
 
     </script>

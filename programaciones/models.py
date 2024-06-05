@@ -1126,11 +1126,6 @@ class InstrEval(models.Model):
     def num_criinstreval(self):
         return CriInstrEval.objects.filter(ieval=self, peso__gt=0, borrado=False).count()
     
-    
-    def get_escalacp_en_cuaderno(self, cp):
-        return EscalaCP.objects.filter(ieval=self, cp=cp).first()
-
-
     def __str__(self):
         return '%s - %s' % (self.asapren, self.nombre)
 
@@ -1491,7 +1486,19 @@ class CuadernoProf(models.Model):
                         asap_element['ievals'].append(ieval_dict)
                         ieval_dict['cievals'].append(False)
                     for ieval in ievals:
-                        ieval_element = {'ieval': ieval, 'ieval_columns': 0, 'cievals': [] }
+                        ieval_element = {'ieval': ieval, 'ieval_columns': 0, 'cievals': [], 'ecp_id': None, 'ecp_tipo': None, 'ecp_display': None, 'ecp': None }
+                        try:
+                            ecp = EscalaCP.objects.filter(ieval_id=ieval.id, cp=self).first()
+                            ieval_element['ecp_id'] = ecp.id
+                            ieval_element['ecp_tipo'] = ecp.tipo
+                            ieval_element['ecp_display'] = ecp.get_tipo_display
+                            ieval_element['ecp'] = ecp
+                        except:
+                            ieval_element['ecp_id'] = None
+                            ieval_element['ecp_tipo'] = "ESVCN"
+                            ieval_element['ecp_display'] = "ESVCN"
+                            ieval_element['ecp'] = ecp
+
                         cievals = ieval.get_criinstreval
                         if cievals.count() == 0:
                             sb_element['sb_columns'] += 1
