@@ -46,6 +46,7 @@
         left: 0;
         z-index: 5 !important;
         background: #F5F5F5;
+        border-right: 1px solid #DDDDDD;
     }
 
 
@@ -146,20 +147,28 @@
 
     .tabla_cuaderno tr > th.selected {
         background-color: #fac289;
+        background-color: 
     }
 
    
 
     /* Mostrar/ocultar unidades*/
+    .ver_ocultar_sb_group {
+        padding: 10px;
+        padding-bottom: 5px;
+        background-color: #EFEFEF;
+        border: 1px solid #DDDDDD;
+        border-bottom: none;
+    }
+
     .ver_ocultar_sb span {
         margin-bottom: 6px;
         margin-right: 6px;
         display: inline-block;
-        padding: 4px 6px;
+        padding: 5px 7px;
         border-radius: 3px;
         background-color: #008CBA !important;
         color: white !important;
-        transition: background 0.3s ease;
     }
 
     .ver_ocultar_sb span:hover {
@@ -169,6 +178,11 @@
         background-color: white !important;
         border: 1px solid #DDDDDD !important;
         color: #222222 !important;
+    }
+
+    .ver_ocultar_sb span.disabled:hover {
+        background-color: #008CBA !important;
+        color: white !important;
     }
 
 </style>

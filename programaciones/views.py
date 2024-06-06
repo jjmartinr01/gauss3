@@ -2100,7 +2100,7 @@ def progsecundaria(request):
                 #         cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
                 #     msg += ''.join(cuadernos)
                 #     return JsonResponse({'ok': False, 'msg': msg})
-                if (permiso == 'X' or progsec.gep.ge == g_e):
+                if ('X' in permiso or progsec.gep.ge == g_e):
                     if progsec.es_borrable:
                         progsec.tipo = "BOR" 
                         progsec.borrado = True
@@ -2119,7 +2119,7 @@ def progsecundaria(request):
                 progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                               id=request.POST['id'])
                 permiso = progsec.get_permiso(g_ep)
-                if (permiso == 'X' or progsec.gep.ge == g_e):
+                if ('X' in permiso or progsec.gep.ge == g_e):
                     progsec.borrado = False
                     progsec.save()
                     progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
