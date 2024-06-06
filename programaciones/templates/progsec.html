@@ -767,22 +767,36 @@
             });
 
             $('body').on('click', '.copiar_progsec', function () {
-                show_mensajes({texto: 'Solo puede haber, dado un curso y una materia, una programación definitiva. '
-                +'Esto implica que, si se hacen copias, estas copias no se podrán poner de manera definitiva de manera simultánea. '
-                +'Además, no es posible copiar una programación de, por ejemplo 3º de Primaria, para hacer una de 4º de Primaria. '
-                +'La programación "copia" siempre será de 3º aunque le cambiemos el nombre y pongamos "4º de Primaria". '
-                +'Es necesario hacer la programación de 4° desde el principio, creando una nueva programación. '
-                +'Si no procedemos de esta forma, tendremos dos programaciones de 3º, aunque creamos que una de ellas es de 4º, y solo una se podrá poner como definitiva.'});
-                var progsec = $(this).data('progsec');
-                $.post("/progsecundaria/", {action: 'copiar_progsec', progsec: progsec},
-                    function (data) {
-                        if (data.ok) {
-                            $('#list_progsec').prepend(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
+                <!-- TODO: He tenido que usar una variable global.
+                    He probado closures, pasar como parámetro, acceder al body, al this, etc.
+                    -->
+                progsecID = $(this).data('progsec');
+                show_mensajes({
+                    title: '<i class="fa fa-info-circle"></i> Aviso copiar programaciones',
+                    texto: '<p><b>Solo puede haber, dado un curso y una materia, una programación definitiva.</b></p>'
+                         + '<p>Esto implica que, si se hacen copias, <b>estas copias no se podrán poner de manera definitiva de manera simultánea.</b></p>'
+                         + '<p>Además, <b>no es posible copiar una programación</b> de, por ejemplo, <b>3º de Primaria, para hacer una de 4º de Primaria.</b></p>'
+                         + '<p>La programación "copia" siempre será de 3º aunque le cambiemos el nombre y pongamos "4º de Primaria".</p>'
+                         + '<p>Es necesario hacer la programación de 4º desde el principio, creando una nueva programación.</p>'
+                         + '<p>Si no procedemos de esta forma, <b>tendremos dos programaciones de 3º, aunque creamos que una de ellas es de 4º, y solo una se podrá poner como definitiva.</b></p>',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", { action: 'copiar_progsec', progsec: progsecID},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#list_progsec').prepend(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                }, 'json');
                         }
-                    });
+                    }
+                });
             });
 
             <!-- Espe: Enviar programación a otro usuario -->
