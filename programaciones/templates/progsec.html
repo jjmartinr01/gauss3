@@ -767,10 +767,6 @@
             });
 
             $('body').on('click', '.copiar_progsec', function () {
-                <!-- TODO: He tenido que usar una variable global.
-                    He probado closures, pasar como parámetro, acceder al body, al this, etc.
-                    -->
-                progsecID = $(this).data('progsec');
                 show_mensajes({
                     title: '<i class="fa fa-info-circle"></i> Aviso copiar programaciones',
                     texto: '<p><b>Solo puede haber, dado un curso y una materia, una programación definitiva.</b></p>'
@@ -785,7 +781,7 @@
                         },
                         "Aceptar": function () {
                             hide_mensajes();
-                            $.post("/progsecundaria/", { action: 'copiar_progsec', progsec: progsecID},
+                            $.post("/progsecundaria/", { action: 'copiar_progsec', progsec: $('#id_progsec').val()},
                                 function (data) {
                                     if (data.ok) {
                                         $('#list_progsec').prepend(data.html);
