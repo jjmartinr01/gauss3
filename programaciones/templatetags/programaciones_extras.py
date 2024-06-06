@@ -340,45 +340,7 @@ def unidades_ra(prog, ra):
 #                     return True
 #             return False
 
-
-
-# Devuelve la escala asignada al instrumento ieval en un cuaderno determinado
-# Existen estas tres
-@register.filter
-def escala_del_instrumento_en_el_cuaderno(ieval, cuaderno):
-    try:
-        return ieval.get_escalacp_en_cuaderno(cuaderno)
-    except:
-        return None # Escala numérica por defecto    
-    
-
-# Existen estas tres
-@register.filter
-def escalas_del_instrumento_en_el_cuaderno(ieval, cuaderno):
-    try:
-        return EscalaCP.objects.filter(ieval=ieval, cp=cuaderno).all().values_list('id', flat=True)
-        #return ieval.get_escalacp_en_cuaderno(cuaderno)
-    except:
-        return None # Escala numérica por defecto    
-    
-# Devuelve el tipo de escala asignada al instrumento ieval en un cuaderno determinadoç
-# Existen estas tres escalas: ESVCN ESVCL LCONT
-@register.filter
-def tipo_de_escala_del_instrumento_en_el_cuaderno(ecp):
-    try:
-        return ecp.tipo
-    except Exception as msg:
-        #print(msg)
-        return "ESVCN" # Escala numérica por defecto
-
-# Indica si hay rúbrica o no. En función del tipo de escala    
-@register.filter
-def tiene_rubrica(ecp):
-    try:
-        return ecp.tipo == 'ESVCL'or ecp.tipo == 'LCONT'
-    except Exception as msg:
-        return False
-    
+   
 
 # Recogemos todos valores de la escala EscalaCPvalor seleccionados en el CalAlumn
 # Se seleccionana a través de CalAlumValor: CalAlum > CalAlumValor > EscalaCPvalor

@@ -767,16 +767,32 @@
             });
 
             $('body').on('click', '.copiar_progsec', function () {
-                var progsec = $(this).data('progsec');
-                $.post("/progsecundaria/", {action: 'copiar_progsec', progsec: progsec},
-                    function (data) {
-                        if (data.ok) {
-                            $('#list_progsec').prepend(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
+                show_mensajes({
+                    title: '<i class="fa fa-info-circle"></i> Aviso copiar programaciones',
+                    texto: '<p><b>Solo puede haber, dado un curso y una materia, una programación definitiva.</b></p>'
+                         + '<p>Esto implica que, si se hacen copias, <b>estas copias no se podrán poner de manera definitiva de manera simultánea.</b></p>'
+                         + '<p>Además, <b>no es posible copiar una programación</b> de, por ejemplo, <b>3º de Primaria, para hacer una de 4º de Primaria.</b></p>'
+                         + '<p>La programación "copia" siempre será de 3º aunque le cambiemos el nombre y pongamos "4º de Primaria".</p>'
+                         + '<p>Es necesario hacer la programación de 4º desde el principio, creando una nueva programación.</p>'
+                         + '<p>Si no procedemos de esta forma, <b>tendremos dos programaciones de 3º, aunque creamos que una de ellas es de 4º, y solo una se podrá poner como definitiva.</b></p>',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", { action: 'copiar_progsec', progsec: $('#id_progsec').val()},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#list_progsec').prepend(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                }, 'json');
                         }
-                    });
+                    }
+                });
             });
 
             <!-- Espe: Enviar programación a otro usuario -->

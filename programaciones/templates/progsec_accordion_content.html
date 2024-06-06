@@ -112,13 +112,17 @@
 </div>
 <!-- FIN Modificación Espe: Enviar copia programación -->
 <div class="row">
-    <div class="columns large-4">
+    <div class="columns large-3">
+        <label><b>Curso: <input disabled type="text"  class="update_texto nombre" data-campo="nombre_areamateria" data-id="{{ progsec.id }}"
+            id="input_nombre_areamateria{{ progsec.id }}" value="{{progsec.areamateria.nombre }} {{progsec.areamateria.get_curso_display}}"></label></b>
+    </div>
+    <div class="columns large-3">
         <label><b>Nombre específico: </b>
             <input type="text" class="update_texto nombre" data-campo="nombre" data-id="{{ progsec.id }}"
                    id="input_nombre{{ progsec.id }}" value="{{ progsec.nombre }}"
                    placeholder="Introduce aquí el nombre específico para la programación"></label>
     </div>
-    <div class="columns large-4">
+    <div class="columns large-2">
         <label title="Tipo de programación"><b>Tipo:</b>
             <select data-campo="tipo" data-progsec="{{ progsec.id }}" class="select_tipo"
                     id="tipo{{ progsec.id }}">

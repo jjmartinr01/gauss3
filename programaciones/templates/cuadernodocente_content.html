@@ -46,6 +46,7 @@
         left: 0;
         z-index: 5 !important;
         background: #F5F5F5;
+        border-right: 1px solid #DDDDDD;
     }
 
 
@@ -146,20 +147,28 @@
 
     .tabla_cuaderno tr > th.selected {
         background-color: #fac289;
+        background-color: 
     }
 
    
 
     /* Mostrar/ocultar unidades*/
+    .ver_ocultar_sb_group {
+        padding: 10px;
+        padding-bottom: 5px;
+        background-color: #EFEFEF;
+        border: 1px solid #DDDDDD;
+        border-bottom: none;
+    }
+
     .ver_ocultar_sb span {
         margin-bottom: 6px;
         margin-right: 6px;
         display: inline-block;
-        padding: 4px 6px;
+        padding: 5px 7px;
         border-radius: 3px;
         background-color: #008CBA !important;
         color: white !important;
-        transition: background 0.3s ease;
     }
 
     .ver_ocultar_sb span:hover {
@@ -169,6 +178,11 @@
         background-color: white !important;
         border: 1px solid #DDDDDD !important;
         color: #222222 !important;
+    }
+
+    .ver_ocultar_sb span.disabled:hover {
+        background-color: #008CBA !important;
+        color: white !important;
     }
 
 </style>
@@ -453,25 +467,25 @@
            
             {% with estructura_cuaderno=cuaderno.estructura_cuaderno %}
                 <div class="ver_ocultar_sb_group">
-                    <a class="ver_ocultar_sb ver_ocultar_all" data-toggle="show-all"
+                    <!--a class="ver_ocultar_sb ver_ocultar_all" data-toggle="show-all"
                            title="Mostrar/ocultar todos">
-                                <span class="label info" style="font-weight: bold;">
-                                    <i class="fa fa-eye"></i> TODOS
+                                <span class="label info disabled" style="font-weight: bold;">
+                                    <i class="fa fa-eye-slash"></i> TODOS
                                 </span>
-                    </a>
+                    </a-->
                 
                 {% for sb in estructura_cuaderno %}
                     <a class="ver_ocultar_sb" data-toggle="sb__{{ sb.sb.id }}"
                        title="Mostrar/ocultar {{ sb.sb.nombre }}">
-                            <span class="label info" style="font-weight: bold;">
-                                <i class="fa fa-eye"></i> {{ sb.sb.nombre }}
+                            <span class="label info disabled" style="font-weight: bold;">
+                                <i class="fa fa-eye-slash"></i> {{ sb.sb.nombre }}
                             </span>
                     </a>
                 {% endfor %}
                 </div>
 
                 <div class="div_table{{ cuaderno.id }}">
-                    <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+                    <table id="tabla_cuaderno" class="tabla_cuaderno" style="display: none;">
                         <thead>
                         <tr>
                             <th class="fixed_column" rowspan="5" id="fixed_column{{ cuaderno.id }}">
@@ -523,17 +537,17 @@
                                             <th data-th-ieval-id="{{ ieval.ieval.id }}" colspan="{{ ieval.ieval_columns }}" class="sb__{{ sb.sb.id }}"
                                                 title="{{ ieval.ieval.nombre }}">
                                                 
-                                                {% with ecp=ieval.ieval|escala_del_instrumento_en_el_cuaderno:cuaderno %}
-                                                    <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp" data-cuaderno="{{ cuaderno.id }}">
+                                                <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp" data-cuaderno="{{ cuaderno.id }}">
                                                     <div>{{ ieval.ieval.nombre|truncatechars:30 }}</div>
-                                                    <div><span data-th-ieval-escala-tipo="{{ ecp.tipo }}" style="font-size: 0.7em; color: #f08a24; ">{{ ecp.get_tipo_display }}</span></div>
-                                                    </a>
-                                                    <div data-th-ieval-escala style="display: none;">
-                                                    {% if ecp|tiene_rubrica %}
+                                                    <div><span data-th-ieval-escala-tipo="{{ ieval.ecp_tipo }}" style="font-size: 0.7em; color: #f08a24; ">{{ ieval.ecp_display }}</span></div>
+                                                </a>
+                                                <div data-th-ieval-escala style="display: none;">
+                                                {% if ieval.ecp_tipo == 'ESVCL' or ieval.ecp_tipo == 'LCONT' %}
+                                                    {% with ecp=ieval.ecp %}
                                                         {% include 'cuadernodocente_content_rubrica.html' %}
-                                                    {% endif %}
-                                                    </div>
-                                                {% endwith %}
+                                                    {% endwith %}
+                                                {% endif %}
+                                                </div>
 
                                             </th>
                                         {% endfor %}
@@ -580,23 +594,56 @@
                                     {% for sap in sb.saps %}
                                         {% for asap in sap.asaps %}
                                             {% for ieval in asap.ievals %}
-                                                {% for cieval in ieval.cievals %}
-                                                    {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno ecp=ieval.ieval|escala_del_instrumento_en_el_cuaderno:cuaderno %}
-                                                        {% with tipo_ecp=ecp|tipo_de_escala_del_instrumento_en_el_cuaderno %}
-                                                            {% include 'cuadernodocente_content_calalum.html' %}
-                                                        {% endwith %}
-                                                    {% endwith %}
-                                                {% endfor %}
+                                                {% with ecp_id=ieval.ecp_id tipo_ecp=ieval.ecp_tipo %}
+                                                    {% for cieval in ieval.cievals %}
+                                                        
+
+<td id="td_{{ cieval.id }}_{{ alumno.id }}"
+    class="sb__{{ sb.sb.id }} edit_calalumn edit_calalumn_ieval__{{ ieval.ieval.id }} cieval__{{ cieval.id }} alumno__{{ alumno.id }}" 
+    data-tipo-ecp="{{tipo_ecp}}"
+    title="{{ calalum.obs }}">
+
+    <div class="edit_calalumn_data">
+        <span class="data-valor">{# calalum.cal #}</span>
+        <span class="icon-obs hidden">
+            <i class="fa fa-commenting-o" aria-hidden="true"></i>
+        </span>
+    </div>
+
+    <div edit-calalumn-datas style="display: none;"
+        data-cuaderno-id="{{ cuaderno.id }}"
+        data-alumno-id="{{ alumno.id }}"
+        data-ieval-id="{{ ieval.ieval.id }}"
+        data-cieval-id="{{ cieval.id }}"
+        data-calalum-id="{# calalum.id #}"
+        data-calalum-cal="{# calalum.cal #}"
+        data-calalum-obs="{# calalum.obs #}"
+        data-ecpv="{% if tipo_ecp == 'ESVCN' %}empty{% endif %}" 
+
+        data-ecpvs-selected="" 
+        data-ecp-id="{% if tipo_ecp == 'ESVCL' or tipo_ecp == 'LCONT' %}{{ ecp_id }}{% endif %}">
+    </div>
+</td>
+
+
+
+                                                        {# include 'cuadernodocente_content_calalum.html' #}
+                                                        
+                                                    {% endfor %}
+                                                {% endwith %}
                                             {% endfor %}
                                         {% endfor %}
                                     {% endfor %}
                                 {% endfor %}
                             </tr>
                         {% endfor %}
-                        <tr id="tr_calificar_alumno{{ cuaderno.id }}">
+                        
+                        <!--tr id="tr_calificar_alumno{{ cuaderno.id }}">
                             <td colspan="200" style="text-align: left!important;"
                                 id="td_calificar_alumno{{ cuaderno.id }}"></td>
-                        </tr>
+                        </tr-->
+
+
                         </tbody>
                     </table>
                 </div>
