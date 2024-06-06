@@ -767,6 +767,8 @@
             });
 
             $('body').on('click', '.copiar_progsec', function () {
+                show_mensajes({texto: 'Solo puede haber, dado un curso y una materia, una programación definitiva. '
+                +'Esto implica que, si se hacen copias, estas copias no se podrán poner de manera definitiva de manera simultánea.'});
                 var progsec = $(this).data('progsec');
                 $.post("/progsecundaria/", {action: 'copiar_progsec', progsec: progsec},
                     function (data) {
