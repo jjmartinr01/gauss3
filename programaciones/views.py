@@ -3368,7 +3368,7 @@ def cuadernodocente(request, id=None):
                 if request.POST['cievals_ids'] == "[]":
                     return JsonResponse({'ok': True, 'calalums': []})
                 
-                # Quitamos las comillas, corchestes y convertimos el array de string en enteros
+                # Quitamos las comillas, corchetes y convertimos el array de string en enteros
                 cievals_ids = request.POST['cievals_ids'].replace('[', '').replace(']', '').replace('"', '').split(",")
                 cievals_ids_numbers = list(map(int, cievals_ids))
 
@@ -3826,7 +3826,57 @@ def cuadernodocente(request, id=None):
                 queryset = ca.calalumvalor_set.all().values_list('ecpv', flat=True)
                 ecpvs_selected = list(queryset)
 
-                return JsonResponse({'ok': True, 'selected': selected, 'cal': ca.cal, 'ca_id': ca.id, 'ecpvs_selected': ecpvs_selected})
+                calalums = []
+                calalums.append({
+                    'cal': str(ca.cal).replace(".",","), 
+                    'ca_id': ca.id, 
+                    'cieval_id': int(request.POST['cieval']), 
+                    'obs': ca.obs,
+                    'ecpvs_selected': ecpvs_selected,
+                    'selected': selected
+                })
+
+                # Si el mode == group, debemos también cambiar las notas de todos las celdas hermanas del mismo instrumento
+                if request.POST['mode'] == "group":
+                    cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                    cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                    alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
+                    ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
+
+                    # Utilizamos la función get_criiinsteval par traer todos los cieval pertenecientes al mismo instrumento
+                    # Esta función no trae los borrados
+                    cievals  = cieval.ieval.get_criinstreval
+                    
+                    for cieval_sibling in cievals:
+                        # Esta nota es la original, ya ha sido creada. Seguimos con las celdas del mismo instrumento
+                        if cieval_sibling.id == cieval.id:
+                            continue
+
+                        ca_sibling, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval_sibling, ecp=ecp)
+                       
+                        # Si no hay creación, borramos todas las notas
+                        ca_sibling.calalumvalor_set.all().delete()  
+
+                        # Copiamos las notas del original
+                        for ecpv_selected in ecpvs_selected:
+                            CalAlumValor.objects.get_or_create(ca=ca_sibling, ecpv_id=ecpv_selected)   
+                        
+                        # Lista de todos los valores de la rúbrica seleccionados
+                        queryset_sibling = ca_sibling.calalumvalor_set.all().values_list('ecpv', flat=True)
+                        ecpvs_selected_sibling = list(queryset_sibling)
+                            
+                        
+                        calalums.append({
+                            'cal': str(ca_sibling.cal).replace(".",","), 
+                            'ca_id': ca_sibling.id, 
+                            'cieval_id': cieval_sibling.id, 
+                            'obs': ca_sibling.obs,
+                            'ecpvs_selected': ecpvs_selected_sibling
+                        })
+
+                return JsonResponse({'ok': True, 'calalums': calalums})
+                #return JsonResponse({'ok': True, 'selected': selected, 'cal': ca.cal, 'ca_id': ca.id, 'ecpvs_selected': ecpvs_selected})
 
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -3852,6 +3902,7 @@ def cuadernodocente(request, id=None):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
             
         elif action == 'update_esvcn':
+
             # Params: cuaderno, cieval, alumno, calcalum, ecpv, valor
             try:
                 ca = None # Inicializamos la variable para meter la calificación
@@ -3897,20 +3948,55 @@ def cuadernodocente(request, id=None):
                 ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)                
                 CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
 
-                return JsonResponse({'ok': True, 'cal': ca.cal, 'ca_id': ca.id})
+                calalums = []
+                calalums.append({'cal': str(ca.cal).replace(".",","), 'ca_id': ca.id, 'cieval_id': int(request.POST['cieval']), 'obs': ca.obs })
+
+                # Si el mode == group, debemos también cambiar las notas de todos las celdas hermanas del mismo instrumento
+                if request.POST['mode'] == "group":
+                    cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                    cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                    alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
+                    ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
+
+                    # Utilizamos la función get_criiinsteval par traer todos los cieval pertenecientes al mismo instrumento
+                    # Esta función no trae los borrados
+                    cievals  = cieval.ieval.get_criinstreval
+                    
+                    for cieval_sibling in cievals:
+                        # Esta nota es la original, ya ha sido creada. Seguimos con las celdas del mismo instrumento
+                        if cieval_sibling.id == cieval.id:
+                            continue
+
+                        ca_sibling, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval_sibling, ecp=ecp)
+                        ca_sibling.calalumvalor_set.all().delete()
+                        CalAlumValor.objects.create(ca=ca_sibling, ecpv=ecpv)
+                        calalums.append({'cal': str(ca_sibling.cal).replace(".",","), 'ca_id': ca_sibling.id, 'cieval_id': cieval_sibling.id, 'obs': ca_sibling.obs })
+
+
+                return JsonResponse({'ok': True, 'calalums': calalums})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
             
         elif action == 'delete_calalum_valores':
             try:
-                ca = CalAlum.objects.get(id=request.POST['calalum'])
-                cieval = ca.cie.id
+                #### FALLO DE SEGURIDAD GENERALIZADO ####
+                #### NO COMPROBAMOS SI TENEMOS PERSMISOS SOBRE LOS CALALUM ##########
                 
-                #ca.obs = "" # Quitamos también las observaciones
-                #ca.calalumvalor_set.all().delete()
-                ca.delete() 
+                # Me llegará un array con los ids de los calalums a borrar.
+                calalums = request.POST['calalums'].replace('[', '').replace(']', '').replace('"', '').split(",")
+                calalums_ids = list(map(int, calalums))
 
-                return JsonResponse({'ok': True, 'cieval': cieval })
+                cievals = []
+                for calalum in calalums_ids:
+                    ca = CalAlum.objects.get(id=calalum)
+                    cieval = ca.cie.id
+                    cievals.append(cieval)
+                    #ca.obs = "" # Quitamos también las observaciones
+                    #ca.calalumvalor_set.all().delete()
+                    ca.delete() 
+
+                return JsonResponse({'ok': True, 'cievals': cievals })
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         

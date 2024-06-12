@@ -97,11 +97,19 @@
         margin: 0;
     }
 
+    /* Para modificar varias notas a la vez de un mismo instrumento */
+    .edit_calalumn.editing-several  > .edit_calalumn_data {
+        border: 2px solid #f08a24;  
+    }
+
     .edit_calalumn.editing  > .edit_calalumn_data {
         background-color: #fac289;
-        border: 2px solid #f08a24;
-        
+        border: 2px solid #f08a24;   
     }
+
+
+
+
 
     .edit_calalumn_data{
         height: 40px;
@@ -600,6 +608,8 @@
 
 <td id="td_{{ cieval.id }}_{{ alumno.id }}"
     class="sb__{{ sb.sb.id }} edit_calalumn edit_calalumn_ieval__{{ ieval.ieval.id }} cieval__{{ cieval.id }} alumno__{{ alumno.id }}" 
+    data-ieval-id="{{ieval.ieval.id}}"
+    data-alumno-id="{{alumno.id}}"
     data-tipo-ecp="{{tipo_ecp}}"
     title="{{ calalum.obs }}">
 

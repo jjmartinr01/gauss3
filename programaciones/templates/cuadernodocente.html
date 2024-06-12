@@ -31,6 +31,7 @@
             min-height: 100px;
         }
     </style>
+    
 
     <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="{{cuaderno.id}}">
     <!--input type="hidden" id="id_cieval" name="id_cieval" value=""-->
@@ -536,6 +537,8 @@
             }else if(tipo_ecp == "ESVCL" || tipo_ecp == "LCONT") {
                 edit_calalumn_RUBRICA($(this));
             }
+
+            ilumina_varias_notas_segun_mode();
             
         });
 
@@ -670,6 +673,7 @@
             $(".alumno").removeClass("selected");
             $("th.selected").removeClass("selected");
             $(".editing").removeClass("editing");
+            $(".editing-several").removeClass("editing-several");
             $("#modal_calalumn").hide();
             $("#modal_calalumn_body").find("[data-cieval-short]").show();
             $("#modal_calalumn_body").find("[data-cieval-long]").hide();
@@ -683,6 +687,39 @@
         ////////////////////////////////////////////////////////////////
         // Interación con el modal > Modal enriquecido botones y teclas
         
+        $("#data-criterio-mode").on('change', function(e){
+            let mode  = $(this).prop('checked'); //true => todos los criterios misma nota, false => cada criterio una nota
+            
+            //Varias notas a la vez
+            if(mode){
+                $("#data-criterio-mode-on").show();
+                $("#data-criterio-mode-off").hide();
+            //Solo una nota a la vez
+            }else{
+                $("#data-criterio-mode-off").show();
+                $("#data-criterio-mode-on").hide();
+            }
+
+            ilumina_varias_notas_segun_mode();
+
+        })
+
+        // Podemos meter todas las notas de los criterios a la vez si "data-criterio-mode" es true
+        // Esta variable se maneja desde el cuadernodocente_content_modal.html
+        function ilumina_varias_notas_segun_mode() {
+            // Por defecto deseleccionamos todas las celdas que serán cambiadas de forma pasiva
+            $(".editing-several").removeClass("editing-several");
+
+            let mode  =  $("#data-criterio-mode").prop('checked'); //true => todos los criterios misma nota, false => cada criterio una nota
+            //Varias notas a la vez
+            if(mode){
+                let ieval_id = $(".editing").attr("data-ieval-id");
+                let alumno_id = $(".editing").attr("data-alumno-id");
+                $(".edit_calalumn_ieval__"+ieval_id+".alumno__"+alumno_id).addClass("editing-several");
+            }
+
+        }
+
         // Mostrar criterio largo
         $('body').on('click', '.edit_calalumn_form_criterio', function (e) {
             $(this).find("div").toggle();
@@ -733,6 +770,8 @@
             me_muevo_alegre_por_la_tabla("down");
 
         }
+
+
 
         // Teclas pulsadas para interactuar con el modal abierto
         document.onkeydown = modal_interaction;
@@ -797,6 +836,13 @@
             valor = Math.max(0, Math.min(10, parseFloat(valor.replace(',', '.').replace(/[^\d.]/g, ''))));
             if (!valor) { valor = 0; }
 
+            // Modo de actulización. single => solo la celda group => todas los criterios del instrumento
+            let mode = "single";
+            if ($("#data-criterio-mode").prop('checked')){
+                mode = "group";
+            }
+
+
             // Necesito que el post sea síncrono para que no exita problemas de carrera cuando interactúo con le teclado.
             // Uso función ajax en vez del post directamente.
             $.ajax({
@@ -811,11 +857,16 @@
                     calalum: calalum_id,
                     valor: valor, 
                     obs: obs,
+                    mode: mode
                 },
                 success: function (data) {
                     
                     if (data.ok) {
-                        actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, null);
+                        for(let i= 0; i < data.calalums.length; i++) {
+                            let calalum = data.calalums[i];
+                            actualiza_celda_after_update(calalum.cieval_id, alumno_id, calalum.ca_id, calalum.cal, calalum.obs, null);
+                        }
+                        
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
@@ -823,27 +874,6 @@
                 },
                 async:false
               });
-
-            /*  $.post('/cuadernodocente/', {
-                    action: 'update_esvcn', 
-                    cuaderno: cuaderno_id, // Necesario cuando no hay calalum
-                    cieval: cieval_id,     // Necesario cuando no hay calalum
-                    alumno: alumno_id,     // Necesario cuando no hay calalum 
-                    
-                    calalum: calalum_id,
-                    valor: valor, 
-                    obs: obs,
-                },
-                function (data) {
-                    
-                    if (data.ok) {
-                        actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, null);      
-                        console.log("actualizo celda");
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-            */
                 
         });
 
@@ -863,6 +893,12 @@
             
             let obs = $("#modal_calalumn_body").find("[data-calalum-obs]").val();
             let celda_editada = $(".editing");
+
+            // Modo de actulización. single => solo la celda group => todas los criterios del instrumento
+            let mode = "single";
+            if ($("#data-criterio-mode").prop('checked')){
+                mode = "group";
+            }
             
             $.post('/cuadernodocente/', {
                     action: 'update_rubrica', 
@@ -874,19 +910,30 @@
                     calalum: calalum_id,
                     ecpv: ecpv_id,
                     obs: obs,
+                    mode: mode
 
                 },
                 function (data) {
                     if (data.ok) {
-                        // Deseleccionamos todos los valores de la rúbrica
-                        element.closest("tbody").find("[data-ecpv-id]").removeClass("ecpv_selected");
-                        // Encendemos los seleccionados
-                        for(let i=0; i < data.ecpvs_selected.length ; i++ ){
-                            let ecpv_id = data.ecpvs_selected[i];
-                            element.closest("tbody").find("[data-ecpv-id='"+ecpv_id+"']").addClass("ecpv_selected");
+
+                        for(let i= 0; i < data.calalums.length; i++) {
+
+                            let calalum = data.calalums[i];
+
+                            // Utilizamos el primero para enceder las casillas de la rúbrica
+                            if (i == 0) {
+                                // Deseleccionamos todos los valores de la rúbrica
+                                element.closest("tbody").find("[data-ecpv-id]").removeClass("ecpv_selected");
+                                // Encendemos los seleccionados
+                                for(let i=0; i < calalum.ecpvs_selected.length ; i++ ){
+                                    let ecpv_id = calalum.ecpvs_selected[i];
+                                    element.closest("tbody").find("[data-ecpv-id='"+ecpv_id+"']").addClass("ecpv_selected");
+                                }
+                            }
+
+                            actualiza_celda_after_update(calalum.cieval_id, alumno_id, calalum.ca_id, calalum.cal, calalum.obs, calalum.ecpvs_selected, tipo="RUBRICA", cerrar_modal=false);
                         }
-                        
-                        actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, data.ecpvs_selected, tipo="RUBRICA", cerrar_modal=false)
+                    
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
@@ -898,16 +945,36 @@
         $('body').on('click', '.delete_calalum_valores', function (e) {
             let element = $(this);
             let calalum_id = element.attr("data-calalum-id");
+            let alumno_id = element.attr("data-alumno-id");
             let tipo = element.attr("data-delete-tipo");
             let celda_editada = $(".editing");
-    
-            // Si no tenemos calificación, es que se ha pulsado borrar a una celda sin nota
-            if(!calalum_id) return;
+            
+            // Modo de actulización. single => solo la celda group => todas los criterios del instrumento
+            let mode = "single";
+            let calalums = [];
+            if(calalum_id != '') calalums.push(calalum_id);
 
-            $.post('/cuadernodocente/', {action: 'delete_calalum_valores', calalum: calalum_id},
+            // Si el modo es grupo, borramos todas la notas del mismo instsrumento
+            if ($("#data-criterio-mode").prop('checked')){
+                mode = "group";
+                calalums = $(".editing-several").map(function(){
+                    let calalum_id = $(this).find("[edit-calalumn-datas]").attr("data-calalum-id");
+                    if(calalum_id != "") return calalum_id;
+                }).toArray() ;
+            }
+                
+            // Si no tenemos calificación, es que se ha pulsado borrar a una celda sin nota
+            if(calalums.length == 0) return;
+
+            $.post('/cuadernodocente/', {action: 'delete_calalum_valores', calalums: JSON.stringify(calalums)},
                 function (data) {
                     if (data.ok) {
-                        actualiza_celda_after_update(celda_editada, "", "", "", "", tipo, true);
+
+                        for(let i= 0; i < data.cievals.length; i++) {
+                            let cieval_id = data.cievals[i];
+                            actualiza_celda_after_update(cieval_id, alumno_id, "", "", "", "", tipo, true);
+                        }
+
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
@@ -916,9 +983,11 @@
 
         // Función auxiliar: Acciones tras la recepción de la respuesta del servidor. 
         // Empleado: update_esvcn | update_rubrica | delete_calalum_valores
-        function actualiza_celda_after_update(celda_editada, ca_id, cal, obs, ecpvs_selected, tipo="ESVCN", cerrar_modal=false) {
+        function actualiza_celda_after_update(cieval_id, alumno_id, ca_id, cal, obs, ecpvs_selected, tipo="ESVCN", cerrar_modal=false) {
+            
             // Actualizamos los datos
-            let datas = celda_editada.find("[edit-calalumn-datas]");
+            let celda = $(".edit_calalumn.cieval__"+cieval_id+".alumno__"+alumno_id); 
+            let datas = celda.find("[edit-calalumn-datas]");
 
             //Actualizo datos: ESCVN
             datas.attr("data-calalum-id", ca_id);
@@ -938,21 +1007,21 @@
             }
 
             // Actualizamos el valor de la celda
-            celda_editada.find(".data-valor").html(cal);
+            celda.find(".data-valor").html(cal);
             $("#modal_calalumn_body").find("#edit_calalumn_cal").html(cal);
             
             
             // Activamos el icono de las observaciones si tiene
             if(obs){
-                celda_editada.find(".icon-obs").removeClass("hidden");
-                celda_editada.attr("title", obs);
+                celda.find(".icon-obs").removeClass("hidden");
+                celda.attr("title", obs);
             }else{
-                celda_editada.find(".icon-obs").addClass("hidden");
-                celda_editada.attr("title", "");
+                celda.find(".icon-obs").addClass("hidden");
+                celda.attr("title", "");
             }
 
             // Trick para que la celda vuelva al color gris en líneas pares
-            celda_editada.find(".edit_calalumn_data").addClass("highlight").delay(600).queue(function(next){
+            celda.find(".edit_calalumn_data").addClass("highlight").delay(600).queue(function(next){
                 $(this).removeClass("highlight");
                 next();
             });
@@ -995,22 +1064,28 @@
   
         
         var funcion_tiempo_espera_update_texto;
-        $('body').on('keyup change', '.update_obs', function () {
-
-            // Si tenemos el modal ESCVN visible, al guardar las observaciones debemos también 
-            // guardar la nota. Por lo tanto simplificamos haciendo un click en update_esvcn
-            // Emulamos pulsar el botón "v" azul
-            if($("#modal_calalumn").find(".edit_calalumn_form_tipo_ESVCN").is(":visible")) {
-                $("#modal_calalumn").find(".update_esvcn").click();
-                return;
-            }
+        $('.update_obs').on('keyup', function () {
             
+            //Cuando cierro el modal, 
+            if(!$("#modal_calalumn").is(":visible")){ return;}
+
             // Si estamos en el campo de observaciones de una rúbrica, guardamos solo las observaciones
             // por el camino tradicional
             clearTimeout(funcion_tiempo_espera_update_texto);
 
             let element = $(this);
             funcion_tiempo_espera_update_texto = setTimeout(function () {
+
+
+                // Si tenemos el modal ESCVN visible, al guardar las observaciones debemos también 
+                // guardar la nota. Por lo tanto simplificamos haciendo un click en update_esvcn
+                // Emulamos pulsar el botón "v" azul
+                if($("#modal_calalumn").find(".edit_calalumn_form_tipo_ESVCN").is(":visible")) {
+                    $("#modal_calalumn").find(".update_esvcn").click();
+                    return;
+                }
+            
+
                 let calalum_id = element.attr('data-calalum-id');
                 let cuaderno_id = element.attr('data-cuaderno-id');
                 let cieval_id = element.attr('data-cieval-id');
@@ -1028,8 +1103,9 @@
                        
                     },
                     function (data) {
+                        console.log(data);
                         if (data.ok) {
-                            actualiza_celda_after_update(celda_editada, data.ca_id, data.cal, obs, null, tipo="UPDATE_OBS", cerrar_modal=false)
+                            actualiza_celda_after_update(cieval_id, alumno_id, data.ca_id, data.cal, obs, null, tipo="UPDATE_OBS", cerrar_modal=false)
 
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
@@ -1207,6 +1283,9 @@
         });
 
         $('body').on('click', '.ver_ocultar_sb', function(){
+
+            // Cerramos el modal por si estuivera abierto
+            reset_calalum_form();
 
             var sb = $(this).attr('data-toggle');
             
