@@ -37,6 +37,15 @@
         {% endfor %}
         </tbody>
     </table>
+
+    {% if alumno.all_cursos_etapa_da %}
+        <p>La expresión del grado de adquisición de las competencias clave en los documentos señalados previamente es la establecida a continuación:</p>
+            <p>(4): Ha alcanzado la adquisición de la competencia en grado alto y de forma destacada.</p>
+            <p>(3): Ha alcanzado la adquisición de la competencia en grado medio, en un nivel suficiente y de forma satisfactoria.</p>
+            <p>(2): Ha alcanzado la adquisición de la competencia en grado básico, o está en proceso de alcanzar la competencia correspondiente.</p>
+            <p>(1): No ha alcanzado el grado esperado de la competencia.</p>
+    
+    {% else %}
     <p>La notación sobre el grado de adquisición de las competencias clave se ha realizado utilizando la
         nomenclatura A,
         B, C, D con el siguiente significado:</p>
@@ -52,6 +61,9 @@
     <p>
         D: No ha alcanzado el grado esperado de la competencia.
     </p>
+    {% endif %}
+   
+    
 
     <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
         Alumno: <span class="nombre_alumno_informe_cc">{{ alumno.gauser.get_full_name }}</span>
