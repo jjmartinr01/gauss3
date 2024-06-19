@@ -22,7 +22,7 @@ if [ ! -d "$LOCAL_DIR" ]; then
 else
   cd $LOCAL_DIR
   git fetch origin | tee -a $LOG_FILE
-  git reset --hard origin/$BRANCH | tee -a $LOG_FILE
+  git pull origin/$BRANCH | tee -a $LOG_FILE
 fi
 
 # Navigate to the project directory
