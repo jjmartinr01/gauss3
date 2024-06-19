@@ -4450,7 +4450,7 @@ def calcula_calificaciones_cc(alumno):
                 cal_cc_num = cal_cc / num_dos
             except:
                 cal_cc_num = 0
-
+            cal_ccs['cal_cc_informe_notas%s' % (cc)]=round(cal_cc_num, 2)           
             if alumno.all_cursos_etapa_da():
                 if cal_cc_num <= 4:
                     cal_ccs['cal_cc_informe%s' % (cc)] = '1'
