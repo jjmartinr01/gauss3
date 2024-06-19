@@ -31,7 +31,7 @@
                 <td>
                     {{ cc.competencia }}
                 </td>
-                <td id="cal_cc_informe{{ cc.siglas }}_{{ alumno.id }}"
+                <td id="cal_cc_informe{{ cc.siglas }}_{{ alumno.id }}" title='{{ cal_ccs|obtener_cc_cal_notas:cc.siglas }}'
                     style="font-weight: bold;text-align: center;" contenteditable="true">{{ cal_ccs|obtener_cc_cal:cc.siglas }}</td>
             </tr>
         {% endfor %}

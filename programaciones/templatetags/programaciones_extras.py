@@ -12,6 +12,9 @@ register = Library()
 def obtener_cc_cal(cal_ccs, siglas):
     return cal_ccs['cal_cc_informe%s' % siglas]
 @register.filter
+def obtener_cc_cal_notas(cal_ccs, siglas):
+    return cal_ccs['cal_cc_informe_notas%s' % siglas]
+@register.filter
 def obtener_do_cal(cal_ccs, clave):
     do_cal = round(cal_ccs['cal_do_informe%s' % clave], 2)
     return do_cal if do_cal > 0 else '-'
