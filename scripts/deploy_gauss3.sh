@@ -3,7 +3,7 @@
 # Define variables
 REPO_URL="https://github.com/jjmartinr01/gauss3"
 BRANCH="develop"
-LOCAL_DIR="$(dirname "$(realpath "$0")")"  #the parent directory
+LOCAL_DIR="$(echo ${PWD%/*})" #the parent directory
 DOCKER_COMPOSE_FILE="$LOCAL_DIR/docker-compose.yml"
 LOG_FILE="/var/log/deploy_gauss3.log"
 
