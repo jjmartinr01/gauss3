@@ -19,7 +19,7 @@ echo "$(date): Starting deployment" | tee -a $LOG_FILE
 
 cd $LOCAL_DIR
 git fetch origin | tee -a $LOG_FILE
-git pull origin/$BRANCH | tee -a $LOG_FILE
+git pull origin $BRANCH | tee -a $LOG_FILE
 
 
 # Build and deploy the Docker Compose setup
