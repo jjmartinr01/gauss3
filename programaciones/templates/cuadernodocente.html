@@ -1205,6 +1205,83 @@
                     }
                 });
         });
+        
+        // Mostramos ocultamos asignatura en la vista de competencias del cuaderno normal
+        $('body').on('click', '.ver_ocultar_asignatura', function(){
+            let asignatura_activa = $(this).attr("data-activo");
+            let asignatura = $(this).attr("trigger-toggle-asignatura");
+
+            // No jugamos con toggle, porque al tener dos switch, puede haber estados cambiados.
+            // Switch: Asignatura. Forzamos a encender o apagar todo.
+            if(asignatura_activa == "1") { // Si está activa, desactivamos.
+                $(this).attr("data-activo", "0");
+                $("[toggle-asignatura='"+asignatura+"']").hide();
+            }else {
+                $(this).attr("data-activo", "1");
+                $("[toggle-asignatura='"+asignatura+"']").show();
+            }
+
+            // Switch: criterios. Escondemos los elementos correspondientes si los criterios están desactivados
+            let criterios_activos = $(".ver_ocultar_criterios").attr("data-activo");
+
+            $("[th-competencias-long]").hide();     //Escondemos todas las cabeceras y vemos cuales mostramos
+            $("[th-competencias-short]").hide();
+            if(criterios_activos == "0")  { $("[toggle-criterio]").hide(); }
+
+            // Cabeceras
+            $(".ver_ocultar_asignatura").each(function(){
+                let asig_activ = $(this).attr("data-activo");
+                let asig = $(this).attr("trigger-toggle-asignatura");
+                if(asig_activ == "1"){
+                    if(criterios_activos == "0") {
+                        $("[th-competencias-short][toggle-asignatura='"+asig+"']").show();
+                    } else {
+                        $("[th-competencias-long][toggle-asignatura='"+asig+"']").show();
+                    }
+                }
+            })  
+
+            //Cambiamos estilo del pill
+            $(this).find("span").toggleClass("disabled");       
+            $(this).find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
+            $(this).find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono 
+
+        });
+
+
+        $('body').on('click', '.ver_ocultar_criterios', function(){
+            let criterios_activos = $(this).attr("data-activo");
+
+            // Switch: Criterios. Mostramos o escondemos todo
+            if(criterios_activos == "1") { //Si los criterios están activos, desactivamos
+                $(this).attr("data-activo", "0");
+                $("[toggle-criterio]").hide();
+
+                $("[th-competencias-long]").hide();
+                $("[th-competencias-short]").show();  
+            }else {
+                $(this).attr("data-activo", "1");
+                $("[toggle-criterio]").show();
+
+                $("[th-competencias-long]").show();
+                $("[th-competencias-short]").hide();   
+            }
+
+            // Switch: Asignaturas. Tenemos que recorrer todas las asignaturas para esconder las celdas correspondientes a una asginatura oculta
+            $(".ver_ocultar_asignatura").each(function(){
+                let asignatura_activa = $(this).attr("data-activo");
+                let asignatura = $(this).attr("trigger-toggle-asignatura");
+                if(asignatura_activa == "0"){
+                    $("[toggle-asignatura='"+asignatura+"']").hide();
+                }
+            })
+            
+        
+            $(this).find("span").toggleClass("disabled");       //Cambiamos estilo del pill
+            $(this).find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
+            $(this).find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono 
+
+        });
 
         $('body').on('click', '.ver_ocultar_sb', function(){
 
@@ -1214,7 +1291,7 @@
             if (sb == "show-all") {
                 
                 $(this).attr("data-toggle", "hide-all");
-                let group = $(this).closest(".ver_ocultar_sb_group");
+                let group = $(this).closest(".ver_ocultar_group");
                 
                 group.find(".ver_ocultar_sb").each(function(){
                     cuadernodocente_visualiza_saber_basico($(this), "hide");
@@ -1225,7 +1302,7 @@
             }else if (sb == "hide-all") {
                 $(this).attr("data-toggle", "show-all");
                 
-                let group = $(this).closest(".ver_ocultar_sb_group");
+                let group = $(this).closest(".ver_ocultar_group");
                 group.find(".ver_ocultar_sb").each(function(){
                     cuadernodocente_visualiza_saber_basico($(this), "show");
                 });
@@ -1293,9 +1370,9 @@
                 }else {
 
                     $('.' + sb).toggle();
-                                element.find("span").toggleClass("disabled");       //Cambiamos estilo del pill
-                                element.find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
-                                element.find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono 
+                    element.find("span").toggleClass("disabled");       //Cambiamos estilo del pill
+                    element.find(".fa").toggleClass("fa-eye");          //Cambiamos el icono
+                    element.find(".fa").toggleClass("fa-eye-slash");    //Cambiamos el icono 
                 }
                 
                 
