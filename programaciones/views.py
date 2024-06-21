@@ -4536,15 +4536,25 @@ def calcula_calificaciones_cc(alumno):
                 cal_cc_num = cal_cc / num_dos
             except:
                 cal_cc_num = 0
-
-            if cal_cc_num <= 4:
-                cal_ccs['cal_cc_informe%s' % (cc)] = 'D'
-            elif cal_cc_num <= 6:
-                cal_ccs['cal_cc_informe%s' % (cc)] = 'C'
-            elif cal_cc_num <= 8:
-                cal_ccs['cal_cc_informe%s' % (cc)] = 'B'
+            cal_ccs['cal_cc_informe_notas%s' % (cc)]=round(cal_cc_num, 2)   
+            if alumno.all_cursos_etapa_da():
+                if cal_cc_num <= 4:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = '1'
+                elif cal_cc_num <= 6:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = '2'
+                elif cal_cc_num <= 8:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = '3'
+                else:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = '4'
             else:
-                cal_ccs['cal_cc_informe%s' % (cc)] = 'A'
+                if cal_cc_num <= 4:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = 'D'
+                elif cal_cc_num <= 6:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = 'C'
+                elif cal_cc_num <= 8:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = 'B'
+                else:
+                    cal_ccs['cal_cc_informe%s' % (cc)] = 'A'
 
         return render_to_string('calificacc_alumno.html',
                                 {'cal_dos': cal_dos, 'cal_ccs': cal_ccs, 'cal_ces': cal_ces, 'ams': ams_ids,
