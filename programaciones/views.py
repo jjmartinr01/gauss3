@@ -3077,10 +3077,7 @@ def estadistica_prog(request):
         action = request.POST['action']
         if action == 'estadistica_entidad' and request.is_ajax():
             try:
-                print(request.POST['entidad'])
                 entidad = Entidad.objects.get(id=request.POST['entidad'])
-                print(request.POST)
-                print(entidad.ronda)
                 dep_ids = ProgSec.objects.filter(pga__ronda=entidad.ronda).values_list('departamento__id', flat=True)
                 departamentos = Departamento.objects.filter(id__in=dep_ids)
                 html = render_to_string('estadistica_prog_tabla.html', {'objeto': entidad,
