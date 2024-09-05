@@ -39,6 +39,7 @@ urlpatterns = [
     path('crea_calalumce_cev/', views.crea_calalumce_cev),
     path('arregla_instrevals/', views.arregla_instrevals),
     path('estadistica_prog/', views.estadistica_prog),
+    path('estadisticas_curso/', views.estadisticas_curso),
     path('arregla_cuaderno/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno),
     path('arregla_cuaderno2/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno2),
     path('arregla_cuaderno3/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno3),

@@ -21,6 +21,7 @@ from bancos.models import Banco
 from django.db.models import Q
 from autenticar.models import Gauser, Permiso, Menu_default
 
+
 logger = logging.getLogger('django')
 
 
@@ -579,6 +580,10 @@ class Gauser_extra(models.Model):
                     autor, date.today()))
         return baja
 
+    def all_cursos_etapa_da(self):
+        #TODO: mejor manera, actualmennte se hace así en otros sitios.
+        return all('E.S.O.' in curso.nombre for curso in self.gauser_extra_estudios.grupo.cursos.all())
+    
     def has_nivel(self, nivel):
         return len([cargo for cargo in self.cargos.all() if cargo.nivel <= nivel]) > 0
 

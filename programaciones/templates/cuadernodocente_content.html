@@ -15,7 +15,7 @@
     .materia-curso {
         color: #f08a24;
         border-radius: 3px;
-        font-size: 1.1em;
+        font-size: 1em;
         font-weight: bold;
         display: inline-block;
     }
@@ -28,7 +28,6 @@
         overflow-x: auto;
         display: block;
         height: 550px;
-        
     }
 
     .fullscreen {
@@ -97,11 +96,19 @@
         margin: 0;
     }
 
+    /* Para modificar varias notas a la vez de un mismo instrumento */
+    .edit_calalumn.editing-several  > .edit_calalumn_data {
+        border: 2px solid #f08a24;  
+    }
+
     .edit_calalumn.editing  > .edit_calalumn_data {
         background-color: #fac289;
-        border: 2px solid #f08a24;
-        
+        border: 2px solid #f08a24;   
     }
+
+
+
+
 
     .edit_calalumn_data{
         height: 40px;
@@ -153,15 +160,16 @@
    
 
     /* Mostrar/ocultar unidades*/
-    .ver_ocultar_sb_group {
+    .ver_ocultar_group {
         padding: 10px;
         padding-bottom: 5px;
         background-color: #EFEFEF;
         border: 1px solid #DDDDDD;
         border-bottom: none;
+        margin-top: 20px;
     }
 
-    .ver_ocultar_sb span {
+    .ver_ocultar_item span {
         margin-bottom: 6px;
         margin-right: 6px;
         display: inline-block;
@@ -171,16 +179,20 @@
         color: white !important;
     }
 
-    .ver_ocultar_sb span:hover {
+    .ver_ocultar_criterios {
+        float: right;
+    }
+
+    .ver_ocultar_item span:hover {
         background-color: #00485f !important;
     }
-    .ver_ocultar_sb span.disabled {
+    .ver_ocultar_item span.disabled {
         background-color: white !important;
         border: 1px solid #DDDDDD !important;
         color: #222222 !important;
     }
 
-    .ver_ocultar_sb span.disabled:hover {
+    .ver_ocultar_item span.disabled:hover {
         background-color: #008CBA !important;
         color: white !important;
     }
@@ -206,17 +218,19 @@
              </a>
             </li>
 
-            <li style="margin-right: 20px;">
-                {% if cuaderno.vista == "NOR" %}
-                    <a class="button tiny cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM" title="Ir a la vista de calificaciones por competencias específicas">
-                        <i class="fa fa-exchange"></i> Competencias
-                    </a>
-                {% else %}
-                    <a class="button tiny cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR" title="Ir a la vista de calificaciones por competencias específicas">
-                        <i class="fa fa-exchange"></i> Notas
-                    </a>
-                {% endif %}
-            </li>
+            {% if cuaderno.tipo == 'PRO' %}
+                <li style="margin-right: 20px;">
+                    {% if cuaderno.vista == "NOR" %}
+                        <a class="button tiny cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM" title="Ir a la vista de calificaciones por competencias específicas">
+                            <i class="fa fa-exchange"></i> Competencias
+                        </a>
+                    {% else %}
+                        <a class="button tiny cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR" title="Ir a la vista de calificaciones por competencias específicas">
+                            <i class="fa fa-exchange"></i> Notas
+                        </a>
+                    {% endif %}
+                </li>
+            {% endif %}
 
 
             <li>
@@ -466,8 +480,8 @@
             {#{% elif cuaderno %}#}
            
             {% with estructura_cuaderno=cuaderno.estructura_cuaderno %}
-                <div class="ver_ocultar_sb_group">
-                    <!--a class="ver_ocultar_sb ver_ocultar_all" data-toggle="show-all"
+                <div class="ver_ocultar_group">
+                    <!--a class="ver_ocultar_item ver_ocultar_all" data-toggle="show-all"
                            title="Mostrar/ocultar todos">
                                 <span class="label info disabled" style="font-weight: bold;">
                                     <i class="fa fa-eye-slash"></i> TODOS
@@ -475,7 +489,7 @@
                     </a-->
                 
                 {% for sb in estructura_cuaderno %}
-                    <a class="ver_ocultar_sb" data-toggle="sb__{{ sb.sb.id }}"
+                    <a class="ver_ocultar_sb ver_ocultar_item" data-toggle="sb__{{ sb.sb.id }}"
                        title="Mostrar/ocultar {{ sb.sb.nombre }}">
                             <span class="label info disabled" style="font-weight: bold;">
                                 <i class="fa fa-eye-slash"></i> {{ sb.sb.nombre }}
@@ -600,6 +614,8 @@
 
 <td id="td_{{ cieval.id }}_{{ alumno.id }}"
     class="sb__{{ sb.sb.id }} edit_calalumn edit_calalumn_ieval__{{ ieval.ieval.id }} cieval__{{ cieval.id }} alumno__{{ alumno.id }}" 
+    data-ieval-id="{{ieval.ieval.id}}"
+    data-alumno-id="{{alumno.id}}"
     data-tipo-ecp="{{tipo_ecp}}"
     title="{{ calalum.obs }}">
 
@@ -650,6 +666,31 @@
             {% endwith %}
         {% else %}
             {% with num_asig=cuaderno.psec.ces_asignaturas_ambito|length caas=cuaderno.psec.ces_asignaturas_ambito %}
+
+                
+                <div class="ver_ocultar_group">
+                    {% for asignatura in caas %}
+                        <a class="ver_ocultar_asignatura ver_ocultar_item" 
+                            data-activo="1"
+                            trigger-toggle-asignatura="{{ asignatura }}"
+                            title="Mostrar/ocultar {{ asignatura }}">
+                                <span class="label info" style="font-weight: bold;">
+                                    <i class="fa fa-eye"></i> {{ asignatura }}
+                                </span>
+                        </a>
+                    {% endfor %}
+
+                    <a class="ver_ocultar_criterios ver_ocultar_item"
+                        data-activo="1"
+                        title="Mostrar/ocultar crietios">
+                         <span class="label info" style="font-weight: bold;">
+                             <i class="fa fa-eye"></i> Criterios
+                         </span>
+                    </a>
+                </div>
+                
+
+
                 <div class="div_table{{ cuaderno.id }}">
                     <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
                         <thead>
@@ -677,51 +718,71 @@
                             </th>
                             {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
                                 <th colspan="{{ ce.criterioevaluacion_set.all|length|add:'1' }}"
-                                    title="{{ ce.orden }}.- {{ ce.nombre }}">{{ ce.orden }}.-
-                                    {{ ce.nombre|truncatechars:160 }}</th>
+                                    title="{{ ce.orden }}.- {{ ce.nombre }}"
+                                    toggle-asignatura="{{ ce.asignatura }}"
+                                    th-competencias-long
+                                    >{{ ce.orden }}.-
+                                    {{ ce.nombre|truncatechars:100 }}
+                                </th>
+
+                                <th colspan="1" style="display: none;"
+                                title="{{ ce.orden }}.- {{ ce.nombre }}"
+                                toggle-asignatura="{{ ce.asignatura }}"
+                                th-competencias-short
+                                >{{ ce.orden }}.-
+                                {{ ce.nombre|truncatechars:20 }}
+                                </th>
+                                
                             {% endfor %}
                         </tr>
                         <tr>
                             {% for cev in cuaderno.psec.areamateria.cevs %}
                                 {% ifchanged cev.ce %}
-                                    <th title="Calificación global de la CE{{ cev.ce.orden }}">Cal.
-                                        CE{{ cev.ce.orden }}</th>
+                                    <th title="Calificación global de la CE{{ cev.ce.orden }}"
+                                    toggle-asignatura="{{ cev.ce.asignatura }}">
+                                    Cal.CE{{ cev.ce.orden }}</th>
                                 {% endifchanged %}
                                 <th title="{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto }}"
-                                >{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
+                                toggle-asignatura="{{ cev.ce.asignatura }}" toggle-criterio>
+                                {{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
                             {% endfor %}
                         </tr>
                         </thead>
                         <tbody id="tbody_cuaderno{{ cuaderno.id }}">
                         {% for alumno in cuaderno.alumnos.all %}
                             {% for asignatura, ces in caas.items %}
-                                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}" style="color:red">
-                                    {% if forloop.first %}
+                                <tr id="tr_alumno{{ alumno.id }}" toggle-asignatura="{{ asignatura }}" data-alumno="{{ alumno.id }}">
+                                  
                                         <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}"
-                                            rowspan="{{ num_asig }}">
-                                            <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</</b>
+                                            rowspan="{{ 1 }}">
+                                            
+                                            <span>
+                                                <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</b>
+                                            </span>
+                                            
                                         </td>
-                                    {% endif %}
+                                    
                                     {% if num_asig > 1 %}
                                         <td>{{ asignatura }}</td>
                                     {% endif %}
-                                    {#                                                        <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>#}
+                                    {#  <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>#}
                                     <td>
                                         <b>
-                                            {{ cuaderno|get_global_asignatura:asignatura|get_global_cal_asignatura:alumno }}</b>
+                                            {{ cuaderno|get_global_asignatura:asignatura|get_global_cal_asignatura:alumno }}
+                                        </b>
                                     </td>
                                     {% for cev in cuaderno.psec.areamateria.cevs %}
                                         {% ifchanged cev.ce %}
                                             {% if cev.ce in ces %}
-                                                <td>{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
+                                                <td  toggle-asignatura="{{ cev.ce.asignatura }}">{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
                                             {% else %}
-                                                <td>--</td>
+                                                <td toggle-asignatura="{{ cev.ce.asignatura }}">--</td>
                                             {% endif %}
                                         {% endifchanged %}
                                         {% if cev.ce in ces %}
-                                            <td>{{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}</td>
+                                            <td toggle-criterio toggle-asignatura="{{ cev.ce.asignatura }}">{{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}</td>
                                         {% else %}
-                                            <td>--</td>
+                                            <td toggle-criterio toggle-asignatura="{{ cev.ce.asignatura }}">--</td>
                                         {% endif %}
                                     {% endfor %}
                                 </tr>
