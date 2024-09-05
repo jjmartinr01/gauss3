@@ -3077,7 +3077,10 @@ def estadistica_prog(request):
         action = request.POST['action']
         if action == 'estadistica_entidad' and request.is_ajax():
             try:
+                print(request.POST['entidad'])
                 entidad = Entidad.objects.get(id=request.POST['entidad'])
+                print(request.POST)
+                print(entidad.ronda)
                 dep_ids = ProgSec.objects.filter(pga__ronda=entidad.ronda).values_list('departamento__id', flat=True)
                 departamentos = Departamento.objects.filter(id__in=dep_ids)
                 html = render_to_string('estadistica_prog_tabla.html', {'objeto': entidad,
@@ -3113,6 +3116,32 @@ def estadistica_prog(request):
                       'g_e': g_e,
                       'objeto': g_e.ronda.entidad.organization,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+# Consulta: 
+# número de programaciones curso 2023/2024
+# número de cuadernos docentes
+# número de profesores que han utilizado Gauss
+# número de centros que han utilizado Gauss
+
+def estadisticas_curso(request):
+    g_e = request.session['gauser_extra']
+    
+    # Query directa a base de datos para recoger todos los usuarios que han accedido por lo menos una vez a Gauss en el curso
+    from django.db import connection
+    with connection.cursor() as cursor:
+        query = "select count(*) from autenticar_gauser  where (last_login != date_joined and last_login >= '2023-09-01');"
+        cursor.execute(query)
+        rawData = cursor.fetchall()
+        result = []
+        for r in rawData:
+            result.append(list(r))
+        
+    return render(request, "estadisticas_curso.html",
+                  {
+                      'rondas': Ronda.objects.filter(inicio = "2023-09-01"),
+                      'query' : query,
+                      'numero_usuarios': result[0][0]
                   })
 
 

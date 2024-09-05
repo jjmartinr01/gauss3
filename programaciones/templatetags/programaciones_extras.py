@@ -54,6 +54,29 @@ def get_programaciones(e): #'e' es 'Entidad'
     return ProgSec.objects.filter(pga__ronda=e.ronda, borrado=False).exclude(tipo='BOR').order_by('areamateria__curso')
 
 @register.filter
+def get_programaciones_incluidos_borradores(e): #'e' es 'Entidad'
+    return ProgSec.objects.filter(pga__ronda=e.ronda, borrado=False).order_by('areamateria__curso')
+
+# Buscamos todos los cuadernos que pertenecen a una programación
+# Podemos seleccionar por tipo
+@register.filter
+def get_cuadernos_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False)
+
+@register.filter
+def get_cuadernos_pro_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False, tipo="PRO")
+
+@register.filter
+def get_cuadernos_cri_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False, tipo="CRI")
+
+@register.filter
+def get_cuadernos_ces_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False, tipo="CES")
+
+
+@register.filter
 def cbarra2br(texto):
     # Transformar "\n" en <br> para imprimir en html
     return texto.replace('\n', '<br>')
