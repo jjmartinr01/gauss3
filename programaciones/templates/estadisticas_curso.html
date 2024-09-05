@@ -19,7 +19,7 @@
     </style>
 
     <div>
-        <h4 id="title_page"><strong>Estadísticas Curso 2023/2024</strong></h4>
+        <h4 id="title_page"><strong>Estadísticas Curso {{ curso }}</strong></h4>
     </div>
 
     <div class="summary">
@@ -51,7 +51,7 @@
 
     <div>
         {% for ronda in rondas %}
-            {% with psecs=ronda.entidad|get_programaciones psecs_all=ronda.entidad|get_programaciones_incluidos_borradores %}
+            {% with psecs=ronda|get_programaciones_by_ronda psecs_all=ronda|get_programaciones_incluidos_borradores_by_ronda %}
                 <div style="margin-bottom: 10px; border-bottom: 1px solid gray;" data-ronda="{{ronda.id}}">
                     <div><b>{{ ronda }} {{ ronda.entidad }}</b></div>
                     <div style="color: green; font-weight: bold;" 

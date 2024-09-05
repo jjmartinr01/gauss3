@@ -57,6 +57,16 @@ def get_programaciones(e): #'e' es 'Entidad'
 def get_programaciones_incluidos_borradores(e): #'e' es 'Entidad'
     return ProgSec.objects.filter(pga__ronda=e.ronda, borrado=False).order_by('areamateria__curso')
 
+
+@register.filter
+def get_programaciones_by_ronda(ronda): 
+    return ProgSec.objects.filter(pga__ronda=ronda, borrado=False).exclude(tipo='BOR').order_by('areamateria__curso')
+
+
+@register.filter
+def get_programaciones_incluidos_borradores_by_ronda(ronda):
+    return ProgSec.objects.filter(pga__ronda=ronda, borrado=False).order_by('areamateria__curso')
+
 # Buscamos todos los cuadernos que pertenecen a una programación
 # Podemos seleccionar por tipo
 @register.filter
