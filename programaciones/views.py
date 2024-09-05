@@ -3121,13 +3121,13 @@ def estadistica_prog(request):
 # número de profesores que han utilizado Gauss
 # número de centros que han utilizado Gauss
 
-def estadisticas_curso(request):
+def estadisticas_curso(request, anno):
     g_e = request.session['gauser_extra']
     
     # Query directa a base de datos para recoger todos los usuarios que han accedido por lo menos una vez a Gauss en el curso
     from django.db import connection
     with connection.cursor() as cursor:
-        query = "select count(*) from autenticar_gauser  where (last_login != date_joined and last_login >= '2023-09-01');"
+        query = "select count(*) from autenticar_gauser  where (last_login != date_joined and last_login >= '" + anno + "-09-01');"
         cursor.execute(query)
         rawData = cursor.fetchall()
         result = []
@@ -3136,9 +3136,10 @@ def estadisticas_curso(request):
         
     return render(request, "estadisticas_curso.html",
                   {
-                      'rondas': Ronda.objects.filter(inicio = "2023-09-01"),
+                      'rondas': Ronda.objects.filter(inicio = anno + "-09-01"),
                       'query' : query,
-                      'numero_usuarios': result[0][0]
+                      'numero_usuarios': result[0][0],
+                      'curso': anno + "/" + str(int(anno)+1)
                   })
 
 
