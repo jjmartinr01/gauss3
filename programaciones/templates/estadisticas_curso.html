@@ -67,13 +67,13 @@
                     </div>
 
                     {% for psec in psecs_all %}
-                        {% with cuadernos=psec|get_cuadernos_programacion cuadernos_pro=psec|get_cuadernos_pro_programacion cuadernos_cri=psec|get_cuadernos_cri_programacion cuadernos_ces=psec|get_cuadernos_ces_programacion  %}
+                        {% with cuadernos=psec|get_cuadernos_programacion   %}
                             <div>
                                 {{ psec.tipo }} | 
                                 <span data-cuadernos="{{cuadernos.count}}">Total cuadernos: {{ cuadernos.count }} </span>
-                                <span data-cuadernos-pro="{{cuadernos_pro.count}}">PRO: {{ cuadernos_pro.count }} </span>
-                                <span data-cuadernos-cri="{{cuadernos_cri.count}}">CRI: {{ cuadernos_cri.count }} </span>
-                                <span data-cuadernos-ces="{{cuadernos_ces.count}}">CES: {{ cuadernos_ces.count }} </span>
+                                <span data-cuadernos-pro="">PRO:  </span>
+                                <span data-cuadernos-cri="">CRI:  </span>
+                                <span data-cuadernos-ces="">CES:  </span>
                                 | {{ psec.nombre }}   
                             </div>
                         {% endwith %}
