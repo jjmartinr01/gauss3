@@ -1,0 +1,89 @@
+<style>
+
+	a.progsec-link {
+    	display: block;
+			border-bottom: 1px solid #EFEFEF;
+			padding: 10px 10px !important;
+			transition: all 0.3s ease;
+			color: #333333;
+  }
+
+	a.prosec-borrado {
+		background-color: rgb(254, 213, 213);
+	}
+
+	a.progsec-link:hover {
+			background-color: #EFEFEF;
+			color: #008CBA;
+	}
+
+	.prosec-borrada {
+		border-radius: 5px;
+		border: 1px solid red;
+		color: red;
+		padding: 3px 6px;
+		font-size: 0.9em;
+		margin-right: 10px;
+	}
+	.progsec-nombre{
+    	font-weight: bold;
+	}
+
+  	.progsec-ronda{
+    	font-size: 0.9em;
+			margin: 0px 10px;
+	}
+
+  	.progsec-id {
+    	float: right;
+    	font-weight: bold;
+    	font-size: 0.9em;
+    	color: #686868;
+  	}
+  
+	.progsec-tipo{
+    	font-weight: bold;
+    	color: #008CBA;
+    	font-size: 0.9em;
+			border: 1px solid #008CBA;
+			border-radius: 4px;
+			padding: 3px 3px;
+ 	}
+
+	.progsec-tipo.Borrador{
+    	color: gray;
+			border: 1px solid gray;
+ 	}
+
+  .progsec-fecha{
+      font-size: 0.9em;
+  }
+
+  .progsec-autor {
+      color: green;
+      font-size: 0.9em;
+  }
+</style>
+
+<a href="/programacion_didactica/{{ progsec.id }}/{{ progsec.identificador }}" 
+		class="progsec-link {% if progsec.borrado %} prosec-borrado {% endif %}">
+                
+  <div class="progsec-link-row">
+		{% if progsec.borrado %} <span class="prosec-borrada">Borrada</span> {% endif %}
+      <span class="progsec-nombre">
+        {% if progsec.nombre %}
+        	{{ progsec.nombre }}
+        {% else %}
+        	{{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}
+        {% endif %}
+      </span>
+	  <span class="progsec-ronda">{{ progsec.pga.ronda.nombre }}</span>
+      <span class="progsec-tipo {{ progsec.get_tipo_display }}">{{ progsec.get_tipo_display }}</span>
+      <span class="progsec-id">Id:{{ progsec.id }}</span>
+  </div>
+  <div class="progsec-link-row">
+      <span class="progsec-autor">Creado por: <span><i class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span></span>
+	  <span class="progsec-fecha">({{ progsec.creado|date:"d-m-Y" }})</span>
+  </div>
+
+</a>

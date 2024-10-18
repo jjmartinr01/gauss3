@@ -1,0 +1,51 @@
+{% load programaciones_extras %}
+
+<style>
+    .formulario_search {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background-color: #EFEFEF;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center; 
+    }
+
+    .formulario_search .button {
+        margin: 0;
+        padding: 10px 15px;
+    }
+
+    .formulario_search select {
+        margin: 0;
+        padding: 0px 40px;
+    }
+</style>
+
+{% with rondas=request.session.gauser_extra|get_rondas_ge %}
+    {% if rondas|length > 0 %}
+
+        <div id="formulario_search" class="formulario_search">
+            
+                <div>
+                    <b>Puedes cargar tus programaciones de cursos anteriores</b>
+                    <a id="info_cargar_progsec"> <i class="fa fa-info-circle"></i></a> :
+                </div>
+                
+                <div>
+                <select id="busca_progsec_ronda">
+                    {% for ronda in rondas %}
+                        <option value="{{ ronda.id }}">{{ ronda.nombre }} ({{ ronda.entidad.name }})
+                        </option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div>
+                    <span id="busca_progsec_manual" class="button radius"><i class="fa fa-search"></i> <strong>Buscar</strong></span>     
+                </div>
+            
+        </div>
+
+    {% endif %}
+{% endwith %}
+

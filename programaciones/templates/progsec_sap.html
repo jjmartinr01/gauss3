@@ -3,14 +3,78 @@
 
 {% block contenido %}
 <style>
-    .title_page {
-        text-align: center;
-        color: #008CBA;
-    }
+
 
     .ckeditor {
         border: lightgrey 1px solid;
         min-height: 100px;
+    }
+
+    .title_page {
+        text-align: left;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        font-weight: bold;
+        display:block;
+        color: #686868;
+        border-bottom: 1px solid #EFEFEF;
+        font-size: 1.2em;
+    }
+
+    .title_page span.sb {
+        font-size: 1em;
+        color: #008CBA;
+        margin-left: 30px;
+        float: right;
+    }
+
+
+    .title_page span.antigua {
+        color: rgb(116, 10, 10);
+    }
+
+
+
+    .progsec-header {
+        
+        font-size: 1.4em;
+        font-weight: bold;
+        border-bottom: 1px solid #EFEFEF;
+        margin: 20px 0px;
+        padding-bottom: 10px;
+    }
+
+    .progsec-curso-materia {
+        color: #f08a24;
+        font-size: 0.8em;
+    }
+
+    .progsec-autor {
+        color: green;
+        font-size: 0.8em;
+        font-weight: normal;
+    }
+
+    .progsec-ronda {
+        color: #008CBA;
+        font-size: 0.7em;
+    }
+
+    .progsec-antigua {
+        background-color: rgb(249, 223, 223);
+        color: rgb(116, 10, 10);
+        padding: 10px;
+        font-size: 0.7em;
+        font-weight: normal;
+    }
+
+    .programacion_didactica_content_box {
+        padding-bottom: 20px;
+        padding-top: 20px;
+        border: 1px solid #EFEFEF;
+        margin-bottom: 30px;
+        background-color: #fcfbfb;
     }
 </style>
 <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
@@ -24,38 +88,77 @@
     <input type="hidden" id="am_sap" name="am_sap" value="{{ sb.psec.areamateria.id }}">
 
     <div>
-        <h4 class="title_page"><strong>{{ sb.psec.areamateria.nombre }} - {{ sb.psec.nombre }}</strong></h4>
-        <h5 class="title_page"><strong>Situaciones de aprendizaje asociadas a la unidad de programación: {{ sb.orden }}.-
+        <h4 class="title_page">
+            SAP's asociadas a la unidad de programación 
+    
+            <span class="sb">{{ sb.orden }}.-
             {% autoescape off %}{{ sb.nombre }}{% endautoescape %}
-            ({{ sb.periodos }} periodo{{ sb.periodos|pluralize }})</strong></h5>
-    </div>
-    <fieldset id="formulario_search_sap" style="display: none;">
-        <legend>Buscar Situaciones de Aprendizaje</legend>
-        <div class="row">
-            <div class="columns large-9">
-                <input name="busca_saps" id="busca_saps"
-                       placeholder="Escribe parte del texto incluido en la SAP (al menos 3 caracteres)">
-            </div>
-            <div class="columns large-3">
-                <select name="busca_saps_tipo" id="busca_saps_tipo">
-                    <option value="MSAP" selected="selected">Entre mis SAP</option>
-                    <option value="ASAP">Entre todas las SAP</option>
-                </select>
+            ({{ sb.periodos }} periodo{{ sb.periodos|pluralize }})</span>
+        </h4>
+
+        <div class="progsec-header">
+            <div>
+                {% if sb.psec.nombre %}
+                    <div class="nombre">{{ sb.psec.nombre }}</div>
+                {% endif %}
+                <div class="progsec-curso-materia">
+                    {{ sb.psec.areamateria.get_curso_display }} · {{ sb.psec.areamateria.nombre }}
+                </div>
+                <div class="progsec-ronda">
+                    <span>{{ sb.psec.pga.ronda.nombre }}</span>
+                    <span>· {{ sb.psec.pga.ronda.entidad.name }}</span>
+                    <div class="progsec-autor">
+                        Creada por: <span><i class="fa fa-user"></i> {{ sb.psec.gep.ge.gauser.get_full_name }}</span>
+                        <span class="progsec-fecha">({{ sb.psec.creado|date:"d-m-Y" }})</span>
+                    </div>
+                </div>
+
+
+                {% if ies %}
+                <div class="progsec-antigua">
+                    No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> 
+                    Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.
+                </div>
+
+                {% elif antigua %}
+                    <div class="progsec-antigua">
+                        Esta programación es de un curso pasado y por tanto no se puede modificar ni utilizar en el curso actual<br>
+                        Puedes realizar una <B>COPIA</B> para traerla a tu curso actual. También puedes <b>ENVIAR UNA COPIA</b> a un/a compañero/a para que la pueda utilizar.
+                    </div>
+                {% endif %}
             </div>
         </div>
-        <div>
-            <br>
-            <dl class="accordion" data-accordion id="resultados_buscar_sap">
+    </div>
+
+    <div class="programacion_didactica_content_box">
+        <fieldset id="formulario_search_sap" style="display: none;">
+            <legend>Buscar Situaciones de Aprendizaje</legend>
+            <div class="row">
+                <div class="columns large-9">
+                    <input name="busca_saps" id="busca_saps"
+                           placeholder="Escribe parte del texto incluido en la SAP (al menos 3 caracteres)">
+                </div>
+                <div class="columns large-3">
+                    <select name="busca_saps_tipo" id="busca_saps_tipo">
+                        <option value="MSAP" selected="selected">Entre mis SAP</option>
+                        <option value="ASAP">Entre todas las SAP</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <br>
+                <dl class="accordion" data-accordion id="resultados_buscar_sap">
+                </dl>
+            </div>
+        </fieldset>
+        <div id="contenido_sb">
+            <dl class="accordion" data-accordion id="list_sbs">
+                {% for sap in sb.get_sitaprens %}
+                    {% include 'progsec_sap_accordion.html' %}
+                {% endfor %}
             </dl>
         </div>
-    </fieldset>
-    <div id="contenido_sb">
-        <br>
-        <dl class="accordion" data-accordion id="list_sbs">
-            {% for sap in sb.get_sitaprens %}
-                {% include 'progsec_sap_accordion.html' %}
-            {% endfor %}
-        </dl>
+
     </div>
 </form>
 {% endblock %}
@@ -130,7 +233,8 @@
         habilita(['s_arrow-left']);
         $('#arrow-left_sign').click(function (event) {
             event.preventDefault();
-            window.location.href = '/progsecundaria/?prog={{ sb.psec.id }}'
+            //window.location.href = '/progsecundaria/?prog={{ sb.psec.id }}'
+            window.location.href = '/programacion_didactica/{{ sb.psec.id }}/{{ sb.psec.identificador }}/'
         });
         {% if g_e|has_permiso:"crea_programaciones" %}
             {#habilita(['s_plus',]);#}
@@ -163,6 +267,7 @@
                 $.post(url_progsec_sap, {'action': 'busca_saps', 'texto': texto, 'am_sap': am_sap, 'tipo': tipo},
                     function (data) {
                         if (data.ok) {
+                            console.log(data);
                             $('#resultados_buscar_sap').html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
@@ -279,7 +384,7 @@
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post(url_progsec_sap, {action: 'open_accordion', id: id},
+                            $.post(url_progsec_sap, {action: 'open_accordion', sitapren_id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
@@ -564,6 +669,8 @@
             $('#legend_texto' + actividad).show();
             $('#legend_form' + actividad).hide();
         });
+
+
     </script>
 
 {% endblock %}
