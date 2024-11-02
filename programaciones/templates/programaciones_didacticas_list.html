@@ -1,0 +1,41 @@
+<style>
+
+    .title_page {
+        text-align: center;
+        color: #008CBA;
+        margin-top: 30px;
+        font-weight: bold;
+    }
+
+    .title_page span {
+        color: #f08a24;
+    }
+
+    .progsec-curso-header {
+        font-size: 1em;
+        font-weight: bold;
+        border-bottom: 1px solid #EFEFEF;
+        color: #f08a24;
+        margin: 20px 0px;
+    }
+</style>
+
+
+{% load entidades_extras %}
+<div>
+    {% if borradas %}
+        <h4 class="title_page">Programaciones <span>borradas<span></h4>
+    {% else %}
+        <h4 class="title_page">Programaciones {{ ronda.nombre }} - <span>{{ ronda.entidad.name }}<span></h4>
+    {% endif %}
+</div>
+
+
+{% for progsec in progsecs %}
+
+    {% ifchanged progsec.areamateria.curso %}
+    <h2 class="progsec-curso-header">{{ progsec.areamateria.get_curso_display }}</h2>
+    {% endifchanged %}
+
+    {% include 'programaciones_didacticas_link.html' %}
+{% endfor %}

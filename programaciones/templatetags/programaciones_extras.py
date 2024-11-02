@@ -101,8 +101,11 @@ def float2stringpoint(number):
 @register.filter
 def get_rondas_ge(ge):
     q1 = Q(gep__ge__gauser=ge.gauser)
-    q2 = ~Q(gep__ge=ge)
-    rondas_id = set(DocProgSec.objects.filter(q1 & q2).values_list('gep__ge__ronda__id', flat=True))
+    #q2 = ~Q(gep__ge=ge) NO QUITAMOS LA RONDA ACTUAL
+    
+    #rondas_id = set(DocProgSec.objects.filter(q1 & q2).values_list('gep__ge__ronda__id', flat=True))
+    rondas_id = set(DocProgSec.objects.filter(q1).values_list('gep__ge__ronda__id', flat=True))
+
     # Fecha a partir de la cual se pueden encontrar programaciones:
     # fecha_inicio = datetime.strptime('01/01/2020', '%d/%m/%Y')
     # rondas_id = Gauser_extra.objects.filter(ronda__inicio__gt=fecha_inicio,

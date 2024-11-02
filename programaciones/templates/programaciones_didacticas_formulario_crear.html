@@ -1,0 +1,48 @@
+<style>
+    .formulario_crear {
+        margin-top: 10px;
+        margin-bottom: 30px;
+        background-color: #EFEFEF;
+        padding: 10px;
+    }
+
+    .formulario_crear_form { 
+        background-color: #EFEFEF;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;    
+    }
+
+    .formulario_crear_form .button {
+        margin: 0;
+        padding: 10px 15px;
+    }
+</style>
+
+<div id="formulario_crear" class="formulario_crear" style="display: none;">
+
+    <h4>Crea una nueva programación</h4>
+
+    <div class="formulario_crear_form">
+        <div>
+            <b>Selecciona el curso:</b>
+            <select id="curso_progsec">
+                <option value="">-------</option>
+                {% for curso in cursos %}
+                    <option value="{{ curso.0 }}">{{ curso.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <b>Selecciona la materia:</b>
+            <select id="areamateria_progsec" disabled>
+                <option value="">-------</option>
+            </select>  
+        </div>
+        
+        <div id="crea_progsec_button" class="hide">
+            <a id="crea_progsec" class="hide button radius"><i class="fa fa-plus"></i> <b>Crear</b></a>
+        </div>
+    </div>
+</div>

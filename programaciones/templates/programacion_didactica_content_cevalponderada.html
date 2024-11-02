@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="columns large-12">
+        <p style="color: gray;">A modo de ejemplo, la calificación de la competencia específica {{ cep.ce.orden }} se
+            calculará a través de la siguiente media ponderada:</p>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12" style="text-align: left;" title="Calificación de la competencia específica {{ cep.ce.orden }}">
+        calificación CE{{ cep.ce.orden }} =
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12" style="text-align: center;">
+        <div>
+            {% for cevp in cep.cevprogsec_set.all %}
+                <span title="Calificación obtenida en el criterio de evaluación {{ cep.ce.orden }}.{{ cevp.cev.orden }}"
+                >CEV{{ cep.ce.orden }}.{{ cevp.cev.orden }}</span>&nbsp;×&nbsp;<span class="valor_cev{{ cevp.id }}"
+            >{{ cevp.valor|floatformat }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
+        </div>
+        <div style="border-top: 1px solid black;">
+            {% for cevp in cep.cevprogsec_set.all %}
+                <span class="valor_cev{{ cevp.id }}">{{ cevp.valor|floatformat }}</span
+                >{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <p style="color: gray;">En la anterior fórmula, CEV{{ cep.ce.orden }}.1 es la calificación que un alumno ha
+            obtenido al evaluar el criterio de evaluación {{ cep.ce.orden }}.1,
+            <br>en general, CEV{{ cep.ce.orden }}.n sería la calificación obtenida en el criterio de evaluación "n".</p>
+    </div>
+</div>

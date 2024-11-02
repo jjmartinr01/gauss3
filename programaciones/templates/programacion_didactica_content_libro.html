@@ -1,0 +1,10 @@
+<tr class="datos_libro{{ libro.id }}">
+    <td>{{ libro.nombre }}</td>
+    <td>{{ libro.isbn }}</td>
+    <td><a class="borrar_libro ocultable" data-progsec="{{ libro.psec.id }}" data-libro="{{ libro.id }}">
+        <i class="fa fa-trash"></i> Borrar
+    </a></td>
+</tr>
+<tr class="datos_libro{{ libro.id }}">
+    <td colspan="3" style="color: grey;">{% autoescape off %}{{ libro.observaciones }}{% endautoescape %}</td>
+</tr>

@@ -1,0 +1,38 @@
+<style>
+  .button.sap {
+      padding: 5px 5px;
+      display: flex;
+      border-radius: 3px;
+      width: 60px;
+  }
+
+  .button.sap i{
+      margin-right: 3px;
+  }
+</style>
+<div class="row datos_saber{{ saber.id }}">
+    <div class="columns large-2">
+        <input type="date" value="{{ saber.comienzo|date:'Y-m-d' }}" class="mod_saber" data-campo="comienzo"
+               data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}">
+    </div>
+    <div class="columns large-7">
+        <div class="row collapse">
+        <div class="small-1 columns">
+          <span class="prefix">{{ saber.orden }}</span>
+        </div>
+        <div class="small-11 columns">
+          <input type="text" value="{{ saber.nombre }}" class="mod_saber" data-campo="nombre"
+               data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}" >
+        </div>
+      </div>
+    </div>
+    <div class="columns large-1">
+        <input type="number" value="{{ saber.periodos }}" class="mod_saber" data-campo="periodos" min="1" max="100"
+               data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}" onkeydown="return false">
+    </div>
+    <div class="columns large-1" style="text-align: center;"><a class="alert borrar_saber ocultable" data-progsec="{{ saber.psec.id }}"
+                                    data-saber="{{ saber.id }}">
+        <i class="fa fa-trash"></i>
+    </a></div>
+    <div class="columns large-1"><a class="button sap" href="/progsecundaria_sb/{{ saber.id }}/"><i class="fa fa-pencil"></i> SAP</a></div>
+</div>

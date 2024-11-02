@@ -1,0 +1,758 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load programaciones_extras %}
+
+{% block contenido %}
+    <style>
+        .title_page {
+            text-align: left;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            font-weight: bold;
+            display:block;
+            color: #686868;
+            border-bottom: 1px solid #EFEFEF;
+            font-size: 1.2em;
+        }
+
+        .title_page span.id {
+            font-size: 0.8em;
+            color: #686868;
+            margin-left: 30px;
+            float: right;
+        }
+
+        .title_page span.antigua {
+            color: rgb(116, 10, 10);
+        }
+
+        .progsec-header {
+            font-size: 1.4em;
+            font-weight: bold;
+            border-bottom: 1px solid #EFEFEF;
+            margin: 20px 0px;
+            padding-bottom: 10px;
+        }
+
+        .progsec-curso-materia {
+            color: #f08a24;
+            font-size: 0.8em;
+        }
+
+        .progsec-autor {
+            color: green;
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+
+        .progsec-ronda {
+            color: #008CBA;
+            font-size: 0.7em;
+        }
+
+        .progsec-antigua {
+            background-color: rgb(249, 223, 223);
+            color: rgb(116, 10, 10);
+            padding: 10px;
+            font-size: 0.7em;
+            font-weight: normal;
+        }
+
+        .programacion_didactica_content_box {
+            padding-bottom: 20px;
+            padding-top: 20px;
+            border: 1px solid #EFEFEF;
+            margin-bottom: 30px;
+            background-color: #fcfbfb;
+        }
+
+        
+
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_progsec" name="id_progsec" value="{{progsec.id}}">
+
+        <div>
+            <h4 class="title_page">Programación didáctica
+                {% if antigua %}<span class="antigua">de un curso pasado</span>{% endif %}
+                <span class="id">Id:{{ progsec.id }}</span>
+            </h4>
+
+            <div class="progsec-header">
+                <div>
+                    {% if progsec.nombre %}
+                        <div class="nombre">{{ progsec.nombre }}</div>
+                    {% endif %}
+                    <div class="progsec-curso-materia">
+                        {{ progsec.areamateria.get_curso_display }} · {{ progsec.areamateria.nombre }}
+                    </div>
+                    <div class="progsec-ronda">
+                        <span>{{ progsec.pga.ronda.nombre }}</span>
+                        <span>· {{ progsec.pga.ronda.entidad.name }}</span>
+                        <div class="progsec-autor">
+                            Creada por: <span><i class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span>
+                            <span class="progsec-fecha">({{ progsec.creado|date:"d-m-Y" }})</span>
+                        </div>
+                    </div>
+                        
+                    {% if ies %}
+                        <div class="progsec-antigua">
+                            No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> 
+                            Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.
+                        </div>
+
+                    {% elif antigua %}
+                        <div class="progsec-antigua">
+                            Esta programación es de un curso pasado y por tanto no se puede modificar ni utilizar en el curso actual<br>
+                            Puedes realizar una <B>COPIA</B> para traerla a tu curso actual. También puedes <b>ENVIAR UNA COPIA</b> a un/a compañero/a para que la pueda utilizar.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="programacion_didactica_content_box">
+            {% include 'programacion_didactica_content.html' %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        
+		// Mostamos el botón de volver al list_cuadernos
+		habilita(['s_arrow-left']);
+		$('#arrow-left_sign').click(function (event) {
+			event.preventDefault();
+			location.href ="/programaciones_didacticas/";
+		});
+
+        var texto_editor;
+
+        function comprueba_cambio_texto(texto, progsec, campo) {
+            if (texto == texto_editor) {
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'update_texto',
+                        id: progsec,
+                        texto: texto_editor,
+                        campo: campo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        }
+
+      
+        {% if g_e == g_ep.ge %}
+
+     
+            
+            $('body').on('click', '.borrar_progsec', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta programación didáctica?',
+                    texto: 'Si aceptas, la programación se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/programacion_didactica_ajax/", {action: 'borrar_progsec', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        location.href = data.redirect;
+                                        //$('#accordion' + id).remove();
+                                        //$("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible el borrado',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.recuperar_progsec', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Recuperar esta programación didáctica?',
+                    texto: 'Si aceptas, la programación se recuperará y podrá ser editada de nuevo', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Recuperar": function () {
+                            hide_mensajes();
+                            $.post("/programacion_didactica_ajax/", {action: 'recuperar_progsec', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        location.href = data.redirect;
+                                        //$('#list_progsec').html(data.html);
+                                        //$("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible la recuperación',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+
+
+ 
+            var funcion_tiempo_espera_update_texto;
+            $('body').on('keyup change', '.update_texto', function () {
+                clearTimeout(funcion_tiempo_espera_update_texto);
+                var element = $(this);
+                funcion_tiempo_espera_update_texto = setTimeout(function () {
+                    var id = element.data('id');
+                    var campo = element.data('campo');
+                    var nuevo_texto = element.val();
+                    $.post("/programacion_didactica_ajax/", {action: 'update_texto', id: id, texto: nuevo_texto, campo: campo},
+                        function (data) {
+                            console.log(data);
+                            if (data.ok) {
+                                if (campo == 'nombre') {
+                                    $('#accordion_nombre' + data.progsec).html(data.html);
+                                }
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 750);
+            });
+
+            $('body').on('click', '.cargar_libro', function () {
+                var id = $(this).data('progsec');
+                var nombre = $('#nombre_libro' + id).val();
+                var isbn = $('#isbn_libro' + id).val();
+                //var observaciones = $('#observaciones_libro' + id).val();
+                var observaciones = $('#container_observaciones_libro').html();
+
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'cargar_libro', id: id, nombre: nombre,
+                        isbn: isbn, observaciones: observaciones
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#lista_libros' + id).append(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('click', '.borrar_libro', function () {
+                id = $(this).data('progsec');
+                libro = $(this).data('libro');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar este libro de la programación didáctica?',
+                    texto: 'Si aceptas, el libro se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/programacion_didactica_ajax/", {action: 'borrar_libro', id: id, libro: libro},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('.datos_libro' + libro).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.cargar_actex', function () {
+                var id = $(this).data('progsec');
+                var nombre = $('#nombre_actex' + id).val();
+                var inicio = $('#inicio_actex' + id).val();
+                var fin = $('#fin_actex' + id).val();
+                //var observaciones = $('#observaciones_actex' + id).val();
+                var observaciones = $('#container_observaciones_actex').html();
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'cargar_actex', id: id, nombre: nombre,
+                        inicio: inicio, fin: fin, observaciones: observaciones
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#lista_actex' + id).append(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('click', '.borrar_actex', function () {
+                id = $(this).data('progsec');
+                actex = $(this).data('actex');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta actividad extraescolar/complementaria de la programación didáctica?',
+                    texto: 'Si aceptas, la actividad se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/programacion_didactica_ajax/", {action: 'borrar_actex', id: id, actex: actex},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('.datos_actex' + actex).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.add_saber', function () {
+                var id = $(this).data('progsec');
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'add_saber', id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            {#$('#tbody_saberes' + id).append(data.html);#}
+                            $('#lista_saberes' + id).html(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            var funcion_tiempo_espera_mod_saber;
+            $('body').on('keyup change', '.mod_saber', function () {
+                var element = $(this);
+                clearTimeout(funcion_tiempo_espera_mod_saber);
+                funcion_tiempo_espera_mod_saber = setTimeout(function () {
+                    var valor = element.val();
+                    var id = element.data('progsec');
+                    var saber = element.data('saber');
+                    var campo = element.data('campo');
+                    if (campo === 'orden' || campo === 'periodos') {
+                        valor = parseInt(valor);
+                    }
+                    $.post("/programacion_didactica_ajax/", {
+                            action: 'mod_saber', id: id, saber: saber, campo: campo, valor: valor
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                if (data.html) {
+                                    $('#gantt' + id).html(data.html);
+                                }
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 750);
+            });
+            {#$('body').on('keydown', '.mod_saber', function () {#}
+            {#    clearTimeout(funcion_tiempo_espera_mod_saber);#}
+            {# });#}
+
+            $('body').on('click', '.ordenar_saberes', function () {
+                var element = $(this);
+                var id = element.data('progsec');
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'ordenar_saberes', id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#lista_saberes' + id).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.borrar_saber', function () {
+                progsec = $(this).data('progsec');
+                saber = $(this).data('saber');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta unidad de programación?',
+                    texto: 'Si aceptas, esta unidad se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/programacion_didactica_ajax/", {action: 'borrar_saber', id: progsec, saber: saber},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#lista_saberes' + progsec).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible el borrado',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('change', '.select_tipo', function () {
+                var id = $(this).data('progsec');
+                var tipo = $(this).val();
+                if (tipo == 'ACS' || tipo == 'AC') {
+                    $('.ajuste_competencial').show();
+                    var grados_100 = 'N';
+                } else {
+                    $('.ajuste_competencial').hide();
+                    var grados_100 = 'Y';
+                    $('.grado_cep').text(100);
+                }
+                $.post("/programacion_didactica_ajax/", {action: 'select_tipo', id: id, tipo: tipo, grados_100: grados_100},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            show_mensajes({'title': '<i class="fa fa-warning"></i> Error', 'texto': data.msg})
+                            $('#tipo' + data.progsec).val(data.tipo);
+                            $('#tipo' + data.progsec).trigger('change');
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            var funcion_tiempo_espera_update_texto;
+            $('body').on('click', '.mod_grado_cep', function () {
+                clearTimeout(funcion_tiempo_espera_update_texto);
+                var progsec = $(this).data('progsec');
+                var tipo = $(this).data('tipo');
+                var cep = $(this).data('cep');
+                var el_valor = $('#cep_grado' + cep);
+                var valor = parseInt(el_valor.text());
+                if (tipo === 'minus') {
+                    valor = (valor - 5 < 0) ? 0 : valor - 5;
+                } else {
+                    valor = (valor + 5 > 100) ? 100 : valor + 5;
+                }
+                el_valor.text(valor);
+                funcion_tiempo_espera_update_texto = setTimeout(function () {
+                    $.post("/programacion_didactica_ajax/", {action: 'mod_grado_cep', id: progsec, cep: cep, valor: valor},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 800);
+            });
+
+            $('body').on('change', '.select_departamento', function () {
+                var id = $(this).data('progsec');
+                var departamento = $(this).val();
+                $.post("/programacion_didactica_ajax/", {action: 'select_departamento', id: id, departamento: departamento},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('change', '.select_jefe', function () {
+                var id = $(this).data('progsec');
+                var jefe = $(this).val();
+                $.post("/programacion_didactica_ajax/", {action: 'select_jefe', id: id, jefe: jefe},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+
+            $('body').on('change', '.miembros_departamento', function () {
+                var id = $(this).data('progsec');
+                var ges = $(this).val();
+                
+                $.post("/programacion_didactica_ajax/", {action: 'add_docprogsec', id: id, ges: ges},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            {#$('body').on('change', '.alumno_destinatario', function (e) {#}
+            $('body').on('change.select2', '.alumno_destinatario', function (e) {
+                var progsec = $(this).data('progsec');
+                var alumno = $(this).val();
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'alumno_destinatario',
+                        id: progsec,
+                        alumno: alumno
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.pesocep', function () {
+                var id = $(this).data('progsec');
+                var cep = $(this).data('cep');
+                var cep_peso = $(this).val();
+                $.post("/programacion_didactica_ajax/", {action: 'update_pesocep', id: id, cep: cep, cep_peso: cep_peso},
+                    function (data) {
+                        if (data.ok) {
+                            $('.valor_ce' + cep).html(cep_peso);
+                            for (var cep_id in data.ceprogsec_porcentajes) {
+                                $('#cep_porcentaje' + cep_id).html(data.ceprogsec_porcentajes[cep_id]);
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.msg})
+                        }
+                    });
+            });
+
+            $('body').on('change', '.pesocevp', function () {
+                var id = $(this).data('progsec');
+                var cevp = $(this).data('cevp');
+                var cevp_peso = $(this).val();
+                $.post("/programacion_didactica_ajax/", {action: 'update_pesocevp', id: id, cevp: cevp, cevp_peso: cevp_peso},
+                    function (data) {
+                        if (data.ok) {
+                            $('#cevalponderada' + id).html(data.html);
+                            for (var cev_id in data.cevrogsec_porcentajes) {
+                                $('#cev_porcentaje' + cev_id).html(data.cevrogsec_porcentajes[cev_id]);
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.msg})
+                        }
+                    });
+            });
+
+            $('body').on('click', '.copiar_progsec', function () {
+                show_mensajes({
+                    title: '<i class="fa fa-info-circle"></i> Aviso copiar programaciones',
+                    texto: '<p><b>Solo puede haber, dado un curso y una materia, una programación definitiva.</b></p>'
+                         + '<p>Esto implica que, si se hacen copias, <b>estas copias no se podrán poner de manera definitiva de manera simultánea.</b></p>'
+                         + '<p>Además, <b>no es posible copiar una programación</b> de, por ejemplo, <b>3º de Primaria, para hacer una de 4º de Primaria.</b></p>'
+                         + '<p>La programación "copia" siempre será de 3º aunque le cambiemos el nombre y pongamos "4º de Primaria".</p>'
+                         + '<p>Es necesario hacer la programación de 4º desde el principio, creando una nueva programación.</p>'
+                         + '<p>Si no procedemos de esta forma, <b>tendremos dos programaciones de 3º, aunque creamos que una de ellas es de 4º, y solo una se podrá poner como definitiva.</b></p>',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/programacion_didactica_ajax/", { action: 'copiar_progsec', progsec: $('#id_progsec').val()},
+                                function (data) {
+                                    if (data.ok) {
+                                        location.href = data.redirect;
+                                        //$('#list_progsec').prepend(data.html);
+                                        //$("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                }, 'json');
+                        }
+                    }
+                });
+            });
+
+            <!-- Espe: Enviar programación a otro usuario -->
+            $('body').on('click', '.enviar_copia', function (e) {
+                e.preventDefault();
+                $('#lista_docentes').toggle();
+            });
+
+            $('body').on('click', '.enviar_copia_progsec', function () {
+                var progsec = $(this).data('progsec');
+                var docente = $('#gauser_extra_selected').val();
+                $.post("/programacion_didactica_ajax/", {
+                        action: 'enviar_copia_progsec', progsec: progsec, docente: docente
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#lista_docentes').toggle();
+
+                            show_mensajes({title: 'Programación enviada',texto: data.msg})
+
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            <!-- Espe: Fin Enviar programación a otro usuario -->
+
+            {######################################################## #}
+
+  
+
+            $('#Contenido').on('click', '.pdf_progsec', function (e) {
+                e.preventDefault();
+                {#genera_pdf_informe();#}
+                $('#action').val('pdf_progsec');
+                document.getElementById('{{formname}}').submit();
+            });
+
+  
+        {% else %}
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Aviso',
+                texto: 'No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.'
+            })
+        {% endif %}
+
+
+    </script>
+
+    
+    <script origin="programacion_didactica_content.html">
+
+        $('select').select2();
+        // Espe: Enviar programación a otro docente
+        // Función conf_select2 definida en base_select2-4.html
+        $('#gauser_extra_selected').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'cars': ['g_docente',],
+                'format_g': '{0}, {1} ({5})',
+                'format_prefix': 'None',
+                'scope': 'rondas',
+                'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
+            })
+        );
+        $('#alumno_destinatario').select2(
+            conf_select2({
+                'url': '/selectgcs/',
+                'gcs': 'g',
+                'cars': ['g_alumno',],
+                'format_g': '{0}, {1} ({2})',
+                'format_prefix': 'None',
+                'scope': 'ronda',
+                'placeholder': 'Escribe parte del nombre o apellido para buscarlo'
+            })
+        );
+
+        // Espe: Fin Enviar programación a otro docente
+        // Ckeditor
+        setTimeout(function () {
+            var procdiversidad{{ progsec.id }} = CKEDITOR.inline('procdiversidad{{ progsec.id }}');
+            var planrecup{{ progsec.id }} = CKEDITOR.inline('planrecup{{ progsec.id }}');
+            var observaciones_libro{{ progsec.id }} = CKEDITOR.inline('observaciones_libro{{ progsec.id }}');
+            var observaciones_actex{{ progsec.id }} = CKEDITOR.inline('observaciones_actex{{ progsec.id }}');
+            var observaciones{{ progsec.id }} = CKEDITOR.inline('observaciones{{ progsec.id }}');
+
+            procdiversidad{{ progsec.id }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                texto_editor = texto;
+                var progsec = {{ progsec.id }};
+                setTimeout(function () {
+                    comprueba_cambio_texto(texto, progsec, 'procdiversidad');
+                }, 1000);
+                re_adjust_check_time();
+            });
+            planrecup{{ progsec.id }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                texto_editor = texto;
+                var progsec = {{ progsec.id }};
+                setTimeout(function () {
+                    comprueba_cambio_texto(texto, progsec, 'planrecup');
+                }, 1000);
+                re_adjust_check_time();
+            });
+            observaciones{{ progsec.id }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                texto_editor = texto;
+                var progsec = {{ progsec.id }};
+                setTimeout(function () {
+                    comprueba_cambio_texto(texto, progsec, 'observaciones');
+                }, 1000);
+                re_adjust_check_time();
+            });
+            observaciones_libro{{ progsec.id }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                $('#container_observaciones_libro').html(texto);
+            });
+            observaciones_actex{{ progsec.id }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                $('#container_observaciones_actex').html(texto);
+            });
+        }, 300);
+
+
+
+        {% if ies or antigua %}
+            //Bloqueamos la edición en programaciones de rondas antinguas
+            $(".programacion_didactica_content_box").find('input').attr('disabled', 'disabled');
+            $(".programacion_didactica_content_box").find('input').attr('readonly', 'readonly');
+
+            $(".programacion_didactica_content_box").find('select').attr('disabled', 'disabled');
+            $(".programacion_didactica_content_box").find('select').attr('readonly', 'readonly');
+
+            $(".programacion_didactica_content_box").find('textarea').attr('disabled', 'disabled');
+            $(".programacion_didactica_content_box").find('textarea').attr('readonly', 'readonly');
+            $(".programacion_didactica_content_box").find('[contenteditable]').attr('contenteditable', 'false');
+
+            $(".programacion_didactica_content_box").find('.ocultable').hide();
+            
+        {% endif %}
+    </script>
+
+
+
+{% endblock %}

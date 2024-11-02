@@ -1,0 +1,11 @@
+<tr class="datos_actex{{ actex.id }}">
+    <td>{{ actex.nombre }}</td>
+    <td>{{ actex.inicio|date:'d/m/Y' }}</td>
+    <td>{{ actex.fin|date:'d/m/Y' }}</td>
+    <td><a class="borrar_actex ocultable" data-progsec="{{ actex.psec.id }}" data-actex="{{ actex.id }}">
+        <i class="fa fa-trash"></i> Borrar
+    </a></td>
+</tr>
+<tr class="datos_actex{{ actex.id }}">
+    <td colspan="4" style="color: grey;">{% autoescape off %}{{ actex.observaciones }}{% endautoescape %}</td>
+</tr>

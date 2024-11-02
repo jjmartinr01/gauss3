@@ -17,7 +17,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.db.models import Q, Sum
-from django.db import transaction
 from django import forms
 from django.forms import ModelForm
 from django.http import HttpResponse, JsonResponse, FileResponse
@@ -26,16 +25,13 @@ from django.core.files.base import File
 from django.core.paginator import Paginator
 from django.utils.timezone import now
 
-
 from autenticar.control_acceso import permiso_required, gauss_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
 from entidades.models import Cargo, EntidadExtra, DocConfEntidad
 from entidades.templatetags.entidades_extras import profesorado
-from entidades.templatetags.entidades_extras import profesorado_por_ronda
 from gauss.funciones import usuarios_ronda, usuarios_de_gauss, get_dce, clone_object, genera_pdf
 from programaciones.models import *
-from programaciones.views_helpers import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
@@ -1946,30 +1942,50 @@ def proyecto_educativo_centro(request):
 #     if borrar_saber:
 #         saber.borrado = True
 #         saber.save()
-# return render_to_string('programacion_didactica_content_saberes.html', {'progsec': progsec})
+# return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
 
 
 def reordenar_saberes_comienzo(psec):
     for i, s in enumerate(psec.saberbas_set.filter(borrado=False)):
         s.orden = i + 1
         s.save()
-    return render_to_string('programacion_didactica_content_saberes.html', {'progsec': psec})
+    return render_to_string('progsec_accordion_content_saberes.html', {'progsec': psec})
 
 
 # @permiso_required('acceso_progsecundaria')
 def programaciones_didacticas(request):
 
-    g_e, g_ep, ies, pga =  set_ge_gep_ies_pga(request)
-
+    g_e = request.session['gauser_extra']
+    try:
+        ies = request.session['ronda'].entidad.entidadextra.depende_de
+    except:
+        # Esta excepción ocurre en centros que no se cargan de Racima, por ejemplo el CRIE
+        EntidadExtra.objects.get_or_create(entidad=g_e.ronda.entidad)
+        ies = request.session['ronda'].entidad.entidadextra.depende_de
+    if ies:
+        try:
+            g_eies = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=ies.ronda)
+            g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_eies)
+            request.session['es_sies'] = True
+        except:
+            return HttpResponse('Error. No tienes usuario en tu IES. Comunica incidencia al Administrador')
+    else:
+        g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
+        request.session['es_sies'] = False
+    if c:
+        g_ep.puesto = g_e.puesto
+        g_ep.save()
+    if ies:
+        pga, c = PGA.objects.get_or_create(ronda=ies.ronda)
+    else:
+        pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
     # Las siguientes líneas son para asegurar que los creadores de una ProgSec siempre tendrán permiso 'X'
     psecs_ge_propietario = ProgSec.objects.filter(pga=pga, gep=g_ep)
-    for psec in psecs_ge_propietario:        
+    for psec in psecs_ge_propietario:
         dps, c = DocProgSec.objects.get_or_create(psec=psec, gep=g_ep)
         dps.permiso = 'X'
         dps.save()
     # Fin de las líneas que aseguran que el propietario tiene permiso 'X'
-    
-    
     if g_e.has_permiso('ve_todas_programaciones'):
         progsecs = ProgSec.objects.filter(pga=pga, borrado=False).order_by('areamateria__curso')
         #progsecs = ProgSec.objects.filter(pga=pga, borrado=False)
@@ -1978,6 +1994,7 @@ def programaciones_didacticas(request):
         progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
         progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False).order_by('areamateria__curso')
         #progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
+    
     
     
     if request.method == 'POST' and request.is_ajax() and not ies:
@@ -2015,6 +2032,9 @@ def programaciones_didacticas(request):
                         for cev in ce.criterioevaluacion_set.all():
                             CEvProgSec.objects.create(cepsec=cepsec, cev=cev)
                     
+                    #html = render_to_string('progsec_accordion.html',
+                    #                        {'buscadas': False, 'progsecs': [progsec], 'g_e': g_e, 'nueva': True})
+                    
                     return JsonResponse({'ok': True, 'redirect': '/programaciones_didacticas'})
                 else:
                     JsonResponse({'ok': False, 'msg': 'No tienes permiso para crear programaciones.'})
@@ -2041,7 +2061,7 @@ def programaciones_didacticas(request):
             try:
                 progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
                 progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=True)
-                html = render_to_string('programaciones_didacticas_list.html', {'progsecs': progsecs, 'borradas': True})
+                html = render_to_string('programaciones_didacticas_list.html', {'progsecs': progsecs})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -2063,7 +2083,10 @@ def programaciones_didacticas(request):
                             'permiso': 'libre'},
                            {'tipo': 'button', 'nombre': 'times-rectangle', 'texto': 'Programaciones borradas',
                             'title': 'Mostrar programaciones borradas y restaurar alguna de ellas',
-                            'permiso': 'libre'}
+                            'permiso': 'libre'},
+                           # {'tipo': 'button', 'nombre': 'file-text', 'texto': 'Programaciones otros cursos',
+                           #  'title': 'Mostrar programaciones de otros curso',
+                           #  'permiso': 'libre'},
                            ),
                       'g_e': g_e,
                       'g_ep': g_ep,
@@ -2075,117 +2098,185 @@ def programaciones_didacticas(request):
                   })
 
 
-# Para consultar una programación didáctica, es necesario cargar el Gauser_extra_programaciones
-# vinculado a la propia progsec, ya que puede ser una programación de rondas de otros años.
-
-def programacion_didactica(request, id=None, identificador=None):
-    
-    g_e, g_ep, ies, pga =  set_ge_gep_ies_pga(request)
-
+def progsecundaria(request):
+    # for p in ProgSec.objects.all():
+    #     p.identificador = pass_generator()
+    #     p.save()
+    # try:
+    g_e = request.session['gauser_extra']
     try:
-        progsec = ProgSec.objects.get(id=id, identificador=identificador)
-        permiso = progsec.get_permiso(g_ep)
-
-        # Si no tengo permiso de Lectura (creador/editor)        
-        if not 'L' in permiso:
-            return redirect('/programaciones_didacticas/')
+        ies = request.session['ronda'].entidad.entidadextra.depende_de
+    except:
+        # Esta excepción ocurre en centros que no se cargan de Racima, por ejemplo el CRIE
+        EntidadExtra.objects.get_or_create(entidad=g_e.ronda.entidad)
+        ies = request.session['ronda'].entidad.entidadextra.depende_de
+    if ies:
+        try:
+            g_eies = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=ies.ronda)
+            g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_eies)
+            request.session['es_sies'] = True
+        except:
+            return HttpResponse('Error. No tienes usuario en tu IES. Comunica incidencia al Administrador')
+    else:
+        g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
+        request.session['es_sies'] = False
+    if c:
+        g_ep.puesto = g_e.puesto
+        g_ep.save()
+    if ies:
+        pga, c = PGA.objects.get_or_create(ronda=ies.ronda)
+    else:
+        pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
+    # Las siguientes líneas son para asegurar que los creadores de una ProgSec siempre tendrán permiso 'X'
+    psecs_ge_propietario = ProgSec.objects.filter(pga=pga, gep=g_ep)
+    for psec in psecs_ge_propietario:
+        dps, c = DocProgSec.objects.get_or_create(psec=psec, gep=g_ep)
+        dps.permiso = 'X'
+        dps.save()
+    # Fin de las líneas que aseguran que el propietario tiene permiso 'X'
+    if g_e.has_permiso('ve_todas_programaciones'):
+        progsecs = ProgSec.objects.filter(pga=pga, borrado=False).order_by('areamateria__curso')
+        #progsecs = ProgSec.objects.filter(pga=pga, borrado=False)
         
-        # Para descargar pdf
-        if request.method == 'POST':
-            if request.POST['action'] == 'pdf_progsec':
-            
-                dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones didácticas')
-                #progsec = ProgSec.objects.get(id=request.POST['id_progsec'])
-                c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True, 'dce': dce})
-                genera_pdf(c, dce)
-                nombre = slugify('%s_%s' % (progsec.areamateria.nombre, progsec.areamateria.get_curso_display()))
-                return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
-                                    content_type='application/pdf')
-
-            elif request.POST['action'] == 'download_file':
-                try:
-                    pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
-                                                      pec__entidad=g_e.ronda.entidad)
-                    response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
-                    response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
-                    return response
-                except:
-                    pass
-
-        # GET
-        # Durante la copia de programaciones el departamento es None, pero si es INF o PRI no debería ser así:
-        CURSOS_CICLOS = {'00INF0': 'Primer Ciclo Infantil', '00INF1': 'Primer Ciclo Infantil',
-                         '00INF2': 'Primer Ciclo Infantil', '00INF3': 'Segundo Ciclo Infantil',
-                         '00INF4': 'Segundo Ciclo Infantil', '00INF5': 'Segundo Ciclo Infantil',
-                         '10PRI1': 'Primer Ciclo Primaria', '10PRI2': 'Primer Ciclo Primaria',
-                         '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
-                         '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
-        if not progsec.departamento and progsec.areamateria.curso in CURSOS_CICLOS:
-            ciclo = CURSOS_CICLOS[progsec.areamateria.curso]
-            etapa = ''.join([i for i in progsec.areamateria.curso if not i.isdigit()])
-            dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
-                                                        abreviatura=etapa)
-            progsec.departamento = dep
-            progsec.save()
-        # Fin de las líneas para evitar tener programaciones de INF o PRI sin ciclo asignado
-
-        docentes_id = DocProgSec.objects.filter(psec=progsec).values_list('gep__ge', flat=True)
-        #departamentos = Departamento.objects.filter(ronda=g_e.ronda)
-        departamentos = Departamento.objects.filter(ronda=progsec.gep.ge.ronda)
-
-        # ¿Es una programación antigua y por tanto no modificable?
-        # Si no es un SIES. Si es un sies se marcará como antigua aunque sea de este curso 
-        # ya que la ronda diferirá.
-        antigua = False
-        if not ies:
-            antigua = True if progsec.gep.ge.ronda != g_e.ronda else False
-        
-        return render(request, "programacion_didactica.html",
-            {
-                'formname': 'progsec',
-                'iconos':
-                    ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Mis Programaciones',
-                        'title': 'Volver a la lista de programaciones', 'permiso': 'libre'},
-                     ),
-
-                'g_e': g_e,
-                'g_ep': g_ep, 
-                'progsec': progsec, 
-                'gep': progsec.gep, 
-                'departamentos': departamentos,
-                #'docentes': profesorado(g_e.ronda.entidad), 
-                'docentes': profesorado_por_ronda(progsec.gep.ge.ronda), 
-                'docentes_id': docentes_id,
-                'antigua': antigua,
-                'ies': ies
-                    
-            })
-    except Exception as msg:
-        print(msg)
-        return redirect('/programaciones_didacticas/')
-    
-# Había problemas de race-conditions. 
-# Descubierto por dublicación del javascript "miembros_departamento"    
-# La acción "progsecundaria", antiguamente abarcaba todo. Desde el index de las progrmaciones
-# hasta los show a través de los accordions.
-# Ahora solo atiende a las peticiones ajax de una progrmación en concreto para su modificación
-# ANTIGUO:def progsecundaria(request):
-
-@transaction.atomic
-def programacion_didactica_ajax(request):
-
-    g_e, g_ep, ies, pga =  set_ge_gep_ies_pga(request)
-    
-    # Si la variable "ies" tiene contenido, significa que estoy accediendo desde un SIES y por tanto no puedo modificar nada
-    
-    if request.method == 'POST' and request.is_ajax() and ies:
-        return JsonResponse({'ok': False, 'msg': str("No es posible modificar programaciones desde el SIES")})
-    
-    elif request.method == 'POST' and request.is_ajax() and not ies:
-        
+    else:
+        progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
+        progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False).order_by('areamateria__curso')
+        #progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
+    if request.method == 'POST' and request.is_ajax() and not ies:
         action = request.POST['action']
-       
-        if action == 'copiar_progsec':
+        # if action == 'get_areasmaterias':
+        #     try:
+        #         ams = AreaMateria.objects.filter(curso=request.POST['curso'])
+        #         return JsonResponse({'ok': True, 'valores': [{'valor': am.id, 'texto': am.nombre} for am in ams]})
+        #     except Exception as msg:
+        #         return JsonResponse({'ok': False, 'msg': str(msg)})
+        # elif action == 'crea_progsec':
+        #     try:
+        #         if g_e.has_permiso('crea_programaciones'):
+        #             CURSOS_CICLOS = {'00INF0': 'Primer Ciclo Infantil', '00INF1': 'Primer Ciclo Infantil',
+        #                              '00INF2': 'Primer Ciclo Infantil', '00INF3': 'Segundo Ciclo Infantil',
+        #                              '00INF4': 'Segundo Ciclo Infantil', '00INF5': 'Segundo Ciclo Infantil',
+        #                              '10PRI1': 'Primer Ciclo Primaria', '10PRI2': 'Primer Ciclo Primaria',
+        #                              '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
+        #                              '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
+        #             areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
+        #             nombre_psec = '%s - %s' % (areamateria.get_curso_display(), areamateria.nombre)
+        #             try:
+        #                 ciclo = CURSOS_CICLOS[request.POST['curso']]
+        #                 etapa = ''.join([i for i in request.POST['curso'] if not i.isdigit()])
+        #                 dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
+        #                                                             abreviatura=etapa)
+        #                 progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
+        #                                                  departamento=dep, nombre=nombre_psec)
+        #             except:
+        #                 crea_departamentos(g_e.ronda)
+        #                 progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, nombre=nombre_psec)
+        #             DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
+        #             for ce in areamateria.competenciaespecifica_set.all():
+        #                 cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
+        #                 for cev in ce.criterioevaluacion_set.all():
+        #                     CEvProgSec.objects.create(cepsec=cepsec, cev=cev)
+        #             html = render_to_string('progsec_accordion.html',
+        #                                     {'buscadas': False, 'progsecs': [progsec], 'g_e': g_e, 'nueva': True})
+        #             return JsonResponse({'ok': True, 'html': html})
+        #         else:
+        #             JsonResponse({'ok': False, 'msg': 'No tienes permiso para crear programaciones.'})
+        #     except Exception as msg:
+        #         return JsonResponse({'ok': False, 'msg': str(msg)})
+        # elif action == 'busca_progsec_manual':
+        #     try:
+        #         ronda = Ronda.objects.get(id=request.POST['ronda'])
+        #         if g_e.has_claves_cargos(['g_director_centro', 'g_miembro_equipo_directivo']):
+        #             id_progsecs = ProgSec.objects.filter(pga__ronda=ronda).values_list('id', flat=True)
+        #         else:
+        #             id_progsecs1 = DocProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
+        #                                                      gep__ge__ronda=ronda).values_list('psec__id', flat=True)
+        #             id_progsecs2 = ProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
+        #                                                   gep__ge__ronda=ronda).values_list('id', flat=True)
+        #             id_progsecs = list(set(list(id_progsecs1) + list(id_progsecs2)))
+        #         progsecs = ProgSec.objects.filter(id__in=id_progsecs)
+        #         html = render_to_string('progsec_accordion.html', {'progsecs': progsecs, 'buscadas': True})
+        #         return JsonResponse({'ok': True, 'html': html})
+        #     except Exception as msg:
+        #         return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        if action == 'open_accordion':
+            try:
+                progsec = ProgSec.objects.get(id=request.POST['id'], identificador=request.POST['identificador'])
+                # Durante la copia de programaciones el departamento es None, pero si es INF o PRI no debería ser así:
+                CURSOS_CICLOS = {'00INF0': 'Primer Ciclo Infantil', '00INF1': 'Primer Ciclo Infantil',
+                                 '00INF2': 'Primer Ciclo Infantil', '00INF3': 'Segundo Ciclo Infantil',
+                                 '00INF4': 'Segundo Ciclo Infantil', '00INF5': 'Segundo Ciclo Infantil',
+                                 '10PRI1': 'Primer Ciclo Primaria', '10PRI2': 'Primer Ciclo Primaria',
+                                 '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
+                                 '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
+                if not progsec.departamento and progsec.areamateria.curso in CURSOS_CICLOS:
+                    ciclo = CURSOS_CICLOS[progsec.areamateria.curso]
+                    etapa = ''.join([i for i in progsec.areamateria.curso if not i.isdigit()])
+                    dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
+                                                                abreviatura=etapa)
+                    progsec.departamento = dep
+                    progsec.save()
+                # Fin de las líneas para evitar tener programaciones de INF o PRI sin ciclo asignado
+                docentes_id = DocProgSec.objects.filter(psec=progsec).values_list('gep__ge', flat=True)
+                departamentos = Departamento.objects.filter(ronda=g_e.ronda)
+                # if departamentos.count() == 0:
+                #     crea_departamentos(g_e.ronda)
+                #     departamentos = Departamento.objects.filter(ronda=g_e.ronda)
+                html = render_to_string('progsec_accordion_content.html',
+                                        {'progsec': progsec, 'gep': g_ep, 'departamentos': departamentos,
+                                         'docentes': profesorado(g_e.ronda.entidad), 'docentes_id': docentes_id})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_progsec':
+            # progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+            #                               id=request.POST['id'])
+            # msg = 'Opción desabilita temporalmente. Disculpe las molestias. %s' % progsec.es_borrable
+            # return JsonResponse({'ok': False, 'msg': msg})
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                # if 'C' in permiso:
+                #     msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                #     cuadernos = []
+                #     for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                #         cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                #     msg += ''.join(cuadernos)
+                #     return JsonResponse({'ok': False, 'msg': msg})
+                if ('X' in permiso or progsec.gep.ge == g_e):
+                    if progsec.es_borrable:
+                        progsec.tipo = "BOR" 
+                        progsec.borrado = True
+                        progsec.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        msg = 'La programación está siendo usada en uno o varios cuadernos docentes que ya contienen calificaciones.'
+                        return JsonResponse({'ok': False, 'msg': msg})
+                else:
+                    msg = 'No tienes permiso para borrar esta programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'recuperar_progsec':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if ('X' in permiso or progsec.gep.ge == g_e):
+                    progsec.borrado = False
+                    progsec.save()
+                    progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
+                    progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=False)
+                    html = render_to_string('progsec_accordion.html', {'progsecs': progsecs})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    msg = 'No tienes permiso para recuperar esta programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'copiar_progsec':
             try:
                 crea_departamentos(g_e.ronda)
                 ps = ProgSec.objects.get(id=request.POST['progsec'])
@@ -2238,15 +2329,11 @@ def programacion_didactica_ajax(request):
                                 for cieval in ieval.criinstreval_set.all():
                                     cevps = CEvProgSec.objects.get(cepsec__psec=ps_nueva, cev=cieval.cevps.cev)
                                     CriInstrEval.objects.create(ieval=ieval_nuevo, cevps=cevps, peso=cieval.peso)
-                # html = render_to_string('progsec_accordion.html',
-                #                         {'buscadas': False, 'progsecs': [ps_nueva], 'g_e': g_e, 'nueva': True})
-                # return JsonResponse({'ok': True, 'html': html})
-                return JsonResponse({'ok': True, 'redirect': "/programaciones_didacticas/"})
-              
+                html = render_to_string('progsec_accordion.html',
+                                        {'buscadas': False, 'progsecs': [ps_nueva], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
-                print(msg)
                 return JsonResponse({'msg': str(msg), 'ok': False})
-        
         # Espe: Enviar Copia de la programación al docente seleccionado
         elif action == 'enviar_copia_progsec':
             try:
@@ -2314,292 +2401,415 @@ def programacion_didactica_ajax(request):
                 return JsonResponse({'msg': str(msg), 'ok': False})
         
         # Espe: Fin Enviar Copia de la programación
-        
-       
-        else: 
-
-            try:    
-                progsec = ProgSec.objects.get(id=request.POST['id'])
+        elif action == 'update_texto':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
                 permiso = progsec.get_permiso(g_ep)
-
-                # Acciones con permisos de creador
-                if action == 'borrar_progsec':
-
-                    if ('X' in permiso or progsec.gep.ge == g_e):
-                        if progsec.es_borrable:
-                            progsec.tipo = "BOR" 
-                            progsec.borrado = True
-                            progsec.save()
-                            return JsonResponse({'ok': True, 'redirect': "/programaciones_didacticas/" })
-                        else:
-                            msg = 'La programación está siendo usada en uno o varios cuadernos docentes que ya contienen calificaciones.'
-                            return JsonResponse({'ok': False, 'msg': msg})
+                if 'E' in permiso or 'X' in permiso:
+                    if '_clases' in request.POST['campo']:  # inicio_clases o fin_clases
+                        texto = datetime.strptime(request.POST['texto'], '%Y-%m-%d')
                     else:
-                        msg = 'No tienes permiso para borrar esta programación didáctica.'
-                        return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
-
-                elif action == 'recuperar_progsec':
-                
-                        if ('X' in permiso or progsec.gep.ge == g_e):
-                            progsec.borrado = False
-                            progsec.save()
-                            return JsonResponse({'ok': True, 'redirect': "/programaciones_didacticas/" })
-                        else:
-                            msg = 'No tienes permiso para recuperar esta programación didáctica.'
-                            return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
-
-                # A partir de aquí acciones para modidficar una programación
-                # Acciones con permisos de editor o creador para modficar programaciones
-                
-                # Evitamos que se puedan modificar programaciones de rondas antiguas
-                elif progsec.gep.ge.ronda != g_e.ronda:
-                    return JsonResponse({'ok': False, 'msg': "No se pueden modificar programaciones de cursos pasados"})
-
-                elif 'E' in permiso or 'X' in permiso:
-
-                    if action == 'alumno_destinatario':
-
-                        progsec.alumno = Gauser_extra.objects.get(id=request.POST['alumno'])
-                        progsec.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
-                
-       
-                    elif action == 'mod_grado_cep':
-   
-                        cep = CEProgSec.objects.get(psec=progsec, id=request.POST['cep'])
-                        valor = int(request.POST['valor'])
-                        if valor in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]:
-                            cep.grado = valor
-                            cep.save()
-                            return JsonResponse({'ok': True, 'progsec': progsec.id})
-                        else:
-                            return JsonResponse({'ok': False, 'msg': 'Valor de grado de adquisición no permitido'})
-
-        
-                    elif action == 'borrar_saber':
-      
-                        saber = progsec.saberbas_set.get(id=request.POST['saber'])
-                        if saber.es_borrable:
-                            psec = saber.psec
-                            saber.borrado = True
-                            saber.save()
-                            html = reordenar_saberes_comienzo(psec)
-                            return JsonResponse({'ok': True, 'html': html})
-                        else:
-                            msg = 'Esta unidad de programación está siendo usada en uno o varios cuadernos docentes que ya contienen calificaciones.'
-                            return JsonResponse({'ok': False, 'msg': msg})
- 
-     
-                    elif action == 'update_texto':
-
-                        if '_clases' in request.POST['campo']:  # inicio_clases o fin_clases
-                            texto = datetime.strptime(request.POST['texto'], '%Y-%m-%d')
-                        else:
-                            texto = request.POST['texto']
-                        setattr(progsec, request.POST['campo'], texto)
-                        if request.POST['campo'] == 'nombre' and not texto:
-                            texto = '%s - %s' % (progsec.areamateria.get_curso_display(), progsec.areamateria.nombre)
-                            progsec.nombre = texto
-                        progsec.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
-
-                    elif action == 'select_tipo':
-
-                        if progsec.tipo == request.POST['tipo']:
-                            return JsonResponse({'ok': True, 'msg': 'No se cambia el tipo'})
-
-
-                        if request.POST['tipo'] == 'DEF':
-                            definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
-                            for d in definitivas:
-                                if d.borrado:
-                                    d.tipo = 'BOR'
-                                    d.save()
-                                else:
-                                    msg = '<p>Ya existe una programación "Definitiva" asociada a esta materia en su centro.</p>'
-                                    msg += '<p>Dicha programación es propiedad de %s.</p>' % d.gep.ge.gauser.get_full_name()
-                                    msg += '<p>Antes de hacer este cambio, esa programación debe marcarse como "Borrador" '
-                                    msg += 'o proceder a su borrado.</p>'
-                                    return JsonResponse(
-                                        {'ok': False, 'msg': msg, 'tipo': progsec.tipo, 'progsec': progsec.id})
-                        progsec.tipo = request.POST['tipo']
-                        progsec.save()
-                        if request.POST['grados_100'] == 'Y':
-                            progsec.ceprogsec_set.filter(grado__lt=100).update(grado=100)
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
-
-
-                    elif action == 'select_departamento':
-
-                        departamento = Departamento.objects.get(id=request.POST['departamento'], ronda=g_e.ronda)
-                        g_ep.departamento = departamento
-                        g_ep.save()
-                        progsec.departamento = departamento
-                        progsec.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
-
-
-                    elif action == 'select_jefe':
-
-                        ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['jefe'])
-                        try:
-                            departamento = progsec.departamento
-                            geps = departamento.gauser_extra_programaciones_set.all()
-                        except:
-                            geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda)
-                        for gep in geps.filter(jefe=True):
-                            gep.jefe = False
-                            try:
-                                dps = DocProgSec.objects.get(gep=gep, psec=progsec)
-                                if progsec.gep == gep:  # Si el jefe era el creador de la progsec se queda con permiso 'X'
-                                    dps.permiso = 'X'
-                                else:
-                                    dps.permiso = 'L'
-                                dps.save()
-                            except:
-                                pass
-                            gep.save()
-                        try:
-                            nuevo_ge_jefe = geps.get(ge=ge)
-                        except:
-                            nuevo_ge_jefe, c = Gauser_extra_programaciones.objects.get_or_create(ge=ge)
-                        nuevo_ge_jefe.departamento = departamento
-                        nuevo_ge_jefe.jefe = True
-                        nuevo_ge_jefe.save()
-                        nuevo_gep_jefe, c = DocProgSec.objects.get_or_create(gep=nuevo_ge_jefe, psec=progsec)
-                        nuevo_gep_jefe.permiso = 'X'
-                        nuevo_gep_jefe.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
-
-
-                    elif action == 'add_docprogsec':
-                    
-                        cdocentes = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
-                        DocProgSec.objects.filter(psec=progsec, gep__jefe=False, gep__ge__cargos__in=cdocentes).delete()
-                        ges = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('ges[]'))
-
-                        for ge in ges:
-                            gep, c = Gauser_extra_programaciones.objects.get_or_create(ge=ge)
-                            gep.departamento = progsec.departamento
-                            gep.save()
-                            dps, c = DocProgSec.objects.get_or_create(gep=gep, psec=progsec)
-                            dps.permiso = 'X' if gep.jefe else 'E'
-                            dps.save()
-
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
-
-                    elif action == 'update_pesocep':
-
-                        cep = CEProgSec.objects.get(psec=progsec, id=request.POST['cep'])
-                        valor = int(request.POST['cep_peso'])
-                        if valor in [1, 2, 3, 4, 5]:
-                            cep.valor = valor
-                            cep.save()
-                            return JsonResponse({'ok': True, 'progsec': progsec.id,
-                                                 'ceprogsec_porcentajes': progsec.ceprogsec_porcentajes})
-                        else:
-                            return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 5'})
-
-                    elif action == 'update_pesocevp':
-
-                        cevp = CEvProgSec.objects.get(cepsec__psec=progsec, id=request.POST['cevp'])
-                        valor = int(request.POST['cevp_peso'])
-                        if valor in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
-                            cevp.valor = valor
-                            cevp.save()
-                            html = render_to_string('programacion_didactica_content_cevalponderada.html', {'cep': cevp.cepsec})
-                            return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html,
-                                                 'cevrogsec_porcentajes': cevp.cepsec.cevrogsec_porcentajes})
-                        else:
-                            return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 10'})
-
-
-                    elif action == 'cargar_libro':
-
-                        nombre = request.POST['nombre']
-                        isbn = request.POST['isbn']
-                        observaciones = request.POST['observaciones']
-                        libro = LibroRecurso.objects.create(psec=progsec, nombre=nombre, isbn=isbn,
-                                                            observaciones=observaciones)
-                        html = render_to_string('programacion_didactica_content_libro.html', {'libro': libro})
-                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
-
-
-                    elif action == 'borrar_libro':
-
-                        libro = LibroRecurso.objects.get(psec=progsec, id=request.POST['libro'])
-                        libro_id = libro.id
-                        libro.delete()
-                        return JsonResponse({'ok': True, 'libro_id': libro_id})
-
-
-                    elif action == 'cargar_actex':
-
-                        nombre = request.POST['nombre']
-                        inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d')
-                        fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d')
-                        observaciones = request.POST['observaciones']
-                        actex = ActExCom.objects.create(psec=progsec, nombre=nombre, inicio=inicio, fin=fin,
-                                                        observaciones=observaciones)
-                        html = render_to_string('programacion_didactica_content_actex.html', {'actex': actex})
-                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
-
-
-                    elif action == 'borrar_actex':
-
-                        actex = ActExCom.objects.get(psec=progsec, id=request.POST['actex'])
-                        actex_id = actex.id
-                        actex.delete()
-                        return JsonResponse({'ok': True, 'actex_id': actex_id})
-
-
-                    elif action == 'add_saber':
-
-                        saber = SaberBas.objects.create(psec=progsec)
-                        html = reordenar_saberes_comienzo(saber.psec)
-                        return JsonResponse({'ok': True, 'html': html})
-
-
-                    elif action == 'mod_saber':
-                    
-                        html = None
-                        saber = progsec.saberbas_set.get(id=request.POST['saber'], borrado=False)
-                        campo = request.POST['campo']
-                        if campo == 'nombre':
-                            saber.nombre = request.POST['valor']
-                            saber.save()
-                        elif campo == 'comienzo':
-                            comienzo = datetime.strptime(request.POST['valor'], '%Y-%m-%d')
-                            saber.comienzo = comienzo
-                            saber.save()
-                            html = render_to_string('programacion_didactica_content_gantt.html', {'progsec': progsec})
-                        else:
-                            saber.periodos = int(request.POST['valor'])
-                            saber.save()
-                            html = render_to_string('programacion_didactica_content_gantt.html', {'progsec': progsec})
-                        # if campo == 'orden':
-                        #     html = reordenar_saberes(saber, valor)
-                        # else:
-                        #     setattr(saber, campo, valor)
-                        #     saber.save()
-                        return JsonResponse({'ok': True, 'html': html})
-
-
-                    elif action == 'ordenar_saberes':
-                    
-                        html = reordenar_saberes_comienzo(progsec)
-                        return JsonResponse({'ok': True, 'html': html})
-
+                        texto = request.POST['texto']
+                    setattr(progsec, request.POST['campo'], texto)
+                    if request.POST['campo'] == 'nombre' and not texto:
+                        texto = '%s - %s' % (progsec.areamateria.get_curso_display(), progsec.areamateria.nombre)
+                        progsec.nombre = texto
+                    progsec.save()
+                    return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
                 else:
-                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso: '+action})
-
-
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        
+        
+        elif action == 'select_tipo':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                if progsec.tipo == request.POST['tipo']:
+                    return JsonResponse({'ok': True, 'msg': 'No se cambia el tipo'})
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    if request.POST['tipo'] == 'DEF':
+                        definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
+                        for d in definitivas:
+                            if d.borrado:
+                                d.tipo = 'BOR'
+                                d.save()
+                            else:
+                                msg = '<p>Ya existe una programación "Definitiva" asociada a esta materia en su centro.</p>'
+                                msg += '<p>Dicha programación es propiedad de %s.</p>' % d.gep.ge.gauser.get_full_name()
+                                msg += '<p>Antes de hacer este cambio, esa programación debe marcarse como "Borrador" '
+                                msg += 'o proceder a su borrado.</p>'
+                                return JsonResponse(
+                                    {'ok': False, 'msg': msg, 'tipo': progsec.tipo, 'progsec': progsec.id})
+                    progsec.tipo = request.POST['tipo']
+                    progsec.save()
+                    if request.POST['grados_100'] == 'Y':
+                        progsec.ceprogsec_set.filter(grado__lt=100).update(grado=100)
+                    return JsonResponse({'ok': True, 'progsec': progsec.id})
+                else:
+                    msg = '<p>No tiene permiso para hacer el cambio solicitado.</p>'
+                    return JsonResponse({'ok': False, 'msg': msg, 'tipo': progsec.tipo, 'progsec': progsec.id})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'select_departamento':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    departamento = Departamento.objects.get(id=request.POST['departamento'], ronda=g_e.ronda)
+                    g_ep.departamento = departamento
+                    g_ep.save()
+                    progsec.departamento = departamento
+                    progsec.save()
+                    return JsonResponse({'ok': True, 'progsec': progsec.id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'select_jefe':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['jefe'])
+                    try:
+                        departamento = progsec.departamento
+                        geps = departamento.gauser_extra_programaciones_set.all()
+                    except:
+                        geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda)
+                    for gep in geps.filter(jefe=True):
+                        gep.jefe = False
+                        try:
+                            dps = DocProgSec.objects.get(gep=gep, psec=progsec)
+                            if progsec.gep == gep:  # Si el jefe era el creador de la progsec se queda con permiso 'X'
+                                dps.permiso = 'X'
+                            else:
+                                dps.permiso = 'L'
+                            dps.save()
+                        except:
+                            pass
+                        gep.save()
+                    try:
+                        nuevo_ge_jefe = geps.get(ge=ge)
+                    except:
+                        nuevo_ge_jefe, c = Gauser_extra_programaciones.objects.get_or_create(ge=ge)
+                    nuevo_ge_jefe.departamento = departamento
+                    nuevo_ge_jefe.jefe = True
+                    nuevo_ge_jefe.save()
+                    nuevo_gep_jefe, c = DocProgSec.objects.get_or_create(gep=nuevo_ge_jefe, psec=progsec)
+                    nuevo_gep_jefe.permiso = 'X'
+                    nuevo_gep_jefe.save()
+                    return JsonResponse({'ok': True, 'progsec': progsec.id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'add_docprogsec':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    cdocentes = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+                    DocProgSec.objects.filter(psec=progsec, gep__jefe=False, gep__ge__cargos__in=cdocentes).delete()
+                    ges = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('ges[]'))
+                    for ge in ges:
+                        gep, c = Gauser_extra_programaciones.objects.get_or_create(ge=ge)
+                        gep.departamento = progsec.departamento
+                        gep.save()
+                        dps, c = DocProgSec.objects.get_or_create(gep=gep, psec=progsec)
+                        dps.permiso = 'X' if gep.jefe else 'E'
+                        dps.save()
+                    return JsonResponse({'ok': True, 'progsec': progsec.id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'alumno_destinatario':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['progsec'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    progsec.alumno = Gauser_extra.objects.get(id=request.POST['alumno'])
+                    progsec.save()
+                    return JsonResponse({'ok': True, 'progsec': progsec.id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'update_pesocep':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    cep = CEProgSec.objects.get(psec=progsec, id=request.POST['cep'])
+                    valor = int(request.POST['cep_peso'])
+                    if valor in [1, 2, 3, 4, 5]:
+                        cep.valor = valor
+                        cep.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id,
+                                             'ceprogsec_porcentajes': progsec.ceprogsec_porcentajes})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 5'})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'mod_grado_cep':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['progsec'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    cep = CEProgSec.objects.get(psec=progsec, id=request.POST['cep'])
+                    valor = int(request.POST['valor'])
+                    if valor in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]:
+                        cep.grado = valor
+                        cep.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'Valor de grado de adquisición no permitido'})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'update_pesocevp':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    cevp = CEvProgSec.objects.get(cepsec__psec=progsec, id=request.POST['cevp'])
+                    valor = int(request.POST['cevp_peso'])
+                    if valor in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+                        cevp.valor = valor
+                        cevp.save()
+                        html = render_to_string('progsec_accordion_content_cevalponderada.html', {'cep': cevp.cepsec})
+                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html,
+                                             'cevrogsec_porcentajes': cevp.cepsec.cevrogsec_porcentajes})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 10'})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'cargar_libro':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    nombre = request.POST['nombre']
+                    isbn = request.POST['isbn']
+                    observaciones = request.POST['observaciones']
+                    libro = LibroRecurso.objects.create(psec=progsec, nombre=nombre, isbn=isbn,
+                                                        observaciones=observaciones)
+                    html = render_to_string('progsec_accordion_content_libro.html', {'libro': libro})
+                    return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_libro':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    libro = LibroRecurso.objects.get(psec=progsec, id=request.POST['libro'])
+                    libro_id = libro.id
+                    libro.delete()
+                    return JsonResponse({'ok': True, 'libro_id': libro_id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'cargar_actex':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    nombre = request.POST['nombre']
+                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d')
+                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d')
+                    observaciones = request.POST['observaciones']
+                    actex = ActExCom.objects.create(psec=progsec, nombre=nombre, inicio=inicio, fin=fin,
+                                                    observaciones=observaciones)
+                    html = render_to_string('progsec_accordion_content_actex.html', {'actex': actex})
+                    return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_actex':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    actex = ActExCom.objects.get(psec=progsec, id=request.POST['actex'])
+                    actex_id = actex.id
+                    actex.delete()
+                    return JsonResponse({'ok': True, 'actex_id': actex_id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'add_saber':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    saber = SaberBas.objects.create(psec=progsec)
+                    html = reordenar_saberes_comienzo(saber.psec)
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'mod_saber':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    html = None
+                    saber = progsec.saberbas_set.get(id=request.POST['saber'], borrado=False)
+                    campo = request.POST['campo']
+                    if campo == 'nombre':
+                        saber.nombre = request.POST['valor']
+                        saber.save()
+                    elif campo == 'comienzo':
+                        comienzo = datetime.strptime(request.POST['valor'], '%Y-%m-%d')
+                        saber.comienzo = comienzo
+                        saber.save()
+                        html = render_to_string('progsec_accordion_content_gantt.html', {'progsec': progsec})
+                    else:
+                        saber.periodos = int(request.POST['valor'])
+                        saber.save()
+                        html = render_to_string('progsec_accordion_content_gantt.html', {'progsec': progsec})
+                    # if campo == 'orden':
+                    #     html = reordenar_saberes(saber, valor)
+                    # else:
+                    #     setattr(saber, campo, valor)
+                    #     saber.save()
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'ordenar_saberes':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    html = reordenar_saberes_comienzo(progsec)
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_saber':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['progsec'], borrado=False)
+                permiso = progsec.get_permiso(g_ep)
+                if 'E' in permiso or 'X' in permiso:
+                    saber = progsec.saberbas_set.get(id=request.POST['saber'])
+                    if saber.es_borrable:
+                        psec = saber.psec
+                        saber.borrado = True
+                        saber.save()
+                        html = reordenar_saberes_comienzo(psec)
+                        return JsonResponse({'ok': True, 'html': html})
+                    else:
+                        msg = 'Esta unidad de programación está siendo usada en uno o varios cuadernos docentes que ya contienen calificaciones.'
+                        return JsonResponse({'ok': False, 'msg': msg})
+                else:
+                    msg = 'No tienes permiso para borrar esta programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg, 'permiso': permiso})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'programaciones_borradas':
+            try:
+                progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
+                progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids, borrado=True)
+                html = render_to_string('progsec_accordion.html', {'progsecs': progsecs})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'pdf_progsec':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración de programaciones didácticas')
+            progsec = ProgSec.objects.get(id=request.POST['id_progsec'])
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True, 'dce': dce})
+            genera_pdf(c, dce)
+            nombre = slugify('%s_%s' % (progsec.areamateria.nombre, progsec.areamateria.get_curso_display()))
+            return FileResponse(open(dce.url_pdf, 'rb'), as_attachment=True, filename=nombre + '.pdf',
+                                content_type='application/pdf')
 
+            # p_dfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # fich = open(dce.url_pdf, 'rb')
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
+            # response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            # return response
+        elif request.POST['action'] == 'download_file':
+            try:
+                pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+                                                  pec__entidad=g_e.ronda.entidad)
+                response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+                return response
+            except:
+                pass
+
+    try:
+        prog = int(request.GET['prog'])
+    except:
+        prog = False
+    return render(request, "progsec.html",
+                  {
+                      'formname': 'progsec',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Programación',
+                            'title': 'Crear una nueva programación de una materia de secundaria',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'link', 'texto': 'Enlace web',
+                            'title': 'Obtener el código a escribir en la página web del centro para ver programaciones',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
+                            'title': 'Buscar programación a través del nombre de la materia de secundaria',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'times-rectangle', 'texto': 'Programaciones borradas',
+                            'title': 'Mostrar programaciones borradas y restaurar alguna de ellas',
+                            'permiso': 'libre'},
+                           # {'tipo': 'button', 'nombre': 'file-text', 'texto': 'Programaciones otros cursos',
+                           #  'title': 'Mostrar programaciones de otros curso',
+                           #  'permiso': 'libre'},
+                           ),
+                      'g_e': g_e,
+                      'g_ep': g_ep,
+                      'prog': prog,
+                      'progsecs': progsecs,
+                      'cursos': AreaMateria.CURSOS_LOMLOE,
+                      'areasmateria': AreaMateria.objects.all(),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
+                  })
 
 # except Exception as msg:
 #     return HttpResponse(str(msg))
+
 
 def verprogramacion(request, secret, id):
     try:
@@ -2626,7 +2836,7 @@ def verprogramacion(request, secret, id):
                           'progsec': progsec,
                           'tipos_procedimientos': InstrEval.TIPOS,
                       })
-    except Exception as e:
+    except:
         pass
 
 
@@ -2648,53 +2858,28 @@ def verprogramaciones(request, secret):
 
 # @permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
-    #Nota teórica:
-    #El id hace referencia al saber básico, ya que la llamada ajax tira contra: 
-    #var url_progsec_sap = "/progsecundaria_sb/{{ sb.id }}/"
-    
     g_e = request.session['gauser_extra']
     g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
-    #pga = PGA.objects.get(ronda=g_e.ronda)
-    
-    #sb = SaberBas.objects.get(psec__pga=pga, id=id)
-    sb = SaberBas.objects.get(id=id)
-
+    pga = PGA.objects.get(ronda=g_e.ronda)
+    sb = SaberBas.objects.get(psec__pga=pga, id=id)
     permiso = sb.psec.get_permiso(g_ep)
-    
     if not ('L' in permiso or 'E' in permiso or 'X' in permiso):
         return HttpResponse('Sin permiso')
-    
-
-    try:
-        ies = request.session['ronda'].entidad.entidadextra.depende_de
-    except:
-        # Esta excepción ocurre en centros que no se cargan de Racima, por ejemplo el CRIE
-        EntidadExtra.objects.get_or_create(entidad=g_e.ronda.entidad)
-        ies = request.session['ronda'].entidad.entidadextra.depende_de
-
-    
-    # ¿Es una programación antigua y por tanto no modificable?
-    # Si no es un SIES. Si es un sies se marcará como antigua aunque sea de este curso 
-    # ya que la ronda diferirá.
-    antigua = False
-    if not ies:
-        antigua = True if sb.psec.gep.ge.ronda != g_e.ronda else False
-    
 
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-
-        if action == 'open_accordion':
+        if action == 'crea_sap':
             try:
-                #sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
-                #                           id=request.POST['id'])
-                sap = SitApren.objects.get(sbas=sb, id=request.POST['sitapren_id'])
-                
-                html = render_to_string('progsec_sap_accordion_content.html', {'sap': sap, 'g_e': g_e, 'antigua': antigua, 'ies': ies})
+                sap = SitApren.objects.create(sbas=sb)
+                act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+                InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
+                html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
+                # sap = SitApren.objects.create(sbas=sb)
+                # html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-
+                # return JsonResponse({'ok': True, 'html': html})
         elif action == 'exportar_sap':
             try:  ## Comentarios
                 ## Se obtiene el objeto SitAprend
@@ -2736,58 +2921,13 @@ def progsecundaria_sb(request, id):
                                 repocev = repocev_all[0]
                                 RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,
                                                                 modificado=criinstreval.modificado)
-
-                if 'X' in permiso:
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     return JsonResponse({'ok': True})
                 else:
-                    msg = 'No tienes permiso para exportar esta situación de aprendizaje.'
+                    msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
-                
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-        
-        # Desplegable con los criterios de evalución en los procemientos que se muestran
-        # al pasar el ratón por encima
-        elif action == 'table_criteval':
-            try:
-                inst = InstrEval.objects.get(id=request.POST['id'])
-                if inst.asapren.sapren.sbas == sb:
-                    criinstrevals = []
-                    for cep in inst.asapren.sapren.ceps.all():
-                        for cevps in cep.cevprogsec_set.all():
-                            criinstreval, c = CriInstrEval.objects.get_or_create(ieval=inst, cevps=cevps)
-                            criinstrevals.append(criinstreval.id)
-                    for cr in inst.criinstreval_set.all():
-                        if cr.id not in criinstrevals:
-                            cr.delete()
-                    html = render_to_string('progsec_sap_accordion_content_act_proc_crits.html', {'instrumento': inst, 'antigua': antigua})
-                    return JsonResponse({'ok': True, 'html': html})
-                else:
-                    return JsonResponse({'ok': False})
-            except Exception as msg:
-                return JsonResponse({'ok': False, 'msg': str(msg)})
-
-
-        # Las acciones siguientes suponen una modficación de la progrmación. Solo se permite para 
-        # programaciones de la ronda actual, no para progrmaciones pasadas. Ponto una barrera.
-
-        # Evitamos que se puedan modificar programaciones de rondas antiguas
-        elif sb.psec.gep.ge.ronda != g_e.ronda:
-            return JsonResponse({'ok': False, 'msg': "No se pueden modificar programaciones de cursos pasados"})
-
-        elif action == 'crea_sap':
-            try:
-                sap = SitApren.objects.create(sbas=sb)
-                act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
-                InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
-                html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
-                return JsonResponse({'ok': True, 'html': html})
-            except Exception as msg:
-                # sap = SitApren.objects.create(sbas=sb)
-                # html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
-                return JsonResponse({'ok': False, 'msg': str(msg)})
-                # return JsonResponse({'ok': True, 'html': html})
-
         elif action == 'borrar_sap':
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
@@ -2847,7 +2987,14 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         # Espe: Fin
-
+        elif action == 'open_accordion':
+            try:
+                sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                           id=request.POST['id'])
+                html = render_to_string('progsec_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'busca_saps':
             try:
                 am = AreaMateria.objects.get(id=request.POST['am_sap'])
@@ -2858,11 +3005,9 @@ def progsecundaria_sb(request, id):
                 if request.POST['tipo'] == 'ASAP':
                     q1 = q1 | Q(areamateria=am, borrada=False, publicar=True)
                 reposaps = RepoSitApren.objects.filter(q1, q2).distinct()
-
                 html = render_to_string('progsec_sap_buscada_accordion.html', {'reposaps': reposaps})
                 return JsonResponse({'ok': True, 'html': html, 'am': am.id})
             except Exception as msg:
-                
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_repoaccordion':
             try:
@@ -2998,7 +3143,60 @@ def progsecundaria_sb(request, id):
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'table_criteval':
+            try:
+                inst = InstrEval.objects.get(id=request.POST['id'])
+                if inst.asapren.sapren.sbas == sb:
+                    criinstrevals = []
+                    for cep in inst.asapren.sapren.ceps.all():
+                        for cevps in cep.cevprogsec_set.all():
+                            criinstreval, c = CriInstrEval.objects.get_or_create(ieval=inst, cevps=cevps)
+                            criinstrevals.append(criinstreval.id)
+                    for cr in inst.criinstreval_set.all():
+                        if cr.id not in criinstrevals:
+                            cr.delete()
+                    html = render_to_string('progsec_sap_accordion_content_act_proc_crits.html', {'instrumento': inst})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
+    # elif request.method == 'POST':
+    #     if request.POST['action'] == 'sube_file_pec':
+    #         pec = PEC.objects.get(id=request.POST['pec'])
+    #         n_files = int(request.POST['n_files'])
+    #         mensaje = False
+    #         p = {'doc_nombre': False}
+    #         if g_e.has_permiso('carga_programaciones'):
+    #             for i in range(n_files):
+    #                 fichero = request.FILES['fichero_xhr' + str(i)]
+    #                 try:
+    #                     p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
+    #                     if p.doc_file:
+    #                         os.remove(p.doc_file.path)
+    #                     p.doc_file = fichero
+    #                     p.doc_nombre = slugify(p.get_tipo_display())
+    #                     p.content_type = fichero.content_type
+    #                     p.save()
+    #                 except:
+    #                     p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
+    #                                                     content_type=fichero.content_type, tipo=request.POST['name'])
+    #                     p.doc_nombre = slugify(p.get_tipo_display())
+    #                     p.save()
+    #             return JsonResponse({'ok': True, 'mensaje': mensaje})
+    #         else:
+    #             mensaje = 'No tienes permiso para cargar archivos del PEC.'
+    #             return JsonResponse({'ok': False, 'mensaje': mensaje})
+    #     elif request.POST['action'] == 'download_file':
+    #         try:
+    #             pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+    #                                               pec__entidad=g_e.ronda.entidad)
+    #             response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+    #             response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+    #             return response
+    #         except:
+    #             pass
     return render(request, "progsec_sap.html",
                   {
                       'formname': 'progsec_sap',
@@ -3007,14 +3205,12 @@ def progsecundaria_sb(request, id):
                             'title': 'Importar una situación de aprendizaje del repositorio'},
                            {'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
                             'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
-                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver a la programación', 'permiso': 'libre',
+                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver', 'permiso': 'libre',
                             'title': 'Volver a la programación didáctica'},
                            ),
                       'g_e': g_e,
                       'sb': sb,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                      'antigua': antigua,
-                      'ies': ies
                   })
 
 
