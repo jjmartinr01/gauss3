@@ -730,11 +730,34 @@ class ProgSec(models.Model):
         try:
             permiso += self.docprogsec_set.get(gep=gep).permiso
         except:
-            if gep.ge.has_permiso('ve_todas_programaciones'):
+            #if gep.ge.has_permiso('ve_todas_programaciones'):
+            if (
+                    gep.ge.has_permiso('ve_todas_programaciones') or
+                    gep.ge.has_claves_cargos(['g_director_centro', 'g_miembro_equipo_directivo'])
+                ) and self.pga.ronda.entidad != gep.ge.entidad:
+                
                 permiso += 'L'
+
+
+        # Si no ha conseguido el permiso de lectura, miramos si tiene por lo menos el permiso de
+        # lectura por ser propietario de colaborador de una programación de rondas pasadas
+        # Para ello, en vez de comparar con gep.ge (gausser extra programación) que va asociado a una ronda
+
+        # comparamos con el gauser 
+        if not 'X' in permiso:
+            if self.gep.ge.gauser == gep.ge.gauser:
+                permiso += 'XL' 
             else:
-                permiso = 'No tiene permiso'
+                progsec_ids = DocProgSec.objects.filter(gep__ge__gauser=gep.ge.gauser).values_list('psec__id', flat=True)
+                if self.id in list(progsec_ids):
+                    permiso += 'XL' 
+        
+        # Si no ha conseguido ningún permiso
+        if permiso == '':
+            permiso = 'No tiene permiso'
+
         return permiso
+    
 
     def cepsec_evaluadas(self):
         cepsecs = []

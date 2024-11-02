@@ -1,0 +1,32 @@
+<style>
+    .info_web_link {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background-color: #EFEFEF;
+        padding: 20px;
+    }
+
+    .info_web_link  span.title {
+        font-weight: bold;
+    }
+
+    .info_web_link span.show_inline{
+        font-style: italic;
+    }
+</style>
+
+<div id="info_web_link" class="info_web_link">
+  <div>
+      <span class="title">Programaciones publicadas:</span>
+      <a target="_blank" href="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/">https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"</a>
+  </div>
+  
+  <div>
+      <span class="title">Link de publicación en página web:</span>
+      <span class="show_inline"><</span><span class="show_inline">iframe</span><span class="show_inline">&nbsp;</span><span
+              class="show_inline">src="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"><</span><span
+              class="show_inline">/iframe>
+      </span>
+  </div>
+</div>
+

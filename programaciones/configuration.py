@@ -95,7 +95,7 @@ MENU_DEFAULT = [
      },
     {'code_menu': 'acceso_progsecundaria',
      'texto_menu': 'Programaciones secundaria',
-     'href': 'progsecundaria',
+     'href': 'programaciones_didacticas',
      'nivel': 2,
      'tipo': 'Accesible',
      'pos': 9,
