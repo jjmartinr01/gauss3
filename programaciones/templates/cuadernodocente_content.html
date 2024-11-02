@@ -12,12 +12,25 @@
         font-weight: bold;
     }
 
-    .materia-curso {
+    .progsec-nombre {
+        font-weight: bold;
+    }
+
+    .progsec-nombre span { 
+        color: #686868;
+    }
+    
+    .progsec-materia-curso {
         color: #f08a24;
         border-radius: 3px;
         font-size: 1em;
         font-weight: bold;
         display: inline-block;
+    }
+
+    .progsec-materia-curso span {
+        color: #008CBA;
+        margin-left: 10px;
     }
 
     /* First column and header table fixed */
@@ -205,12 +218,24 @@
 
 <div class="row" style="max-width: 100%;">
     <div class="columns large-6" style="padding: 0;">
-        <span class="materia-curso">
-            {{ cuaderno.psec.areamateria.nombre }} ({{ cuaderno.psec.areamateria.get_curso_display }})
+        <div class="progsec-nombre"><span>Programación asociada:</span>
+            {% if cuaderno.psec.nombre %}
+                {{ cuaderno.psec.nombre }}
+            {% endif %}
+        </div>
+        <span class="progsec-materia-curso">
+            {{ cuaderno.psec.areamateria.get_curso_display }} · {{ cuaderno.psec.areamateria.nombre }}
+            <span>{{ cuaderno.psec.pga.ronda.nombre }} · {{ cuaderno.psec.pga.ronda.entidad.name }}</span>
         </span>
     </div>
     <div class="columns large-6">
         <ul class="button-group right">
+
+
+            <li  style="margin-right: 20px;">
+                <a href="/programacion_didactica/{{ cuaderno.psec.id }}/{{ cuaderno.psec.identificador }}" class="button tiny">Ver programación</a>
+            </li>
+
             <li style="margin-right: 20px;">
                 <a class="button tiny cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa">
                     <span><i class="fa fa-external-link"></i> Pantalla completa</span>

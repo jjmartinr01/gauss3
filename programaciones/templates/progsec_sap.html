@@ -22,28 +22,29 @@
         font-size: 1.2em;
     }
 
-    .title_page span.sb {
-        font-size: 1em;
-        color: #008CBA;
-        margin-left: 30px;
-        float: right;
-    }
-
-
     .title_page span.antigua {
         color: rgb(116, 10, 10);
     }
 
-
-
+        
+ 
     .progsec-header {
         
-        font-size: 1.4em;
+        font-size: 1.3em;
         font-weight: bold;
         border-bottom: 1px solid #EFEFEF;
         margin: 20px 0px;
         padding-bottom: 10px;
     }
+
+    .progsec-sb {
+        font-size: 1.3em;
+        color: #008CBA;
+        border-bottom: 1px solid #EFEFEF;
+        padding-bottom: 10px;
+        margin: 20px 0px;
+    }
+
 
     .progsec-curso-materia {
         color: #f08a24;
@@ -90,13 +91,13 @@
     <div>
         <h4 class="title_page">
             SAP's asociadas a la unidad de programación 
-    
-            <span class="sb">{{ sb.orden }}.-
-            {% autoescape off %}{{ sb.nombre }}{% endautoescape %}
-            ({{ sb.periodos }} periodo{{ sb.periodos|pluralize }})</span>
         </h4>
-
+        
         <div class="progsec-header">
+            <div class="progsec-sb">
+                {{ sb.orden }}.- {% autoescape off %}{{ sb.nombre }}{% endautoescape %}
+                ({{ sb.periodos }} periodo{{ sb.periodos|pluralize }})
+            </div>
             <div>
                 {% if sb.psec.nombre %}
                     <div class="nombre">{{ sb.psec.nombre }}</div>
@@ -234,7 +235,7 @@
         $('#arrow-left_sign').click(function (event) {
             event.preventDefault();
             //window.location.href = '/progsecundaria/?prog={{ sb.psec.id }}'
-            window.location.href = '/programacion_didactica/{{ sb.psec.id }}/{{ sb.psec.identificador }}/'
+            window.location.href = '/programacion_didactica/{{ sb.psec.id }}/{{ sb.psec.identificador }}/#progsec-saberes'
         });
         {% if g_e|has_permiso:"crea_programaciones" %}
             {#habilita(['s_plus',]);#}

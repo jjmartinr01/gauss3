@@ -2626,7 +2626,7 @@ def verprogramacion(request, secret, id):
                           'progsec': progsec,
                           'tipos_procedimientos': InstrEval.TIPOS,
                       })
-    except:
+    except Exception as e:
         pass
 
 
@@ -2849,7 +2849,6 @@ def progsecundaria_sb(request, id):
         # Espe: Fin
 
         elif action == 'busca_saps':
-            
             try:
                 am = AreaMateria.objects.get(id=request.POST['am_sap'])
                 texto = request.POST['texto']
@@ -2859,6 +2858,7 @@ def progsecundaria_sb(request, id):
                 if request.POST['tipo'] == 'ASAP':
                     q1 = q1 | Q(areamateria=am, borrada=False, publicar=True)
                 reposaps = RepoSitApren.objects.filter(q1, q2).distinct()
+
                 html = render_to_string('progsec_sap_buscada_accordion.html', {'reposaps': reposaps})
                 return JsonResponse({'ok': True, 'html': html, 'am': am.id})
             except Exception as msg:
