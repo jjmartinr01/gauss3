@@ -2085,7 +2085,6 @@ def programacion_didactica(request, id=None, identificador=None):
     try:
         progsec = ProgSec.objects.get(id=id, identificador=identificador)
         permiso = progsec.get_permiso(g_ep)
-        print(permiso)
 
         # Si no tengo permiso de Lectura (creador/editor)        
         if not 'L' in permiso:
