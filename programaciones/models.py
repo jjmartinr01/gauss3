@@ -737,21 +737,32 @@ class ProgSec(models.Model):
                 ) and self.pga.ronda.entidad != gep.ge.entidad:
                 
                 permiso += 'L'
+        
+        # Si no ha conseguido el permiso X con gep (este año), comprobamos para años pasados.
+        # Para ello comparamos con gauser
 
-
-        # Si no ha conseguido el permiso de lectura, miramos si tiene por lo menos el permiso de
-        # lectura por ser propietario de colaborador de una programación de rondas pasadas
-        # Para ello, en vez de comparar con gep.ge (gausser extra programación) que va asociado a una ronda
-
-        # comparamos con el gauser 
         if not 'X' in permiso:
             if self.gep.ge.gauser == gep.ge.gauser:
-                permiso += 'XL' 
+                permiso += 'LEX' 
             else:
-                progsec_ids = DocProgSec.objects.filter(gep__ge__gauser=gep.ge.gauser).values_list('psec__id', flat=True)
-                if self.id in list(progsec_ids):
-                    permiso += 'XL' 
+                # Si ha sido colaborador de esta progrmación de ronda pasada, añadimos el permiso
+                #progsec_ids = DocProgSec.objects.filter(gep__ge__gauser=gep.ge.gauser).values_list('psec__id', flat=True)
+                #if self.id in list(progsec_ids):
+                #    permiso += 'L' 
+                docs = DocProgSec.objects.filter(gep__ge__gauser=gep.ge.gauser, psec_id=self.id)
+                if len(docs) > 0:
+                    permiso += docs[0].permiso
         
+
+        # Completamos los permisos, ya que puede que haya conseguido el permiso "E", o "X" por ser
+        # colaborador, y le tenemos que añadir el de lectura L
+        if 'E' in permiso and not 'L' in permiso:
+            permiso += 'L'
+
+        if 'X' in permiso and not 'E' in permiso:
+            permiso += 'LE'
+                
+          
         # Si no ha conseguido ningún permiso
         if permiso == '':
             permiso = 'No tiene permiso'
