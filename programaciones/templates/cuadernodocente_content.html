@@ -259,12 +259,12 @@
 
 
             <li>
-                <a title="Asignar el cuaderno a otro docente" class="button asignar_cuadernoprof tiny"><i class="fa fa-user"></i><i class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar
+                <a title="Asignar el cuaderno a otro docente" class="button asignar_cuadernoprof ocultable tiny"><i class="fa fa-user"></i><i class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar
                 </a>
             </li>
             
             <li>
-                <a title="Borrar este cuaderno docente de la base de datos" class="button alert borrar_cuadernoprof tiny" accion="{% if cuaderno.borrado %}recuperar{% else %}borrar{% endif %}">
+                <a title="Borrar este cuaderno docente de la base de datos" class="button alert borrar_cuadernoprof ocultable tiny" accion="{% if cuaderno.borrado %}recuperar{% else %}borrar{% endif %}">
                 <i class="fa fa-trash-o"></i> 
                     {% if cuaderno.borrado %} Recuperar {% else %} Borrar {% endif %}
                 </a>

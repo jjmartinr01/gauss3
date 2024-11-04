@@ -18,15 +18,14 @@
 
         {% include 'programaciones_didacticas_formulario_crear.html' %}
         {% include 'programaciones_didacticas_buscar.html' %}
-
-        <div id="listado_progsec">
-            <dl class="accordion" data-accordion id="list_progsec">
-                {% include 'programaciones_didacticas_list.html' %}
-            </dl>
-        </div>
-
-        {% include 'programaciones_didacticas_weblink.html' %}
     </form>
+
+    <div id="list_progsec">
+        {% include 'programaciones_didacticas_list.html' %}
+    </div>
+
+    {% include 'programaciones_didacticas_weblink.html' %}
+
 {% endblock %}
 
 {% block final %}
@@ -105,10 +104,9 @@
 
 
             $("body").on('click', '#busca_progsec_manual', function (e) {
-                var texto = $('#busca_progsec').val();
                 var ronda = $('#busca_progsec_ronda').val();
                 $.post("/programaciones_didacticas/", {
-                        action: 'busca_progsec_manual', texto: texto, ronda: ronda
+                        action: 'busca_progsec_manual', ronda: ronda
                     },
                     function (data) {
                         $('#list_progsec').html(data['html']);
