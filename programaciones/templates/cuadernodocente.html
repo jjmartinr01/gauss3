@@ -302,6 +302,7 @@
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $("#update_error").show().delay(1500).fadeOut();
+                                console.log(data.msg);
                             }
                         }
                     });
@@ -389,6 +390,7 @@
                                     location.href = data.redirect;
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
+                                    console.log(data.msg);
                                 }
                             });
                     }
@@ -585,6 +587,7 @@
 
                             // Cambiamos el tipo de escala para todas las celdas que tenga el instrumento ieval
                             $(".edit_calalumn_ieval__"+ieval_id).attr("data-tipo-ecp", data.ecp_tipo);
+                            
 
                         }
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -1290,6 +1293,7 @@
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
+                        console.log(data.msg);
                     }
                 });
         });
@@ -1318,6 +1322,7 @@
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
+                                    console.log(data.msg);
                                 }
                             });
                     }
@@ -1329,7 +1334,9 @@
 
         $('body').on('click', '.enviar2repo', function (e) {
             var ecp = $(this).data('ecp');
-            $.post('/cuadernodocente/', {action: 'enviar2repo', ecp: ecp},
+            var cuaderno = $(this).data('cuaderno');
+
+            $.post('/cuadernodocente/', {action: 'enviar2repo', ecp: ecp, cuaderno: cuaderno},
                 function (data) {
                     if (data.ok) {
                         $('#enviar2repo' + ecp).hide();
@@ -1337,6 +1344,7 @@
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
+                        console.log(data.msg);
                     }
                 });
         });
@@ -1349,10 +1357,23 @@
                 identificador: identificador},
                 function (data) {
                     if (data.ok) {
+
+                        // Cambiamos el html en el modal
                         $('#content_ecp').html(data.html);
+
+                        // Cambiamos la posible rúbrica escondida en el instrumento
+                        let th_ieval = $("[data-th-ieval-id='"+data.ieval_id+"']");
+                        th_ieval.find("[data-th-ieval-escala]").html(data.rubrica);
+                        th_ieval.find("[data-th-ieval-escala-tipo]").html(data.ecp_tipo_display);
+
+                        // Cambiamos el tipo de escala para todas las celdas que tenga el instrumento ieval
+                        $(".edit_calalumn_ieval__"+data.ieval_id).attr("data-tipo-ecp", data.ecp_tipo);
+
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
+                        console.log(data.msg);
+                        
                     }
                 });
         });
