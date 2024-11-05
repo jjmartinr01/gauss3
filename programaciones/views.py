@@ -3541,7 +3541,7 @@ def cuadernodocente(request, id=None):
                     ieval = InstrEval.objects.get(id=request.POST['ieval'], asapren__sapren__sbas__psec=cuaderno.psec)
                     ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=ieval)
                     if CalAlumValor.objects.filter(ca__cp=cuaderno, ecpv__valor__gt=0, ca__cie__ieval=ieval).count() == 0:
-                        html = render_to_string('cuadernodocente_content_ecp.html', {'ecp': ecp})
+                        html = render_to_string('cuadernodocente_content_ecp.html', {'ecp': ecp, 'cuaderno': cuaderno})
                         cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
                         cuaderno.save()
                         return JsonResponse({'ok': True, 'html': html})
@@ -3746,7 +3746,9 @@ def cuadernodocente(request, id=None):
                         EscalaCPvalor.objects.create(ecp=ecp, x=recpv.x, y=recpv.y, valor=recpv.valor,
                                                      texto_cualitativo=recpv.texto_cualitativo)
                     html = render_to_string('cuadernodocente_content_ecp.html', {'ecp': ecp})
-                    return JsonResponse({'ok': True, 'html': html})
+                    rubrica = render_to_string('cuadernodocente_content_rubrica.html', {'ecp': ecp})
+
+                    return JsonResponse({'ok': True, 'html': html, 'rubrica': rubrica, 'ieval_id': ecp.ieval.id, 'ecp_tipo': ecp.tipo, 'ecp_tipo_display': ecp.get_tipo_display()})
                 except Exception as msg:
                     return JsonResponse({'ok': False, 'msg': str(msg)})
             
