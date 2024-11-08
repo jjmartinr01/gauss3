@@ -393,4 +393,3 @@ def get_ecpvs_seleccionados(calalum):
         return [] 
     
 
-    
