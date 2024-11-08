@@ -1399,6 +1399,50 @@
         $(".cuadernodocente_content_box").find('.ocultable').hide();
         
     {% endif %}
+
+
+    {% if cuaderno.tipo == 'CES' %}
+
+        $("#info_importar_button").click(function(){
+            $("#info_importar").slideToggle();
+            $("#info_importar_ok").hide();
+        })
+
+        function cuaderno_competencias_importar_excel() {
+
+            let texto = $('#output').val();
+            texto = texto.replace(/ /g, "|")
+            texto = texto.replace(/\t/g, "|")
+            console.log(texto)
+
+            let notas_matrix = [];
+            let lines = texto.split(/\n/);
+            for(let i = 0; i < lines.length; i++) {
+                notas_line = lines[i].split("|");
+                for(let j = 0; j < notas_line.length; j++) {
+                    let nota = parseFloat(notas_line[j]);
+
+                    if (!isNaN(parseFloat(nota))) {
+                        let input = $("[auto-paste-index='"+(i+1)+"_"+(j+1)+"']").find('input');
+
+                        //Ajustamos nota entre 0 o 10
+                        if(nota > 10) nota = 10;
+                        if(nota < 0) nota = 0;
+                        input.val(nota);
+                        input.change();
+                    }
+                }
+                notas_matrix.push(notas_line);
+            }
+            console.log(notas_matrix);
+            $("#info_importar").hide();
+            $("#info_importar_ok").fadeIn();
+          }
+
+          document.querySelector("#paste").addEventListener("click", cuaderno_competencias_importar_excel);
+
+
+    {% endif%}
         
 
     </script>
