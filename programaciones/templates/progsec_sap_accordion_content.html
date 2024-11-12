@@ -54,14 +54,14 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-            <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
+            <li><a class="button alert borrar_sap tiny ocultable" data-id="{{ sap.id }}"
                    title="Borrar completamente esta situación de aprendizaje de la base de datos"><i
                     class="fa fa-trash"></i> <b>Borrar</b></a></li>
             <li><a class="button exportar_sap tiny" data-id="{{ sap.id }}"
                    title="Exportar esta situación de aprendizaje al repositorio de SAP"><i
                     class="fa fa-share"></i> <b>Exportar</b></a>
             </li>
-            <li><a class="button copiar_sap tiny" data-sap="{{ sap.id }}" data-sb="{{ sap.sbas.id }}"
+            <li><a class="button copiar_sap tiny ocultable" data-sap="{{ sap.id }}" data-sb="{{ sap.sbas.id }}"
                    title="Hacer una copia (un duplicado) de esta situación de aprendizaje"><i
                     class="fa fa-copy"></i> <b>Copiar</b></a>
             </li>
@@ -149,7 +149,7 @@
     </div>
     <div class="row">
         <div class="columns large-12">
-            <a class="button right add_sap_actividad" data-sap="{{ sap.id }}"><i class="fa fa-plus"></i> Añadir
+            <a class="button right add_sap_actividad ocultable" data-sap="{{ sap.id }}"><i class="fa fa-plus"></i> Añadir
                 actividad</a>
         </div>
     </div>
@@ -170,4 +170,22 @@
                 $('#container_producto_sap').html(texto);
         });
 }, 300);
+
+
+
+{% if ies or antigua %}
+    //Bloqueamos la edición en programaciones de rondas antinguas
+    $(".programacion_didactica_content_box").find('input').attr('disabled', 'disabled');
+    $(".programacion_didactica_content_box").find('input').attr('readonly', 'readonly');
+
+    $(".programacion_didactica_content_box").find('select').attr('disabled', 'disabled');
+    $(".programacion_didactica_content_box").find('select').attr('readonly', 'readonly');
+
+    $(".programacion_didactica_content_box").find('textarea').attr('disabled', 'disabled');
+    $(".programacion_didactica_content_box").find('textarea').attr('readonly', 'readonly');
+    $(".programacion_didactica_content_box").find('[contenteditable]').attr('contenteditable', 'false');
+
+    $(".programacion_didactica_content_box").find('.ocultable').hide();
+
+{% endif %}
 </script>

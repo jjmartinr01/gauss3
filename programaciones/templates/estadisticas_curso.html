@@ -1,0 +1,213 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load programaciones_extras %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center !important;
+            color: #008CBA;
+        }
+
+        .thtd {
+            text-align: center;
+        }
+        .thtdb {
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+
+    <div>
+        <h4 id="title_page"><strong>Estadísticas Curso {{ curso }}</strong></h4>
+    </div>
+
+    <div class="summary">
+        <table>
+            <tr><td>Número total de usuarios que han accedido</td><td>{{ numero_usuarios }}</td></tr>
+            <tr><td>Query</td><td>{{ query }}</td></tr>
+            <tr><td>Número total de centros</td><td id="centros-total"></td></tr>
+            <tr><td >Centros <b style="color:green;">CON</b> programaciones</td><td id="centros-con-psecs-all"></td></tr>
+            <tr><td>Centros <b style="color:red;">SIN</b> programaciones</td><td id="centros-sin-psecs-all"></td></tr>
+            <tr><td><b>Total programaciones</b></td><td id="psecs-total-all"></td></tr>
+
+            <tr><td>Centros <b style="color:green;">CON</b> programaciones DEFINITIVAS</td><td id="centros-con-psecs"></td></tr>
+            <tr><td>Centros <b style="color:red;">CON</b> prog definitivas DEFINITIVAS</td><td id="centros-sin-psecs"></td></tr>
+            <tr><td><b>Total programaciones DEFINITIVAS</b></td><td id="psecs-total"></td></tr>
+
+            
+        </table>
+    </div>
+
+
+    <div class="summary">
+        <table>
+            <tr><td>Cuadernos docentes</td><td id="total-cuadernos"></td></tr>
+            <tr><td>Cuadernos docentes PROCEDIMIENTOS</td><td id="total-cuadernos-pro"></td></tr>
+            <tr><td>Cuadernos docentes CRITERIOS</td><td id="total-cuadernos-cri"></td></tr>
+            <tr><td>Cuadernos docentes COMPETENCIAS</td><td id="total-cuadernos-ces"></td></tr>
+        </table>
+    </div>
+
+    <div>
+        {% for ronda in rondas %}
+            {% with psecs=ronda|get_programaciones_by_ronda psecs_all=ronda|get_programaciones_incluidos_borradores_by_ronda %}
+                <div style="margin-bottom: 10px; border-bottom: 1px solid gray;" data-ronda="{{ronda.id}}">
+                    <div><b>{{ ronda }} {{ ronda.entidad }}</b></div>
+                    <div style="color: green; font-weight: bold;" 
+                        data-num-psecs="{{psecs.count}}" 
+                        data-num-psecs-all="{{psecs_all.count}}">
+                        Programaciones definitivas: <span>{{ psecs.count}} (Total programaciones: {{ psecs_all.count}})  </span>
+                    </div>
+                    <div style="color: blue; font-weight: bold;">
+                        Total cuadernos: <span ronda-total-cuadernos></span> |
+                        PROCEDIMIENTOS: <span ronda-total-cuadernos-pro></span> |
+                        CRITERIOS: <span ronda-total-cuadernos-cri></span> |
+                        COMPETENCIAS: <span ronda-total-cuadernos-ces></span>
+                    </div>
+
+                    {% for psec in psecs_all %}
+                        {% with cuadernos=psec|get_cuadernos_programacion   %}
+                            <div>
+                                {{ psec.tipo }} | 
+                                <span data-cuadernos="{{cuadernos.count}}">Total cuadernos: {{ cuadernos.count }} </span>
+                                <span data-cuadernos-pro="">PRO:  </span>
+                                <span data-cuadernos-cri="">CRI:  </span>
+                                <span data-cuadernos-ces="">CES:  </span>
+                                | {{ psec.nombre }}   
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+
+            {% endwith %}
+
+
+
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_file-pdf-o'])
+        $('#select_entidad').select2();
+        $('#select_entidad').change(function () {
+            var entidad = $(this).val();
+            $.post("/estadistica_prog/", {'action': 'estadistica_entidad', 'entidad': entidad},
+                function (data) {
+                    if (data.ok) {
+                        $('#listado_estadistica').append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.remove_tabla', function (e){
+            $(this).closest('table').remove();
+        });
+
+        $('#file-pdf-o_sign').click(function (e) {
+                e.preventDefault();
+                var style = '<style>table, td, th{border:1px}</style>';
+                var html = $('#listado_estadistica').html();
+                $('#textarea_listado_estadistica').val(style + html);
+                $('#action').val('genera_pdf');
+                document.getElementById('{{ formname }}').submit();
+            });
+
+
+
+        /*Rellenamos tablas de estadísticas*/
+        let centros_total = 0;
+        let centros_sin_psecs = 0;
+        let centros_con_psecs = 0;
+        let psecs_total = 0;
+        let centros_sin_psecs_all = 0;
+        let centros_con_psecs_all = 0;
+        let psecs_total_all = 0;
+
+        $("[data-num-psecs]").each(function(){
+            let num_psecs = parseFloat($(this).attr("data-num-psecs"));
+            psecs_total += num_psecs; 
+            centros_total++;
+            if(num_psecs == 0) {
+                centros_sin_psecs++;
+            }else if(num_psecs > 0){
+                centros_con_psecs++;
+            } 
+
+            $("#centros-total").html(centros_total);
+            $("#centros-sin-psecs").html(centros_sin_psecs);
+            $("#centros-con-psecs").html(centros_con_psecs);
+            $("#psecs-total").html(psecs_total);
+
+        });
+
+        $("[data-num-psecs-all]").each(function(){
+            let num_psecs_all = parseFloat($(this).attr("data-num-psecs-all"));
+            psecs_total_all += num_psecs_all; 
+
+            if(num_psecs_all == 0) {
+                centros_sin_psecs_all++;
+            }else if(num_psecs_all > 0){
+                centros_con_psecs_all++;
+            } 
+
+            $("#centros-sin-psecs-all").html(centros_sin_psecs_all);
+            $("#centros-con-psecs-all").html(centros_con_psecs_all);
+            $("#psecs-total-all").html(psecs_total_all);
+
+        });
+
+        /*Contabilizamos cuadernos*/
+
+        let total_cuadernos = 0;
+        let total_cuadernos_pro = 0;
+        let total_cuadernos_cri = 0;
+        let total_cuadernos_ces = 0;
+
+        $("[data-ronda]").each(function(){
+
+            
+            let ronda_total_cuadernos = 0;
+            let ronda_total_cuadernos_pro = 0;
+            let ronda_total_cuadernos_cri = 0;
+            let ronda_total_cuadernos_ces = 0;
+            
+            $(this).find("[data-cuadernos]").each(function(){
+                ronda_total_cuadernos += parseInt($(this).attr("data-cuadernos"));
+            });
+            $(this).find("[data-cuadernos-pro]").each(function(){
+                ronda_total_cuadernos_pro += parseInt($(this).attr("data-cuadernos-pro"));
+            });
+            $(this).find("[data-cuadernos-cri]").each(function(){
+                ronda_total_cuadernos_cri += parseInt($(this).attr("data-cuadernos-cri"));
+            });
+            $(this).find("[data-cuadernos-ces]").each(function(){
+                ronda_total_cuadernos_ces += parseInt($(this).attr("data-cuadernos-ces"));
+            });
+
+            
+            $(this).find("[ronda-total-cuadernos]").html(ronda_total_cuadernos);
+            $(this).find("[ronda-total-cuadernos-pro]").html(ronda_total_cuadernos_pro);
+            $(this).find("[ronda-total-cuadernos-cri]").html(ronda_total_cuadernos_cri);
+            $(this).find("[ronda-total-cuadernos-ces]").html(ronda_total_cuadernos_ces);
+
+            /*Conteo total de todas las rondas*/
+            total_cuadernos += ronda_total_cuadernos;
+            total_cuadernos_pro += ronda_total_cuadernos_pro;
+            total_cuadernos_cri += ronda_total_cuadernos_cri;
+            total_cuadernos_ces += ronda_total_cuadernos_ces;
+        });
+
+        $("#total-cuadernos").html(total_cuadernos);
+        $("#total-cuadernos-pro").html(total_cuadernos_pro);
+        $("#total-cuadernos-cri").html(total_cuadernos_cri);
+        $("#total-cuadernos-ces").html(total_cuadernos_ces);
+
+    </script>
+{% endblock %}

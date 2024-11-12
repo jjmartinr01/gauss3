@@ -1,0 +1,142 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load programaciones_extras %}
+
+{% block contenido %}
+    <style>
+
+        #listado_progsec {
+            padding-bottom: 50px;
+        }
+
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+
+        {% include 'programaciones_didacticas_formulario_crear.html' %}
+        {% include 'programaciones_didacticas_buscar.html' %}
+    </form>
+
+    <div id="list_progsec">
+        {% include 'programaciones_didacticas_list.html' %}
+    </div>
+
+    {% include 'programaciones_didacticas_weblink.html' %}
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_times-rectangle',]);
+
+        {% if g_e == g_ep.ge %}
+            $('#info_cargar_progsec').click(function (e) {
+                e.preventDefault();
+                show_mensajes({
+                    title: 'Información <i class="fa fa-info-circle"></i>',
+                    texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'
+                })
+            });
+            
+            {% if g_e|has_permiso:"crea_programaciones" %}
+
+                habilita(['s_plus',]);
+                $('#plus_sign').click(function (event) {
+                    event.preventDefault();
+                    $('#formulario_crear').slideToggle();
+                });
+
+                $('#curso_progsec').change(function () {
+                    var curso = $('#curso_progsec').val();
+                    $.post("/programaciones_didacticas/", {'action': 'get_areasmaterias', 'curso': curso},
+                        function (data) {
+                            if (data.ok) {
+                                var element_select = $('#areamateria_progsec');
+                                element_select.prop('disabled', false).find('option').remove();
+                                element_select.append($('<option>', {
+                                    value: '',
+                                    text: '-------'
+                                }));
+                                $.each(data.valores, function (i, valor) {
+                                    element_select.append($('<option>', {
+                                        value: valor.valor,
+                                        text: valor.texto
+                                    }));
+                                });
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                    
+                        });
+                });
+
+                $('#areamateria_progsec').change(function () {
+                    var areamateria = $('#areamateria_progsec').val();
+                    if (areamateria) {
+                        $('#crea_progsec_button').show();
+                    } else {
+                        $('#crea_progsec_button').hide();
+                    }
+                });
+
+                $('#crea_progsec').click(function (event) {
+                    event.preventDefault();
+                    var curso = $('#curso_progsec').val();
+                    var areamateria = $('#areamateria_progsec').val();
+                    $.post("/programaciones_didacticas/", {'action': 'crea_progsec', 'curso': curso, 'areamateria': areamateria},
+                        function (data) {
+                            if (data.ok) {
+                                location.href = data.redirect;
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                                show_mensajes({
+                                    'title': '<i class="fa fa-warning"></i> Aviso',
+                                    'texto': data.msg
+                                })
+                            }
+                        });
+                });
+            {% endif %}
+
+
+            $("body").on('click', '#busca_progsec_manual', function (e) {
+                var ronda = $('#busca_progsec_ronda').val();
+                $.post("/programaciones_didacticas/", {
+                        action: 'busca_progsec_manual', ronda: ronda
+                    },
+                    function (data) {
+                        $('#list_progsec').html(data['html']);
+                        $(document).foundation();
+                    });
+            });
+
+
+
+        {% else %}
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Aviso',
+                texto: 'No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.'
+            })
+        {% endif %}
+
+        {# Recuperar programaciones borradas #}
+        $('#times-rectangle_sign').click(function (event) {
+            event.preventDefault();
+            $.post("/programaciones_didacticas/", {action: 'programaciones_borradas'},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_progsec').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+
+        });
+    </script>
+
+{% endblock %}

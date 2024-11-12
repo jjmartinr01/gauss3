@@ -12,12 +12,40 @@
         font-weight: bold;
     }
 
-    .materia-curso {
+    .progsec-nombre {
+        font-weight: bold;
+    }
+
+    .progsec-nombre span { 
+        color: #686868;
+    }
+    
+    .progsec-materia-curso {
         color: #f08a24;
         border-radius: 3px;
         font-size: 1em;
         font-weight: bold;
         display: inline-block;
+    }
+
+    .progsec-materia-curso span {
+        color: #008CBA;
+        margin-left: 10px;
+    }
+
+    .info_importar {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background-color: #EFEFEF;
+        padding: 20px;
+    }
+
+    .info_importar_button {
+        padding: 10px 20px;
+    }
+
+    .info_importar_button i {
+        margin-right: 10px;
     }
 
     /* First column and header table fixed */
@@ -96,11 +124,19 @@
         margin: 0;
     }
 
+    /* Para modificar varias notas a la vez de un mismo instrumento */
+    .edit_calalumn.editing-several  > .edit_calalumn_data {
+        border: 2px solid #f08a24;  
+    }
+
     .edit_calalumn.editing  > .edit_calalumn_data {
         background-color: #fac289;
-        border: 2px solid #f08a24;
-        
+        border: 2px solid #f08a24;   
     }
+
+
+
+
 
     .edit_calalumn_data{
         height: 40px;
@@ -197,12 +233,24 @@
 
 <div class="row" style="max-width: 100%;">
     <div class="columns large-6" style="padding: 0;">
-        <span class="materia-curso">
-            {{ cuaderno.psec.areamateria.nombre }} ({{ cuaderno.psec.areamateria.get_curso_display }})
+        <div class="progsec-nombre"><span>Programación asociada:</span>
+            {% if cuaderno.psec.nombre %}
+                {{ cuaderno.psec.nombre }}
+            {% endif %}
+        </div>
+        <span class="progsec-materia-curso">
+            {{ cuaderno.psec.areamateria.get_curso_display }} · {{ cuaderno.psec.areamateria.nombre }}
+            <span>{{ cuaderno.psec.pga.ronda.nombre }} · {{ cuaderno.psec.pga.ronda.entidad.name }}</span>
         </span>
     </div>
     <div class="columns large-6">
         <ul class="button-group right">
+
+
+            <li  style="margin-right: 20px;">
+                <a href="/programacion_didactica/{{ cuaderno.psec.id }}/{{ cuaderno.psec.identificador }}" class="button tiny">Ver programación</a>
+            </li>
+
             <li style="margin-right: 20px;">
                 <a class="button tiny cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa">
                     <span><i class="fa fa-external-link"></i> Pantalla completa</span>
@@ -226,12 +274,12 @@
 
 
             <li>
-                <a title="Asignar el cuaderno a otro docente" class="button asignar_cuadernoprof tiny"><i class="fa fa-user"></i><i class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar
+                <a title="Asignar el cuaderno a otro docente" class="button asignar_cuadernoprof ocultable tiny"><i class="fa fa-user"></i><i class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar
                 </a>
             </li>
             
             <li>
-                <a title="Borrar este cuaderno docente de la base de datos" class="button alert borrar_cuadernoprof tiny" accion="{% if cuaderno.borrado %}recuperar{% else %}borrar{% endif %}">
+                <a title="Borrar este cuaderno docente de la base de datos" class="button alert borrar_cuadernoprof ocultable tiny" accion="{% if cuaderno.borrado %}recuperar{% else %}borrar{% endif %}">
                 <i class="fa fa-trash-o"></i> 
                     {% if cuaderno.borrado %} Recuperar {% else %} Borrar {% endif %}
                 </a>
@@ -334,6 +382,30 @@
     </div>
 {% else %}
     {% if cuaderno.tipo == 'CES' %}
+        
+        <div>
+            <button class="info_importar_button" id="info_importar_button"><i class="fa fa-file-excel-o"></i>Importar las notas desde Excel</button>
+        </div>
+        <div class="info_importar" id="info_importar" style="display: none;">
+            <h4>Importar notas desde Excel</h4>
+            <p> Abre el <b>Excel</b> y selecciona las notas de las competencias, solo las notas. 
+                No selecciones ni la columna con los nombres de los alumnos, ni la fila de cabecera con las competencias. 
+                Únicamente las notas numéricas.
+            </p>
+            <p> <b>Asegúrate del orden.</b> Es decir, cada fila corresponderá con las notas de los alumnos según están dispuestos en este cuaderno docente. 
+                <br>En cada fila, cada nota debe estar separada por un espacio en blanco o tabulador. 
+                Y deberá corresponder a cada una de las competencias según el orden de este cuaderno docente.
+            </p>
+            <p>Pega las notas en el siguiente cuadro (puedes hacer más grande el rectángulo estirándolo desde su esquina inferior derecha):</p>
+            <textarea id="output" style="height: 80px; width: 400px;"></textarea> 
+            <p>Y ahora haz la magia pulsando en el siguiente botón:</p>
+            <button id="paste">Importar notas</button>
+        </div>
+
+        <div class="info_importar" id="info_importar_ok" style="display: none;">
+            Have a nice day <span style="color: red;">&#9829;!</span>
+        </div>
+
         <div class="div_table{{ cuaderno.id }}">
             <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
                 <thead>
@@ -365,7 +437,9 @@
                         <td class="fixed_column alumno" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
                             <b>{{ alumno.gauser.last_name }}, <span class="firstname">{{ alumno.gauser.first_name }}</span></b>
                         </td>
+                        
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                            
                             {% ifchanged cep.ce.asignatura %}
                                 {#                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>#}
                                 <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">
@@ -378,7 +452,8 @@
                                 {#                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" contenteditable="true">#}
                                 {#                                {{ calalumce.valor }}#}
                                 {#                            </td>#}
-                                <td><input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="text"
+                                <td auto-paste-index="{{forloop.parentloop.counter}}_{{ forloop.counter }}">
+                                    <input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="text"
                                            data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" 
                                            data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
                                            id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}"
@@ -386,6 +461,7 @@
                                 </td>
                             {% endwith %}
                         {% endfor %}
+
                     </tr>
                 {% endfor %}
                 {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
@@ -606,6 +682,8 @@
 
 <td id="td_{{ cieval.id }}_{{ alumno.id }}"
     class="sb__{{ sb.sb.id }} edit_calalumn edit_calalumn_ieval__{{ ieval.ieval.id }} cieval__{{ cieval.id }} alumno__{{ alumno.id }}" 
+    data-ieval-id="{{ieval.ieval.id}}"
+    data-alumno-id="{{alumno.id}}"
     data-tipo-ecp="{{tipo_ecp}}"
     title="{{ calalum.obs }}">
 
@@ -789,3 +867,4 @@
 
 
 <div id="gestionar-alumnos-seccion"></div>
+

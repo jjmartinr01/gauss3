@@ -6,8 +6,8 @@
     .modal_calalumn {
         position: fixed;
         top: 30px;
-        left: 50%;
-        //min-width: 500px;
+        left: 5%;
+        max-width:1800px;
         z-index: 100;
         background-color: #fac289;
         border: 1px solid #f08a24;
@@ -48,6 +48,8 @@
 
     .modal_calalumn_body {
         padding: 5px 20px;
+        max-height: 700px;
+        overflow-y: auto;
     }
 
     .edit_calalumn_form {
@@ -214,6 +216,30 @@
         cursor: pointer;
         color: #f08a24;
     }
+    .edit_calalumn_form_criterio_mode{
+        overflow: hidden;
+        border-top: 1px solid #f08a24;
+        padding-top: 7px;
+    }
+    .edit_calalumn_form_criterio_mode > div {
+        float: left;   
+        margin-bottom: 0px;
+        
+    }
+    .edit_calalumn_form_criterio_mode .text{
+        width: 80%;
+        font-size: 0.8em;
+        margin-left: 10px;
+        padding-top: 4px;
+    }
+
+    .edit_calalumn_form_criterio_mode .highlight{
+        font-weight: bold;
+    }
+
+    .switch input:checked + label {
+        background: #f08a24;
+    }
 
 
 </style>
@@ -254,7 +280,7 @@
 
                     <span data-calalum-id="" class="help" title="Desplázate por la tabla con las flechas del teclado.&#10;Pulsa 'enter' para guardar y pasar al siguiente en las notas numéricas"><i class="fa fa-info"></i></span>
 
-                    <span data-calalum-id="" data-delete-tipo="ESVCN" class="buttonform delete delete_calalum_valores" title="Eliminar nota"><i class="fa fa-trash-o"></i></span>
+                    <span data-calalum-id="" data-cuaderno-id="" data-alumno-id="" data-delete-tipo="ESVCN" class="buttonform delete delete_calalum_valores" title="Eliminar nota"><i class="fa fa-trash-o"></i></span>
                 </div>
                 
             </div>
@@ -272,7 +298,7 @@
                     
                     <span data-calalum-id="" class="help" title="Desplázate por la tabla con las flechas del teclado.&#10;Pulsa 'enter' para guardar y pasar al siguiente en las notas numéricas"><i class="fa fa-info"></i></span>
 
-                    <span data-calalum-id="" data-delete-tipo="RUBRICA" class="buttonform delete delete_calalum_valores" title="Eliminar nota"><i class="fa fa-trash-o"></i></span>
+                    <span data-calalum-id="" data-cuaderno-id="" data-alumno-id="" data-delete-tipo="RUBRICA" class="buttonform delete delete_calalum_valores" title="Eliminar nota"><i class="fa fa-trash-o"></i></span>
                 </div>
 
                 <div class="edit_calalumn_form_rubrica" data-rubrica></div>
@@ -283,6 +309,18 @@
                 <textarea class="update_obs"
                     data-calalum-obs data-cuaderno-id data-cieval-id data-alumno-id data-calalum-id  
                   placeholder="Introduce aquí las observaciones a la calificación otorgada"></textarea>
+            </div>
+
+            <div class="edit_calalumn_form_criterio_mode">    
+                <div class="switch tiny">
+                    <input class="switch-input" id="data-criterio-mode" type="checkbox" name="exampleSwitch">
+                    <label class="switch-paddle" for="data-criterio-mode">
+                      <span class="show-for-sr"></span>
+                    </label>
+                </div>
+
+                <div id="data-criterio-mode-off" class="text">Cada criterio tendrá nota diferente.</div>
+                <div id="data-criterio-mode-on" style="display: none;" class="text highlight">Pon la misma nota para todos los criterios del instrumento ;-)</div>
             </div>
     
         </div>

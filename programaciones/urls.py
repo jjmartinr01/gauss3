@@ -23,7 +23,12 @@ urlpatterns = [
     path('proyecto_educativo_centro/', views.proyecto_educativo_centro),
     path('pecjson/<int:code>/', views.pecjson),
     path('pgajson/<int:code>/', views.pgajson),
-    path('progsecundaria/', views.progsecundaria),
+    
+    
+    path('programaciones_didacticas/', views.programaciones_didacticas),                         # Index get
+    path('programacion_didactica/<int:id>/<str:identificador>/', views.programacion_didactica),  # Show get
+    
+    path('programacion_didactica_ajax/', views.programacion_didactica_ajax),        # Llamadas ajax
     path('progsecundaria_sb/<int:id>/', views.progsecundaria_sb),
     
     path('cuadernosdocentes/', views.cuadernosdocentes),        # Index get
@@ -39,6 +44,7 @@ urlpatterns = [
     path('crea_calalumce_cev/', views.crea_calalumce_cev),
     path('arregla_instrevals/', views.arregla_instrevals),
     path('estadistica_prog/', views.estadistica_prog),
+    path('estadisticas_curso/<str:anno>/', views.estadisticas_curso),
     path('arregla_cuaderno/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno),
     path('arregla_cuaderno2/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno2),
     path('arregla_cuaderno3/<int:cuaderno_id>/<int:max_cal>/', views.arregla_cuaderno3),

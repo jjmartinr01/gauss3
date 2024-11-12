@@ -12,6 +12,9 @@ register = Library()
 def obtener_cc_cal(cal_ccs, siglas):
     return cal_ccs['cal_cc_informe%s' % siglas]
 @register.filter
+def obtener_cc_cal_notas(cal_ccs, siglas):
+    return cal_ccs['cal_cc_informe_notas%s' % siglas]
+@register.filter
 def obtener_do_cal(cal_ccs, clave):
     do_cal = round(cal_ccs['cal_do_informe%s' % clave], 2)
     return do_cal if do_cal > 0 else '-'
@@ -51,6 +54,39 @@ def get_programaciones(e): #'e' es 'Entidad'
     return ProgSec.objects.filter(pga__ronda=e.ronda, borrado=False).exclude(tipo='BOR').order_by('areamateria__curso')
 
 @register.filter
+def get_programaciones_incluidos_borradores(e): #'e' es 'Entidad'
+    return ProgSec.objects.filter(pga__ronda=e.ronda, borrado=False).order_by('areamateria__curso')
+
+
+@register.filter
+def get_programaciones_by_ronda(ronda): 
+    return ProgSec.objects.filter(pga__ronda=ronda, borrado=False).exclude(tipo='BOR').order_by('areamateria__curso')
+
+
+@register.filter
+def get_programaciones_incluidos_borradores_by_ronda(ronda):
+    return ProgSec.objects.filter(pga__ronda=ronda, borrado=False).order_by('areamateria__curso')
+
+# Buscamos todos los cuadernos que pertenecen a una programación
+# Podemos seleccionar por tipo
+@register.filter
+def get_cuadernos_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False)
+
+@register.filter
+def get_cuadernos_pro_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False, tipo="PRO")
+
+@register.filter
+def get_cuadernos_cri_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False, tipo="CRI")
+
+@register.filter
+def get_cuadernos_ces_programacion(psec):
+    return CuadernoProf.objects.filter(psec=psec, borrado=False, tipo="CES")
+
+
+@register.filter
 def cbarra2br(texto):
     # Transformar "\n" en <br> para imprimir en html
     return texto.replace('\n', '<br>')
@@ -65,8 +101,11 @@ def float2stringpoint(number):
 @register.filter
 def get_rondas_ge(ge):
     q1 = Q(gep__ge__gauser=ge.gauser)
-    q2 = ~Q(gep__ge=ge)
-    rondas_id = set(DocProgSec.objects.filter(q1 & q2).values_list('gep__ge__ronda__id', flat=True))
+    #q2 = ~Q(gep__ge=ge) NO QUITAMOS LA RONDA ACTUAL
+    
+    #rondas_id = set(DocProgSec.objects.filter(q1 & q2).values_list('gep__ge__ronda__id', flat=True))
+    rondas_id = set(DocProgSec.objects.filter(q1).values_list('gep__ge__ronda__id', flat=True))
+
     # Fecha a partir de la cual se pueden encontrar programaciones:
     # fecha_inicio = datetime.strptime('01/01/2020', '%d/%m/%Y')
     # rondas_id = Gauser_extra.objects.filter(ronda__inicio__gt=fecha_inicio,
@@ -354,4 +393,3 @@ def get_ecpvs_seleccionados(calalum):
         return [] 
     
 
-    

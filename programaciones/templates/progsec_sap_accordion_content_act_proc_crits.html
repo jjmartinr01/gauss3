@@ -39,3 +39,13 @@
     </tr>
 {% endfor %}
 </tbody>
+
+
+<script>
+    {% if antigua %}
+        //Bloqueamos la edición en programaciones de rondas antinguas
+        $(".programacion_didactica_content_box").find('input').attr('disabled', 'disabled');
+        $(".programacion_didactica_content_box").find('input').attr('readonly', 'readonly');
+
+    {% endif %}
+</script>

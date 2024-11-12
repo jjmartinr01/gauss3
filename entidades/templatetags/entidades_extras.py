@@ -29,6 +29,11 @@ def profesorado(entidad):
     return Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos)
 
 @register.filter
+def profesorado_por_ronda(ronda):
+    cargos = Cargo.objects.filter(entidad=ronda.entidad, clave_cargo='g_docente')
+    return Gauser_extra.objects.filter(ronda=ronda, cargos__in=cargos)
+
+@register.filter
 def puestos_especialidad(entidad):
     cargos = Cargo.objects.filter(entidad=entidad, clave_cargo='g_docente')
     return set(Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos).values_list('puesto', flat=True))
