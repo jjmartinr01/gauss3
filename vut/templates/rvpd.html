@@ -66,148 +66,155 @@
         </ul>
         <div class="tabs-content">
             <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
-                <input type="hidden" name="firma" id="firma" value="">
-                <div>
-                    <h4 style="text-align: center;color: #008CBA;"><strong>ORDEN INT/1922/2003, de 3 de julio, sobre
-                        libros-registro y partes de entrada de viajeros en establecimientos de hostelería y otros
-                        análogos</strong></h4>
-                    <p style="text-align: center;color: #008CBA; font-weight: 800;">According to Spanish law, if the
-                        duration
-                        of your stay is less than three months, you are required to register your data to be allowed to
-                        stay in
-                        a house or flat.</p>
-                </div>
-                <div id="formulario_viajero">
-                    <div class="row">
-                        <div class="columns large-4">
-                            <label><b>Nombre/Name:</b> <input type="text" value="" name="nombre"
-                                                              placeholder="Obligatorio/Required" class="obl_int texto"
-                                                              id="nombre" data-campo="Nombre/Name"></label>
-                        </div>
-                        <div class="columns large-4">
-                            <label><b>Primer apellido/Last name:</b> <input type="text" value=""
-                                                                            name="apellido1"
-                                                                            data-campo="Primer apellido/Last name"
-                                                                            id="apellido1" class="obl_int texto"
-                                                                            placeholder="Obligatorio/Required"></label>
-                        </div>
-                        <div class="columns large-4">
-                            <label><b>Segundo apellido:</b> <input type="text" value=""
-                                                                   name="apellido2"
-                                                                   id="apellido2" class="obl_esp texto"
-                                                                   data-campo="Segundo apellido"
-                                                                   placeholder="Obligatorio/Optional if you are not spanish"></label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="columns large-4">
-                            <label><b>Sexo/Gender:</b> <select name="sexo" id="sexo" class="obl_int"
-                                                               data-campo="Sexo/Gender">
-                                <option value="">------</option>
-                                <option value="F">Femenino/Female
-                                </option>
-                                <option value="M">Masculino/Male
-                                </option>
-                            </select></label>
-                        </div>
-                        <div class="columns large-4">
-                            <label><b>Fecha de nacimiento/Birthdate:</b>
-                                <input type="text" readonly data-campo="Fecha de nacimiento/Birthdate"
-                                       value=""
-                                       name="nacimiento" id="nacimiento"
-                                       class="obl_int fecha"
-                                       placeholder="Obligatorio/Required"></label>
-                        </div>
-                        <div class="columns large-4">
-                            <label><b>País de nacionalidad/Nacionality:</b>
-                                <select name="pais" id="pais" class="obl_int"
-                                        data-campo="País de nacionalidad/Nacionality">
-                                    <option value="A9109AAAAA">España</option>
-                                    {% for p in paises %}
-                                        <option value="{{ p.0 }}">{{ p.1 }}</option>
-                                    {% endfor %}
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="columns large-4">
-                            <label><b>Tipo/Type:</b><select name="tipo_ndi" id="tipo_ndi" class="obl_int"
-                                                             data-campo="Tipo/Type">
-                                <option value="">------</option>
-                                <option class="ndi_esp ndi_eu ndi_int" value="P">Pasaporte/Passport</option>
-                                <option class="ndi_esp" value="D">DNI</option>
-                                <option class="ndi_esp" value="C">Permiso de conducir</option>
-                                <option class="ndi_eu ndi_int hide" value="N">NIE o tarjeta española de extranjeros
-                                </option>
-                                <option class="ndi_eu hide" value="X">Permiso de residencia de estado miembro de la UE
-                                </option>
-                                <option class="ndi_eu ndi_int hide" value="I">Carta o documento de identidad extranjera
-                                </option>
-                            </select></label>
-                        </div>
-                        <div class="columns large-4">
-                            <label><b>Passport/DNI/ID number:</b> <input type="text" value=""
-                                                                         name="ndi"
-                                                                         id="ndi"
-                                                                         placeholder="Obligatorio/Required"
-                                                                         class="obl_int"
-                                                                         data-campo="Passport/DNI/ID number"></label>
-                        </div>
-                        <div class="columns large-4">
-                            <label><b>Fecha de expedición/Date of issue:</b> <input type="text"
-                                                                                    data-campo="Fecha de expedición/Date of issue"
-                                                                                    value=""
-                                                                                    name="fecha_exp" id="fecha_exp"
-                                                                                    class="obl_int fecha" readonly
-                                                                                    placeholder="Obligatorio/Required"></label>
-                        </div>
-                    </div>
-                    <div id="sketchpadapp">
-                        <div class="row">
-                            <div class="columns large-12 medium-12">
-                                <p style="font-weight: 800;">Es necesario que firmes dentro del siguiente recuadro. Si
-                                    te
-                                    equivocas, o quieres modificar la firma, puedes pulsar en "Borrar firma".</p>
-                                <p style="font-weight: 800;">It is necessary that you sign inside the following box. If
-                                    you make
-                                    a mistake, or want to change the signature, you can click on "Delete signature"</p>
-                            </div>
-                        </div>
-                        <div>
-                            <canvas id="sketchpad" height="300" width="400"></canvas>
-                        </div>
-                        <div class="row">
-                            <div class="columns large-4 medium-4">
-                                &nbsp;
-                            </div>
-                            <div class="columns large-4 medium-4">
-                                <a class="button alert" id="clearbutton" onclick="clearCanvas(canvas,ctx);">Borrar
-                                    firma/Delete
-                                    signature</a>
-                            </div>
-                            <div class="columns large-4 medium-4">
-                                &nbsp;
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="columns large-12 medium-12">
-                                <p style="font-weight: 800;">Pulsa el siguiente botón para enviar datos. Se volverá a
-                                    cargar la
-                                    patalla para permitir el registro de un nuevo viajero.</p>
-                                <p style="font-weight: 800;">Click on the following button to submit your data. Web page
-                                    will be
-                                    reloaded and you will be allowed to register another traveller.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="columns large-12 medium-12">
-                            <a class="button" id="enviar_datos">Envía datos</a>
-                        </div>
-                    </div>
-                </div>
+                {% if reserva.vivienda.webregistro %}
+                    <iframe src="{{ reserva.vivienda.webregistro }}" allowfullscreen
+                            style="width: 100%;height: 2900px;border:none;"></iframe>
+                {% else %}
+                    <h1 style="text-align: center;font-weight: bold;">EN ESTOS MOMENTOS EL REGISTRO DE VIAJEROS A 
+                        TRAVÉS DE GAUSS NO ESTÁ FUNCIONANDO</h1>
+                {% endif %}
+                {#                <input type="hidden" name="firma" id="firma" value="">#}
+                {#                <div>#}
+                {#                    <h4 style="text-align: center;color: #008CBA;"><strong>ORDEN INT/1922/2003, de 3 de julio, sobre#}
+                {#                        libros-registro y partes de entrada de viajeros en establecimientos de hostelería y otros#}
+                {#                        análogos</strong></h4>#}
+                {#                    <p style="text-align: center;color: #008CBA; font-weight: 800;">According to Spanish law, if the#}
+                {#                        duration#}
+                {#                        of your stay is less than three months, you are required to register your data to be allowed to#}
+                {#                        stay in#}
+                {#                        a house or flat.</p>#}
+                {#                </div>#}
+                {#                <div id="formulario_viajero">#}
+                {#                    <div class="row">#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Nombre/Name:</b> <input type="text" value="" name="nombre"#}
+                {#                                                              placeholder="Obligatorio/Required" class="obl_int texto"#}
+                {#                                                              id="nombre" data-campo="Nombre/Name"></label>#}
+                {#                        </div>#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Primer apellido/Last name:</b> <input type="text" value=""#}
+                {#                                                                            name="apellido1"#}
+                {#                                                                            data-campo="Primer apellido/Last name"#}
+                {#                                                                            id="apellido1" class="obl_int texto"#}
+                {#                                                                            placeholder="Obligatorio/Required"></label>#}
+                {#                        </div>#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Segundo apellido:</b> <input type="text" value=""#}
+                {#                                                                   name="apellido2"#}
+                {#                                                                   id="apellido2" class="obl_esp texto"#}
+                {#                                                                   data-campo="Segundo apellido"#}
+                {#                                                                   placeholder="Obligatorio/Optional if you are not spanish"></label>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {#                    <div class="row">#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Sexo/Gender:</b> <select name="sexo" id="sexo" class="obl_int"#}
+                {#                                                               data-campo="Sexo/Gender">#}
+                {#                                <option value="">------</option>#}
+                {#                                <option value="F">Femenino/Female#}
+                {#                                </option>#}
+                {#                                <option value="M">Masculino/Male#}
+                {#                                </option>#}
+                {#                            </select></label>#}
+                {#                        </div>#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Fecha de nacimiento/Birthdate:</b>#}
+                {#                                <input type="text" readonly data-campo="Fecha de nacimiento/Birthdate"#}
+                {#                                       value=""#}
+                {#                                       name="nacimiento" id="nacimiento"#}
+                {#                                       class="obl_int fecha"#}
+                {#                                       placeholder="Obligatorio/Required"></label>#}
+                {#                        </div>#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>País de nacionalidad/Nacionality:</b>#}
+                {#                                <select name="pais" id="pais" class="obl_int"#}
+                {#                                        data-campo="País de nacionalidad/Nacionality">#}
+                {#                                    <option value="A9109AAAAA">España</option>#}
+                {#                                    {% for p in paises %}#}
+                {#                                        <option value="{{ p.0 }}">{{ p.1 }}</option>#}
+                {#                                    {% endfor %}#}
+                {#                                </select>#}
+                {#                            </label>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {#                    <div class="row">#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Tipo/Type:</b><select name="tipo_ndi" id="tipo_ndi" class="obl_int"#}
+                {#                                                             data-campo="Tipo/Type">#}
+                {#                                <option value="">------</option>#}
+                {#                                <option class="ndi_esp ndi_eu ndi_int" value="P">Pasaporte/Passport</option>#}
+                {#                                <option class="ndi_esp" value="D">DNI</option>#}
+                {#                                <option class="ndi_esp" value="C">Permiso de conducir</option>#}
+                {#                                <option class="ndi_eu ndi_int hide" value="N">NIE o tarjeta española de extranjeros#}
+                {#                                </option>#}
+                {#                                <option class="ndi_eu hide" value="X">Permiso de residencia de estado miembro de la UE#}
+                {#                                </option>#}
+                {#                                <option class="ndi_eu ndi_int hide" value="I">Carta o documento de identidad extranjera#}
+                {#                                </option>#}
+                {#                            </select></label>#}
+                {#                        </div>#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Passport/DNI/ID number:</b> <input type="text" value=""#}
+                {#                                                                         name="ndi"#}
+                {#                                                                         id="ndi"#}
+                {#                                                                         placeholder="Obligatorio/Required"#}
+                {#                                                                         class="obl_int"#}
+                {#                                                                         data-campo="Passport/DNI/ID number"></label>#}
+                {#                        </div>#}
+                {#                        <div class="columns large-4">#}
+                {#                            <label><b>Fecha de expedición/Date of issue:</b> <input type="text"#}
+                {#                                                                                    data-campo="Fecha de expedición/Date of issue"#}
+                {#                                                                                    value=""#}
+                {#                                                                                    name="fecha_exp" id="fecha_exp"#}
+                {#                                                                                    class="obl_int fecha" readonly#}
+                {#                                                                                    placeholder="Obligatorio/Required"></label>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {#                    <div id="sketchpadapp">#}
+                {#                        <div class="row">#}
+                {#                            <div class="columns large-12 medium-12">#}
+                {#                                <p style="font-weight: 800;">Es necesario que firmes dentro del siguiente recuadro. Si#}
+                {#                                    te#}
+                {#                                    equivocas, o quieres modificar la firma, puedes pulsar en "Borrar firma".</p>#}
+                {#                                <p style="font-weight: 800;">It is necessary that you sign inside the following box. If#}
+                {#                                    you make#}
+                {#                                    a mistake, or want to change the signature, you can click on "Delete signature"</p>#}
+                {#                            </div>#}
+                {#                        </div>#}
+                {#                        <div>#}
+                {#                            <canvas id="sketchpad" height="300" width="400"></canvas>#}
+                {#                        </div>#}
+                {#                        <div class="row">#}
+                {#                            <div class="columns large-4 medium-4">#}
+                {#                                &nbsp;#}
+                {#                            </div>#}
+                {#                            <div class="columns large-4 medium-4">#}
+                {#                                <a class="button alert" id="clearbutton" onclick="clearCanvas(canvas,ctx);">Borrar#}
+                {#                                    firma/Delete#}
+                {#                                    signature</a>#}
+                {#                            </div>#}
+                {#                            <div class="columns large-4 medium-4">#}
+                {#                                &nbsp;#}
+                {#                            </div>#}
+                {#                        </div>#}
+                {##}
+                {#                        <div class="row">#}
+                {#                            <div class="columns large-12 medium-12">#}
+                {#                                <p style="font-weight: 800;">Pulsa el siguiente botón para enviar datos. Se volverá a#}
+                {#                                    cargar la#}
+                {#                                    patalla para permitir el registro de un nuevo viajero.</p>#}
+                {#                                <p style="font-weight: 800;">Click on the following button to submit your data. Web page#}
+                {#                                    will be#}
+                {#                                    reloaded and you will be allowed to register another traveller.</p>#}
+                {#                            </div>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {#                    <div class="row">#}
+                {#                        <div class="columns large-12 medium-12">#}
+                {#                            <a class="button" id="enviar_datos">Envía datos</a>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {#                </div>#}
             </section>
             <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
                 <div>
@@ -421,7 +428,7 @@
                 });
                 valido = false;
             }
-            if (fechaexp > antesdeayer  && valido) {
+            if (fechaexp > antesdeayer && valido) {
                 let combo = document.getElementById("tipo_ndi");
                 let selected = combo.options[combo.selectedIndex].text;
                 show_mensajes({
