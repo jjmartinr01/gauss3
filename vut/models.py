@@ -120,6 +120,7 @@ class Vivienda(models.Model):
     descripcionweb = models.TextField("Descripción de la vivienda", default='', blank=True, null=True)
     preciosweb = models.CharField("Secuencia de precios", blank=True, null=True, max_length=200, default='')
     publicarweb = models.BooleanField("Debe mostrarse en web?", default=False)
+    webregistro = models.URLField("Enlace web al registro genérico Partee/Chekin/etc.", blank=True, null=True, default='')
 
     class Meta:
         ordering = ['provincia', 'municipio', 'nombre']

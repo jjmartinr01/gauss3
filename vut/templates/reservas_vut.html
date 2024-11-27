@@ -187,7 +187,7 @@
         var starDate = new Date();
         var endDate = new Date();
         var yesterday = new Date();
-        yesterday.setDate(yesterday.getDate()-1);
+        yesterday.setDate(yesterday.getDate() - 1);
         $("#entrada_nueva_reserva").fdatepicker({
             format: 'dd/mm/yyyy',
             weekStart: 1,
@@ -518,8 +518,10 @@
 
         $('#Contenido').on('click', '.copy_url_viajero', function () {
             var secret = $(this).data('secret');
-            var protocol = window.location.protocol; {# http: o https: #}
-            var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            var protocol = window.location.protocol;
+            {# http: o https: #}
+            var host = window.location.host;
+            {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
             var c = copiar_al_portapapeles(protocol + '//' + host + '/rvpd/' + secret + '/');
             if (c) {
                 show_mensajes({
@@ -527,6 +529,21 @@
                     texto: 'Se ha copiado en el portapapeles la dirección en la que deben registrase los viajeros de esta reserva'
                 });
             }
+        });
+
+        $('#Contenido').on('click', '.no_copy_url_viajero', function () {
+            show_mensajes({
+                title: 'NO ES POSIBLE COMPLETAR LA ACCIÓN',
+                texto: '<h1 style="text-align: center;font-weight: bold;">EN ESTOS MOMENTOS EL REGISTRO DE VIAJEROS ' +
+                    'A TRAVÉS DE GAUSS NO ESTÁ FUNCIONANDO</h1>' +
+                    '<h2 style="text-align: center;font-weight: bold;">POR FAVOR, CONSIDERA UTILIZAR OTRA APLICACIÓN ' +
+                    'DE REGISTRO COMO POR EJEMPLO:</h2>' +
+                    '<h2 style="text-align: center;font-weight: bold;">PARTEE ' +
+                    '(<a href="https://partee.es/" target="_blank">Enlace a Partee</a>) O ' +
+                    'CHEKIN (<a href="https://chekin.com/" target="_blank">Enlace a Chekin</a>)</h2>' +
+                    '<h3 style="text-align: center;font-weight: bold;">EXISTEN OTRAS APLICACIONES DE TERCEROS QUE ' +
+                    'TAMBIÉN PUEDES USAR Y QUE PODRÁS INTEGRAR EN GAUSS</h3>'
+            });
         });
 
         $('#Contenido').on('click', '.viajeros_list', function () {
