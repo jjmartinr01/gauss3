@@ -92,7 +92,8 @@ def upload_file_noticia_web(request):
     noticia_id = request.GET['CKEditor'].replace('texto_noticia', '')
     noticia = Noticia_web.objects.get(autor__entidad=g_e.ronda.entidad, id=noticia_id)
     f = File_noticia_web.objects.create(fichero=fichero, content_type=fichero.content_type, noticia=noticia)
-    p = 'https://gaumentada.es%s' % f.fichero.url.replace('/', '\/')
+    p = 'https://gaumentada.es%s' % f.fichero.url.replace('/', '\\/')
+
 
     return HttpResponse(
         '<script type="text/javascript">window.parent.CKEDITOR.tools.callFunction("%s", "%s", "");</script>' % (n, p))
