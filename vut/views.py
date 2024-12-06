@@ -2015,16 +2015,19 @@ def ajax_contabilidad_vut(request):
                                                                   inicio=inicio, fin=fin, describir='')
                     viviendas = viviendas_con_permiso(g_e, 'crea_contabilidad_vut')
                     contabilidad.viviendas.add(*viviendas)
-                    for portal in contabilidad.portales:
-                        try:
-                            PartidaVUT.objects.get(contabilidad=contabilidad, tipo='I_%s' % portal)
-                        except:
-                            PartidaVUT.objects.create(contabilidad=contabilidad, tipo='I_%s' % portal,
-                                                      nombre='Ingresos realizados por plataforma')
+                    # for portal in contabilidad.portales:
+                    #     try:
+                    #         PartidaVUT.objects.get(contabilidad=contabilidad, tipo='I_%s' % portal)
+                    #     except:
+                    #         PartidaVUT.objects.create(contabilidad=contabilidad, tipo='I_%s' % portal,
+                    #                                   nombre='Ingresos realizados por plataforma')
+                    for tipo in PartidaVUT.TIPOS:
+                        if tipo[0] not in ['I_HOM', 'I_REN', 'I_NIU', 'I_OAP', 'I_WIM']:
+                            PartidaVUT.objects.create(contabilidad=contabilidad, tipo=tipo[0], nombre=tipo[1])
                     html = render_to_string('contabilidad_vut_accordion.html', {'contabilidad': contabilidad})
                     return JsonResponse({'html': html, 'ok': True})
-                except:
-                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para crear una contabilidad'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para crear una contabilidad', 'msg':str(msg)})
             elif request.POST['action'] == 'open_accordion':
                 try:
                     contabilidad = ContabilidadVUT.objects.get(id=request.POST['contabilidad'])
@@ -2282,7 +2285,7 @@ def domotica_vut(request):
                 domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
                 s = requests.Session()
                 s.verify = False
-                p = s.post(domotica.url, timeout=5)
+                p = s.get(domotica.url, timeout=5)
                 return JsonResponse({'ok': True, 'response': p.status_code})
             except:
                 return JsonResponse({'ok': False})

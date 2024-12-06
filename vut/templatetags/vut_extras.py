@@ -11,6 +11,13 @@ from vut.views import viviendas_autorizado
 register = Library()
 
 @register.filter
+def esta_en_actual_contabilidad(contabilidad):
+    today = timezone.now().date()
+    if contabilidad.inicio <= today and contabilidad.fin >= today:
+        return True
+    else:
+        return False
+@register.filter
 def check_commodity(vivienda, commodity):
     try:
         ViviendaCommodities.objects.get(vivienda=vivienda, commodity=commodity)

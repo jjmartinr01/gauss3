@@ -4,8 +4,12 @@
     style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
     <a href="#panel{{ contabilidad.id }}">
         <i id="circle{{ contabilidad.id }}" class="fa fa-plus-circle circle_icon"></i>
-        <span id="span_contabilidad_nombre{{ contabilidad.id }}">{{ contabilidad.nombre }}</span>
-        &nbsp;&nbsp;&nbsp;
+        {% if contabilidad|esta_en_actual_contabilidad %}
+            <span id="span_contabilidad_nombre{{ contabilidad.id }}"
+                  style="font-weight: bold;color:green">{{ contabilidad.nombre }}</span>
+        {% else %}
+            <span id="span_contabilidad_nombre{{ contabilidad.id }}">{{ contabilidad.nombre }}</span>
+        {% endif %}
         <span style="color:gray">
             (
             <span id="span_contabilidad_inicio{{ contabilidad.id }}" style="color:gray">

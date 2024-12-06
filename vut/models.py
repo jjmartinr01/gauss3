@@ -82,6 +82,7 @@ PAISES = (('A9401AAAAA', 'AFGANISTAN'), ('A9399AAAAA', 'AFRICA'), ('A9102AAAAA',
           ('A9430AAAAA', 'VIETNAM'), ('A9434AAAAA', 'YEMEN'), ('A9132AAAAD', 'YUGOSLAVIA'), ('A9382AAAAA', 'ZAMBIA'),
           ('A9357AAAAA', 'ZIMBABWE'))
 
+
 class RemoteConection(models.Model):
     ip = models.URLField('URL desde la que se hace la conexión', blank=True, null=True)
     url = models.GenericIPAddressField('IP desde la que se hace la conexión', blank=True, null=True)
@@ -120,7 +121,10 @@ class Vivienda(models.Model):
     descripcionweb = models.TextField("Descripción de la vivienda", default='', blank=True, null=True)
     preciosweb = models.CharField("Secuencia de precios", blank=True, null=True, max_length=200, default='')
     publicarweb = models.BooleanField("Debe mostrarse en web?", default=False)
-    webregistro = models.URLField("Enlace web al registro genérico Partee/Chekin/etc.", blank=True, null=True, default='')
+    webregistro = models.URLField("Enlace web al registro genérico Partee/Chekin/etc.", blank=True, null=True,
+                                  default='')
+    refcatastral = models.CharField('Referencia Catastral', max_length=22, blank=True, null=True, default='')
+    valcatastral = models.FloatField('Valor Catastral', blank=True, null=True)
 
     class Meta:
         ordering = ['provincia', 'municipio', 'nombre']
@@ -160,6 +164,7 @@ class ViviendaCommodities(models.Model):
     def __str__(self):
         return '%s - %s (%s)' % (self.vivienda, self.commodity, self.num)
 
+
 class ViviendaPrecio(models.Model):
     vivienda = models.ForeignKey(Vivienda, on_delete=models.CASCADE)
     precio = models.FloatField('Precio por noche', default=100)
@@ -168,6 +173,7 @@ class ViviendaPrecio(models.Model):
 
     def __str__(self):
         return '%s - %s (%s)' % (self.vivienda, self.precio, self.numper)
+
 
 PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 'Rentalia'), ('NIU', 'Niumba'),
             ('OAP', 'Only Apartments'), ('WIM', 'Wimdu'), ('TRI', 'TripAdvisor'), ('OTR', 'Otros/Privado'))
@@ -614,11 +620,20 @@ class AutorizadoContabilidadVut(models.Model):
     def __str__(self):
         return u'%s <-> %s' % (self.contabilidad, self.autorizado)
 
-
 class PartidaVUT(models.Model):
-    TIPOS = (('GASTO', 'Gasto'), ('INGRE', 'Ingreso'), ('I_BOO', 'Ingreso Booking'), ('I_AIR', 'Ingreso Airbnb'),
-             ('I_HOM', 'Ingreso Homeaway'), ('I_REN', 'Ingreso Rentalia'), ('I_NIU', 'Ingreso Niumba'),
-             ('I_OAP', 'Ingreso Only apartments'), ('I_WIM', 'Ingreso Wimdu'))
+    TIPOS = (('GASTO', 'Gasto no deducible fiscalmente'), ('G_COM', 'Gastos de comunidad'),
+             ('G_CON', 'Gastos de formalización del contrato de arrendamiento'),
+             ('G_DEF', 'Gastos de defensa jurídica'),
+             ('G_TER', 'Otras cantidades devengadas por terceros por servicios personales'),
+             ('G_SUM', 'Servicios y suministros (electricidad, agua, internet, gas...)'),
+             ('G_SEG', 'Primas de contratos de seguro'),
+             ('G_TRI', 'Tributos, recargo y tasas'),
+             ('G_DUD', 'Saldos de dudoso cobro'),
+             ('G_OTR', 'Otros gastos fiscalmente deducibles'),
+             ('I_AIR', 'Ingreso realizado por plataforma AIRBNB'),
+             ('I_BOO', 'Ingreso realizado por plataforma BOOKING'),
+             ('INGRE', 'Ingreso realizado'), ('I_HOM', 'Ingreso Homeaway'), ('I_REN', 'Ingreso Rentalia'),
+             ('I_NIU', 'Ingreso Niumba'), ('I_OAP', 'Ingreso Only apartments'), ('I_WIM', 'Ingreso Wimdu'))
     contabilidad = models.ForeignKey(ContabilidadVUT, on_delete=models.CASCADE)
     tipo = models.CharField('Tipo de partida', max_length=6, choices=TIPOS)
     nombre = models.CharField('Nombre de la partida', max_length=150)
