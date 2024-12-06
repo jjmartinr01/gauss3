@@ -79,21 +79,21 @@
 <fieldset>
     <legend>Partidas</legend>
     <div id="partidas{{ contabilidad.id }}">
-        <table width="100%">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
-                <th>Creado</th>
-                <th>Borrar</th>
-            </tr>
-        <thead>
-        <tbody id="table_partidas{{ contabilidad.id }}">
+{#        <table width="100%">#}
+{#        <thead>#}
+{#            <tr>#}
+{#                <th>Nombre</th>#}
+{#                <th>Tipo</th>#}
+{#                <th>Creado</th>#}
+{#                <th>Borrar</th>#}
+{#            </tr>#}
+{#        <thead>#}
+{#        <tbody id="table_partidas{{ contabilidad.id }}">#}
             {% for partida in contabilidad.partidavut_set.all %}
                 {% include  "contabilidad_vut_accordion_content_partida.html" %}
             {% endfor %}
-        </tbody>
-        </table>
+{#        </tbody>#}
+{#        </table>#}
     </div>
     <div class="row">
         <div class="columns large-6"><label>Nombre:

@@ -1,15 +1,16 @@
-{% if partida.tipo == 'GASTO' or partida.tipo == 'INGRE' %}
-    <tr id="partida_tr{{ partida.id }}">
-        <td>{{ partida.nombre }}</td>
-        <td>{{ partida.get_tipo_display }}</td>
-        <td>{{ partida.creado|date:'d/m/Y' }}</td>
-        <td><a class="borrar_partida" data-partida="{{ partida.id }}"><i class="fa fa-trash"></i> Borrar</a></td>
-    </tr>
-{% else %}
-    <tr id="partida_tr{{ partida.id }}">
-        <td>{{ partida.nombre }}</td>
-        <td>{{ partida.get_tipo_display }}</td>
-        <td>{{ partida.creado|date:'d/m/Y' }}</td>
-        <td></td>
-    </tr>
-{% endif %}
+{#{% if partida.tipo == 'GASTO' or partida.tipo == 'INGRE' %}#}
+{#    <tr id="partida_tr{{ partida.id }}">#}
+{#        <td>{{ partida.nombre }}</td>#}
+{#        <td>{{ partida.get_tipo_display }}</td>#}
+{#        <td>{{ partida.creado|date:'d/m/Y' }}</td>#}
+{#        <td><a class="borrar_partida" data-partida="{{ partida.id }}"><i class="fa fa-trash"></i> Borrar</a></td>#}
+{#    </tr>#}
+{#{% else %}#}
+{#    <tr id="partida_tr{{ partida.id }}">#}
+{#        <td>{{ partida.nombre }}</td>#}
+{#        <td>{{ partida.get_tipo_display }}</td>#}
+{#        <td>{{ partida.creado|date:'d/m/Y' }}</td>#}
+{#        <td></td>#}
+{#    </tr>#}
+{#{% endif %}#}
+<span class="label round secondary" style="font-weight: bold;"><a><i class="fa fa-trash"></i></a> {{ partida.nombre }}</span>
