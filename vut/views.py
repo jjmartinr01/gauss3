@@ -1865,7 +1865,7 @@ def rvpd(request, secret_id):  # rvpd: recepción viajeros policía y domótica
                 domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
                 s = requests.Session()
                 s.verify = False
-                p = s.post(domotica.url, timeout=5)
+                p = s.get(domotica.url, timeout=5)
                 return JsonResponse({'ok': True, 'response': p.status_code})
             except:
                 return JsonResponse({'ok': False})
