@@ -232,7 +232,7 @@
 {% include 'cuadernodocente_content_modal.html' %}
 
 <div class="row" style="max-width: 100%;">
-    <div class="columns large-6" style="padding: 0;">
+    <div class="columns large-12" style="padding: 0;">
         <div class="progsec-nombre"><span>Programación asociada:</span>
             {% if cuaderno.psec.nombre %}
                 {{ cuaderno.psec.nombre }}
@@ -243,12 +243,16 @@
             <span>{{ cuaderno.psec.pga.ronda.nombre }} · {{ cuaderno.psec.pga.ronda.entidad.name }}</span>
         </span>
     </div>
-    <div class="columns large-6">
-        <ul class="button-group right">
+    <div class="columns large-12" style="padding: 0; margin-top: 20px;">
+        <ul class="button-group ">
 
 
             <li  style="margin-right: 20px;">
                 <a href="/programacion_didactica/{{ cuaderno.psec.id }}/{{ cuaderno.psec.identificador }}" class="button tiny">Ver programación</a>
+            </li>
+
+            <li  style="margin-right: 20px;">
+                <span class="button tiny" id="descargar-cuaderno"><i class="fa fa-file-excel-o"></i> Descargar</a>
             </li>
 
             <li style="margin-right: 20px;">
@@ -582,6 +586,7 @@
                                    style="position:absolute;top:5px;right:5px">
                                     <i class="fa fa-exchange"></i>
                                 </a>
+
                                 <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
                                     <i class="fa fa-users"></i> Gestionar alumnos
                                 </a>
@@ -867,4 +872,3 @@
 
 
 <div id="gestionar-alumnos-seccion"></div>
-

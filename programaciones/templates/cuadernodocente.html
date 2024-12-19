@@ -1443,7 +1443,75 @@
 
 
     {% endif%}
+
+    
+    /*Descargamos el cuaderno docente a Excel*/
+    $("#descargar-cuaderno").on('click', function() {
+
+        var table_content = $("#tabla_cuaderno").clone();
         
+        //Limpiamos la tabla de elementos no necesarios para el excel
+        table_content.find("[edit-calalumn-datas]").remove();
+        table_content.find("[data-th-ieval-escala]").remove();
+
+        table_content.find("[style*='display: none']").remove();
+
+        table_content.find(".edit_calalumn_data").each(function() {
+            let valor = $(this).find(".data-valor").html();
+            let parent = $(this).parent();
+            parent.removeAttr("data-ieval-id");
+            parent.removeAttr("data-alumno-id");
+            parent.removeAttr("data-tipo-ecp");
+            parent.html(valor);
+        });
+
+        table_content.find("th").removeAttr('class');
+        table_content.find("td").removeAttr('class');
+        table_content.find("tr").removeAttr('class');
+
+        table_content.find("th").removeAttr('id');
+        table_content.find("td").removeAttr('id');
+        table_content.find("tr").removeAttr('id');
+
+        table_content.find("th").removeAttr('title');
+        table_content.find("td").removeAttr('title');
+        table_content.find("tr").removeAttr('title');
+
+        table_content.find("th").removeAttr('style');
+        table_content.find("td").removeAttr('style');
+        table_content.find("tr").removeAttr('style');
+
+        table_content.find("th").removeAttr('data-cieval-id');
+        table_content.find("td").removeAttr('data-cieval-id');
+        table_content.find("tr").removeAttr('data-cieval-id');
+
+        table_content.find("th").removeAttr('data-cieval-texto');
+        table_content.find("td").removeAttr('data-cieval-texto');
+        table_content.find("tr").removeAttr('data-cieval-texto');
+
+        // Exportamos un excel con la tabla limpia
+    
+        var uri = 'data:application/vnd.ms-excel;base64,'
+        var template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><?xml version="1.0" encoding="UTF-8" standalone="yes"?><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>'+table_content.html()+ '</table></body></html>'
+        var base64 = function(s) { return window.btoa(unescape(encodeURIComponent(s))) }
+        var format = function(s, c) { return s.replace(/{(\w+)}/g, function(m, p) { return c[p]; }) };
+      
+        var ctx = { worksheet: "Cuaderno docente", table: table_content.innerHTML };
+        //window.location.href = uri + base64(format(template, ctx));
+        var a = document.createElement('a');
+        a.href = uri + base64(format(template, ctx))
+        a.download = 'cuaderno_docente.xls';
+        a.click();
+      
+    })
+        
+
+    
+
+    
+
+
+
 
     </script>
 
