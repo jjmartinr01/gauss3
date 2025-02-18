@@ -65,91 +65,95 @@
    
     
 
-    <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
-        Alumno: <span class="nombre_alumno_informe_cc">{{ alumno.gauser.get_full_name }}</span>
-    </p>
-    <p class="no_visible">
-        Curso: <span style="font-weight: bold;"
-                     class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
-        {{ curso.nombre }}{% endfor %}</span>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Grupo: <span style="font-weight: bold;"
-                     class="nombre_grupo_informe_cc">{{ alumno.gauser_extra_estudios.grupo.nombre }}</span>
-    </p>
-    <table style="width: 100%;">
-        <thead>
-        <tr>
-            <th colspan="3" style="text-align: center;">Perfil de salida (evaluación de los descriptores
-                operativos)
-            </th>
-        </tr>
-        <tr>
-            <th style="text-align: center;">Competencia Clave</th>
-            <th style="text-align: center;">Descriptores Operativos</th>
-            <th style="text-align: center;">Calificación</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for cc in ps.competenciaclave_set.all %}
-            {% for do in cc.descriptoroperativo_set.all %}
-                <tr>
-                    {% if forloop.first %}
-                        <td rowspan="{{ cc.descriptoroperativo_set.all|length }}">
-                            {{ cc.competencia }}
-                        </td>
-                    {% endif %}
-                    <td title="{{ do.clave }}">
-                        {{ do.texto }}
-                    </td>
-                    <td id="cal_do_informe{{ do.clave }}_{{ alumno.id }}" style="text-align: center;"
-                        contenteditable="true">{{ cal_dos|obtener_do_cal:do.clave }}</td>
-                </tr>
-            {% endfor %}
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="informe_extendido">
 
-    <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
-        Alumno: <span class="nombre_alumno_informe_cc">{{ alumno.gauser.get_full_name }}</span>
-    </p>
-    <p class="no_visible">
-        Curso: <span style="font-weight: bold;"
-                     class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
-        {{ curso.nombre }}{% endfor %}</span>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Grupo: <span style="font-weight: bold;"
-                     class="nombre_grupo_informe_cc">{{ alumno.gauser_extra_estudios.grupo.nombre }}</span>
-    </p>
-    <table style="width: 100%;">
-        <thead>
-        <tr>
-            <th colspan="3" style="text-align: center;">
-                Evaluación de las competencias específicas vinculadas a cada asignatura
-            </th>
-        </tr>
-        <tr>
-            <th style="text-align: center;">Asignatura</th>
-            <th style="text-align: center;">Competencia Específica</th>
-            <th style="text-align: center;">Calificación</th>
-        </tr>
-        </thead>
-        {% for am in ams %}
-            <tbody class="tbody_am" id="tbody_am{{ am.id }}_{{ alumno.id }}">
-            {% for ce in am.competenciaespecifica_set.all %}
-                <tr>
-                    {% if forloop.first %}
-                        <td rowspan="{{ am.competenciaespecifica_set.all|length }}">
-                            {{ am.nombre }}
+        <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
+            Alumno: <span class="nombre_alumno_informe_cc">{{ alumno.gauser.get_full_name }}</span>
+        </p>
+        <p class="no_visible">
+            Curso: <span style="font-weight: bold;"
+                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
+            {{ curso.nombre }}{% endfor %}</span>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Grupo: <span style="font-weight: bold;"
+                         class="nombre_grupo_informe_cc">{{ alumno.gauser_extra_estudios.grupo.nombre }}</span>
+        </p>
+        <table style="width: 100%;">
+            <thead>
+            <tr>
+                <th colspan="3" style="text-align: center;">Perfil de salida (evaluación de los descriptores
+                    operativos)
+                </th>
+            </tr>
+            <tr>
+                <th style="text-align: center;">Competencia Clave</th>
+                <th style="text-align: center;">Descriptores Operativos</th>
+                <th style="text-align: center;">Calificación</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for cc in ps.competenciaclave_set.all %}
+                {% for do in cc.descriptoroperativo_set.all %}
+                    <tr>
+                        {% if forloop.first %}
+                            <td rowspan="{{ cc.descriptoroperativo_set.all|length }}">
+                                {{ cc.competencia }}
+                            </td>
+                        {% endif %}
+                        <td title="{{ do.clave }}">
+                            {{ do.texto }}
                         </td>
-                    {% endif %}
-                    <td title="CE{{ ce.orden }}">
-                        {{ ce.nombre }}
-                    </td>
-                    <td id="cal_ce_informe{{ ce.id }}_{{ alumno.id }}" style="text-align: center;"
-                        contenteditable="true">{{ cal_ces|obtener_ce_cal:ce.id }}</td>
-                </tr>
+                        <td id="cal_do_informe{{ do.clave }}_{{ alumno.id }}" style="text-align: center;"
+                            contenteditable="true">{{ cal_dos|obtener_do_cal:do.clave }}</td>
+                    </tr>
+                {% endfor %}
             {% endfor %}
             </tbody>
-        {% endfor %}
-    </table>
+        </table>
+    
+        <p style="font-weight: bold;font-size: large;" class="pagebreak no_visible">
+            Alumno: <span class="nombre_alumno_informe_cc">{{ alumno.gauser.get_full_name }}</span>
+        </p>
+        <p class="no_visible">
+            Curso: <span style="font-weight: bold;"
+                         class="nombre_curso_informe_cc">{% for curso in alumno.gauser_extra_estudios.grupo.cursos.all %}
+            {{ curso.nombre }}{% endfor %}</span>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Grupo: <span style="font-weight: bold;"
+                         class="nombre_grupo_informe_cc">{{ alumno.gauser_extra_estudios.grupo.nombre }}</span>
+        </p>
+        <table style="width: 100%;">
+            <thead>
+            <tr>
+                <th colspan="3" style="text-align: center;">
+                    Evaluación de las competencias específicas vinculadas a cada asignatura
+                </th>
+            </tr>
+            <tr>
+                <th style="text-align: center;">Asignatura</th>
+                <th style="text-align: center;">Competencia Específica</th>
+                <th style="text-align: center;">Calificación</th>
+            </tr>
+            </thead>
+            {% for am in ams %}
+                <tbody class="tbody_am" id="tbody_am{{ am.id }}_{{ alumno.id }}">
+                {% for ce in am.competenciaespecifica_set.all %}
+                    <tr>
+                        {% if forloop.first %}
+                            <td rowspan="{{ am.competenciaespecifica_set.all|length }}">
+                                {{ am.nombre }}
+                            </td>
+                        {% endif %}
+                        <td title="CE{{ ce.orden }}">
+                            {{ ce.nombre }}
+                        </td>
+                        <td id="cal_ce_informe{{ ce.id }}_{{ alumno.id }}" style="text-align: center;"
+                            contenteditable="true">{{ cal_ces|obtener_ce_cal:ce.id }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            {% endfor %}
+        </table>
+
+    </div>
 </div>
