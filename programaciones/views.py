@@ -4697,8 +4697,11 @@ def calificacc_all(request, grupo_id):
                   {
                       'formname': 'calificacc_all',
                       'iconos':
-                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF',
+                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF completo',
                             'title': 'Generar pdf de los informes competenciales',
+                            'permiso': 'libre'},
+                            {'tipo': 'button', 'nombre': 'file-o', 'texto': 'PDF resumido',
+                            'title': 'Generar pdf de los informes competenciales resumido',
                             'permiso': 'libre'},
                            # {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
                            #  'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},

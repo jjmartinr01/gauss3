@@ -6,6 +6,7 @@
         {% csrf_token %}
         <input type="hidden" id="action" name="action" value=""/>
         <div id="tabla_generar_informe"></div>
+        <div id="tabla_generar_informe_resumido" style="display: none;"></div>
         <textarea style="display: none;" id="textarea_tabla_generar_informe"
                   name="textarea_tabla_generar_informe"></textarea>
     </form>
@@ -14,7 +15,7 @@
 {% block final %}
     <script type="text/javascript">
         setTimeout(function () {
-            habilita(['s_file-pdf-o',]);
+            habilita(['s_file-pdf-o', 's_file-o']);
         }, 2000);
 
         function carga_alumnocc(alumno) {
@@ -22,6 +23,11 @@
                 function (data) {
                     if (data.ok) {
                         $('#tabla_generar_informe').append(data.informe);
+
+                        // Quitamos la parte extendida del informe
+                        $('#tabla_generar_informe_resumido').append(data.informe);
+                        $('#tabla_generar_informe_resumido').find(".informe_extendido").remove();
+                        
                     } else {
                         show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg});
                         $("#update_error").show().delay(1500).fadeOut();
@@ -41,6 +47,16 @@
             e.preventDefault();
             var style = '<style>table, td, th{border:1px}</style>';
             var html = $('#tabla_generar_informe').html();
+            $('#textarea_tabla_generar_informe').val(style + html);
+            $('#action').val('genera_pdf');
+            document.getElementById('{{ formname }}').submit();
+        });
+
+        //Informes resumidos
+        $('#file-o_sign').click(function (e) {
+            e.preventDefault();
+            var style = '<style>table, td, th{border:1px}</style>';
+            var html = $('#tabla_generar_informe_resumido').html();
             $('#textarea_tabla_generar_informe').val(style + html);
             $('#action').val('genera_pdf');
             document.getElementById('{{ formname }}').submit();
