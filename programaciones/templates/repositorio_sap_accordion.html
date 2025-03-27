@@ -3,6 +3,13 @@
     style="border-bottom: dotted 1px black">
     <a href="#panel{{ sap.id }}">
         <i id="circle{{ sap.id }}" class="fa fa-plus-circle circle_icon"></i>
+        
+        {% if sap.publicar %}
+            <span class="pill publica">Pública</span>
+        {% else %}
+            <span class="pill privada">Privada</span>
+        {% endif %}
+        
         <b id="nombre{{ sap.id }}">
             {% if not sap.nombre %}<span style="color:red">Nueva Situación de aprendizaje</span>
                 {% else %}{{ sap.nombre }} -
