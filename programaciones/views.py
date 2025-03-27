@@ -3116,6 +3116,20 @@ def repositorio_sap(request):
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        
+        elif action == 'compartir_sap':
+            try:
+                sapren = RepoSitApren.objects.get(id=request.POST['id'])
+                if sapren.autor.gauser == g_e.gauser:
+                    sapren.publicar = False if sapren.publicar else True
+                    sapren.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No tienes permiso para compartir esta situación de aprendizaje.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+            
         elif action == 'open_accordion':
             try:
                 sap = RepoSitApren.objects.get(id=request.POST['id'])
