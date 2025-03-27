@@ -12,6 +12,25 @@
             border: lightgrey 1px solid;
             min-height: 100px;
         }
+
+        .pill {
+            font-size: 0.9em;
+            border: lightgrey 1px solid;
+            border-radius: 10px;
+            padding: 4px 6px;
+            margin: 0px 3px;
+        }
+
+        .publica {
+            color: #008CBA;
+            border: 1px solid #008CBA;
+        }
+
+        .privada {
+            color: gray;
+        }
+
+
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -77,6 +96,20 @@
                                     }
                                 });
                         }
+                    }
+                });
+
+            });
+
+            $('body').on('click', '.compartir_sap', function () {
+                id = $(this).data('id');
+                $.post(url_repositorio_sap, {action: 'compartir_sap', id: id},
+                function (data) {
+                    if (data.ok) {
+                        location.href = "/repositorio_sap/"
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
 
