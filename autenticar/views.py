@@ -30,10 +30,10 @@ from django.forms import ModelForm
 from django.utils import translation, timezone
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
 from gauss.funciones import pass_generator, genera_nie, borra_carga_masiva_antigua
-from gauss.settings import RUTA_BASE_SETTINGS
+from gauss.settings import LANGUAGE_SESSION_KEY, RUTA_BASE_SETTINGS
 from estudios.models import Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default, Configauss
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
@@ -532,7 +532,7 @@ def index(request):
                 if user.is_active:
                     login(request, user)
                     request.session["hoy"] = datetime.today()
-                    request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                    request.session[LANGUAGE_SESSION_KEY] = user_language
                     # Identificación de la entidad en el que está el usuario:
                     try:
                         gauser_extras = [Gauser_extra.objects.get(gauser=user, activo=True, ronda_id=request.POST['r'])]
@@ -683,7 +683,7 @@ def logincas(request):
             if user.is_active:
                 login(request, user)
                 request.session["hoy"] = datetime.today()
-                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                request.session[LANGUAGE_SESSION_KEY] = user_language
                 gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
                 g_cs = gauser_extras
                 entidades_disponibles = 0
@@ -776,7 +776,7 @@ def logincas_antiguo(request):
             if user.is_active:
                 login(request, user)
                 request.session["hoy"] = datetime.today()
-                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                request.session[LANGUAGE_SESSION_KEY] = user_language
                 gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
                 g_cs = gauser_extras
                 entidades_disponibles = 0
@@ -834,10 +834,10 @@ def no_login(request):
 def crear_nombre_usuario(nombre, apellidos):
     # En primer lugar quitamos tildes, colocamos nombres en minúsculas y :
     nombre = ''.join(
-        (c for c in unicodedata.normalize('NFD', smart_text(nombre)) if
+        (c for c in unicodedata.normalize('NFD', smart_str(nombre)) if
          unicodedata.category(c) != 'Mn')).lower().split()
     apellidos = ''.join(
-        (c for c in unicodedata.normalize('NFD', smart_text(apellidos)) if
+        (c for c in unicodedata.normalize('NFD', smart_str(apellidos)) if
          unicodedata.category(c) != 'Mn')).lower().split()
     iniciales_nombre = ''
     for parte in nombre:
