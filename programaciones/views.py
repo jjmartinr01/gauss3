@@ -3735,11 +3735,13 @@ def cuadernodocente(request, id=None):
                     #ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
 
                     observaciones = ecp.cp.psec.areamateria.nombre + ' <br>' + ecp.cp.psec.areamateria.get_curso_display()
-                    ecp_nueva = RepoEscalaCP.objects.get_or_create(tipo=ecp.tipo, nombre=ecp.nombre, creador=g_e,
+                    
+                    ecp_nueva = RepoEscalaCP.objects.create(tipo=ecp.tipo, nombre=ecp.nombre, creador=g_e,
                                                                    observaciones=observaciones)
-                    ecp_nueva[0].repoescalacpvalor_set.all().delete()
+                    #ecp_nueva.repoescalacpvalor_set.all().delete()
+                    
                     for ecpv in ecp.escalacpvalor_set.all():
-                        RepoEscalaCPvalor.objects.create(ecp=ecp_nueva[0], x=ecpv.x, y=ecpv.y, valor=ecpv.valor,
+                        RepoEscalaCPvalor.objects.create(ecp=ecp_nueva, x=ecpv.x, y=ecpv.y, valor=ecpv.valor,
                                                          texto_cualitativo=ecpv.texto_cualitativo)
                     return JsonResponse({'ok': True})
                 except Exception as msg:
@@ -4292,6 +4294,7 @@ def repoescalacp(request):
             return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
     paginator = Paginator(RepoEscalaCP.objects.all(), 25)
+    
     return render(request, "repoescalacp.html",
                   {
                       'formname': 'repoescalacp',
