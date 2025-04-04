@@ -725,7 +725,7 @@ class ProgSec(models.Model):
         permiso = ''
         if self.cuadernoprof_set.filter(borrado=False).count() > 0:
             permiso += 'C'
-        if gep == self.gep:
+        if gep == self.gep or gep.ge.cargos.filter(clave_cargo='g_miembro_equipo_directivo').exists():
             permiso += 'LEX'
         try:
             permiso += self.docprogsec_set.get(gep=gep).permiso
