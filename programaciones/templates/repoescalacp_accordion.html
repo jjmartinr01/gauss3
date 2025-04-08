@@ -5,6 +5,7 @@
         style="border-bottom: dotted 1px black">
         <a href="#panel{{ recp.id }}">
             <i id="circle{{ recp.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <span class="recp_id">{{ recp.id }}</span>
             <b id="nombre{{ recp.id }}">{{ recp.nombre }}
                 - {{ recp.observaciones|striptags|truncatechars_html:50 }}</b>
             {% if buscar %}
@@ -22,6 +23,7 @@
                 style="border-bottom: dotted 1px black">
                 <a href="#panel{{ recp.id }}">
                     <i id="circle{{ recp.id }}" class="fa fa-plus-circle circle_icon"></i>
+                    <span class="recp_id">{{ recp.id }}</span>
                     <b id="nombre{{ recp.id }}">{{ recp.nombre }}
                         - {{ recp.observaciones|striptags|truncatechars_html:50 }}</b>
                     {% if buscar %}
