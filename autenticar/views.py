@@ -36,7 +36,7 @@ from gauss.funciones import pass_generator, genera_nie, borra_carga_masiva_antig
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default, Configauss
-from programaciones.models import Gauser_extra_programaciones, ProgSec
+from programaciones.models import Gauser_extra_programaciones, ProgSec, DocProgSec, LibroRecurso, SaberBas, SitApren
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
     Reserva_plaza
 from entidades.tasks import carga_masiva_from_excel, ejecutar_configurar_cargos_permisos, \
