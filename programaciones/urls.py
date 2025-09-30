@@ -37,6 +37,7 @@ urlpatterns = [
     
     
     path('verprogramacion/<str:secret>/<int:id>/', views.verprogramacion),
+    path('verprogramaciones/<str:secret>/curso/<str:curso>/', views.verprogramaciones),
     path('verprogramaciones/<str:secret>/', views.verprogramaciones),
     path('repositorio_sap/', views.repositorio_sap),
     path('repoescalacp/', views.repoescalacp),
