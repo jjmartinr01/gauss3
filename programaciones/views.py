@@ -181,13 +181,6 @@ def cargar_programaciones(request):
             # response['Content-Disposition'] = 'attachment; filename=%s' % fichero
             # return response
 
-    try:
-        print(Curso.objects.get(pk="10581").nombre)
-        print(Materia.objects.filter(curso="10581"))
-    except Exception as error:
-        print(error)
-
-
     return render(request, "cargar_programaciones.html",
                   {
                       'formname': 'cargar_programaciones',
