@@ -1,3 +1,4 @@
+{% load programaciones_extras %}
 <style>
     .info_web_link {
         margin-top: 10px;
@@ -16,17 +17,30 @@
 </style>
 
 <div id="info_web_link" class="info_web_link">
-  <div>
-      <span class="title">Programaciones publicadas:</span>
-      <a target="_blank" href="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/">https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"</a>
-  </div>
-  
-  <div>
+    <div>
+        <span class="title">Programaciones publicadas curso actual:</span>
+        <a target="_blank" href="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/">https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"</a>
+    </div>  
+    <div>
       <span class="title">Link de publicación en página web:</span>
       <span class="show_inline"><</span><span class="show_inline">iframe</span><span class="show_inline">&nbsp;</span><span
               class="show_inline">src="https://gauss.larioja.org/verprogramaciones/{{ request.session.gauser_extra.ronda.entidad.secret }}/"><</span><span
               class="show_inline">/iframe>
       </span>
-  </div>
+    </div>
+
+    {% with rondas=request.session.gauser_extra|get_rondas_ge %}
+        {% if rondas|length > 0 %}
+        <div style="margin-top: 20px;">
+            <span class="title">Links de publicación por cursos:</span>
+            {% for ronda in rondas %}
+            <div><span>Curso {{ ronda.nombre }}</span>: <a target="_blank" href="https://gauss.larioja.org/verprogramaciones/{{ ronda.entidad.secret }}/curso/{{ ronda.nombre|slice:"2:4" }}{{ ronda.nombre|slice:"7:9" }}/">https://gauss.larioja.org/verprogramaciones/{{ ronda.entidad.secret }}/curso/{{ ronda.nombre|slice:"2:4" }}{{ ronda.nombre|slice:"7:9" }}"</a></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+  
+
 </div>
 

@@ -2628,10 +2628,27 @@ def verprogramacion(request, secret, id):
         pass
 
 
-def verprogramaciones(request, secret):
+def verprogramaciones(request, secret, curso=None):
+
     try:
         entidad = Entidad.objects.get(secret=secret)
-        pga = PGA.objects.get(ronda=entidad.ronda)
+        
+        #Si no me proporcionan curso en la url, proporcionamos la pga actual
+        if curso==None:
+            pga = PGA.objects.get(ronda=entidad.ronda)
+            ronda = entidad.ronda
+
+        #Si me proporcionan curso en la url, buscamos la pga correspondiente
+        else:
+            try:
+                ronda_nombre = "20" + curso[0:2] + "/20" + curso[2:4]
+                ronda = Ronda.objects.get(entidad=entidad, nombre=ronda_nombre)
+                pga = PGA.objects.get(ronda=ronda)
+            except:
+                #Si no existe por error, proporcionamos la actual
+                ronda = entidad.ronda
+                pga = PGA.objects.get(ronda=entidad.ronda)
+
         progsecs = ProgSec.objects.filter(pga=pga, tipo__in=('DEF', 'BIN', 'BNO', 'BDI', 'EOI')).order_by(
             'areamateria__curso')
         return render(request, "verprogramaciones.html",
@@ -2639,6 +2656,7 @@ def verprogramaciones(request, secret):
                           'formname': 'verprogramaciones',
                           'progsecs': progsecs,
                           'entidad': entidad,
+                          'ronda': ronda
                       })
     except:
         return HttpResponse('<h1>Se ha producido un error. Petición no llevada a cabo.</h1>')
