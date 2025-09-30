@@ -11,6 +11,7 @@
     </style>
     {#<input type="hidden" name="centro" id="centro" value="{{ progsecs.0.pga.ronda.entidad.code }}">#}
     <h1>Programaciones Didácticas</h1>
+    <p>{{ ronda }}</p>
     {% for progsec in progsecs %}
         {% ifchanged progsec.areamateria.curso %}
             <h2>{{ progsec.areamateria.get_curso_display }}</h2>
