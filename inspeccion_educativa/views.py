@@ -29,6 +29,8 @@ from entidades.tasks import carga_masiva_from_excel
 from entidades.models import CargaMasiva, Cargo, DocConfEntidad
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
+from bs4 import BeautifulSoup
+
 
 logger = logging.getLogger('django')
 
@@ -658,7 +660,232 @@ def informes_ie(request):
             except:
                 return JsonResponse({'ok': False})
     elif request.method == 'POST' and not request.is_ajax():
-        if request.POST['action'] == 'pdf_ie':
+
+        if request.POST['action'] == 'download_informes_ie':
+            if g_e.has_permiso('crea_informes_ie') or True:  # El permiso da igual
+                try:
+                    informes = InformeInspeccion.objects.order_by('-creado').filter(inspector__gauser=g_e.gauser)
+                    
+
+                    ruta = MEDIA_INSPECCION + str(g_e.ronda.entidad.code) + '/'
+                    if not os.path.exists(ruta):
+                        os.makedirs(ruta)
+                    #fichero_xls = 'informes_inspeccion_%s.xls' % (g_e.gauser.id)
+                    fichero_xls = 'informes_inspeccion.xls'
+                    
+                    # Preparamos fichero Excel
+                    wb = xlwt.Workbook()
+                    wc = wb.add_sheet('Informes', cell_overwrite_ok=True)
+                    
+                    date_format = xlwt.XFStyle()
+                    date_format.num_format_str = 'dd/mm/yyyy'
+
+                    # cell_with_unit
+                    cell_with_unit = 2000
+
+                    # Estilo arial, bold, 180 
+                    font_bold = xlwt.Font()
+                    font_bold.name = 'Arial'
+                    font_bold.height = 180
+                    font_bold.bold = True
+
+                    # Estilo arial, normal, 170
+                    font_normal = xlwt.Font()
+                    font_normal.name = 'Arial'
+                    font_normal.height = 170
+                    font_normal.bold = False
+
+                    # Borders 1px 
+                    borders = xlwt.Borders()
+                    borders.left = 1
+                    borders.right = 1
+                    borders.top = 1
+                    borders.bottom = 1
+                    
+                    # Alineación izquierda/centrada
+                    alignment = xlwt.Alignment()
+                    alignment.horz = xlwt.Alignment.HORZ_LEFT
+                    alignment.vert = xlwt.Alignment.VERT_CENTER
+
+                    # Alineación izquierda/top
+                    alignment_left_top = xlwt.Alignment()
+                    alignment_left_top.horz = xlwt.Alignment.HORZ_LEFT
+                    alignment_left_top.vert = xlwt.Alignment.VERT_TOP
+                    
+                    # Color fondo dark_purple
+                    pattern = xlwt.Pattern()
+                    pattern.pattern = xlwt.Pattern.SOLID_PATTERN
+                    pattern.pattern_fore_colour = xlwt.Style.colour_map['dark_purple']
+
+                    
+                    #Estilo header
+                    header_style = xlwt.XFStyle()   
+                    header_style.borders = borders
+                    header_style.font = font_bold
+                    header_style.alignment = alignment
+                    header_style.pattern = pattern
+
+                    #Estilo body
+                    body_style = xlwt.XFStyle()
+                    body_style.font = font_normal
+                    body_style.alignment = alignment_left_top
+                    body_style.borders = borders
+
+                    # Índice de filas
+                    fila_excel_informes = 0
+
+                    # Cabeceras
+                    wc.row(0).height = 500
+
+                    wc.col(0).width = cell_with_unit
+                    wc.write(fila_excel_informes, 0, 'ID', style=header_style)
+                    wc.write(fila_excel_informes, 1, 'INSPECTOR', style=header_style)
+                    wc.write(fila_excel_informes, 2, 'CREADO', style=header_style)
+                    wc.write(fila_excel_informes, 3, 'TITLE', style=header_style)
+                    
+                    wc.col(4).width = cell_with_unit * 6
+                    wc.write(fila_excel_informes, 4, 'ASUNTO', style=header_style)
+                    
+                    wc.col(5).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 5, 'DESTINATARIO', style=header_style)
+
+                    wc.col(6).width = cell_with_unit * 2
+                    wc.write(fila_excel_informes, 6, 'TEXTO', style=header_style)
+                    
+                    wc.col(7).width = cell_with_unit * 8
+                    wc.write(fila_excel_informes, 7, 'TEXTO PLANO', style=header_style)
+                    
+                    wc.write(fila_excel_informes, 8, 'MODIFICADO', style=header_style)
+                    
+                    wc.write(fila_excel_informes, 9, 'VARIANTE NOMBRE', style=header_style)
+                    wc.write(fila_excel_informes, 10, 'VARIANTE PLANTILLA ASUNTO', style=header_style)
+                    wc.write(fila_excel_informes, 11, 'VARIANTE PLANTILLA DESTINATARIO', style=header_style)
+                    
+                    wc.col(12).width = cell_with_unit * 2
+                    wc.write(fila_excel_informes, 12, 'VARIANTE TEXTO', style=header_style)
+                    
+                    wc.col(13).width = cell_with_unit * 8
+                    wc.write(fila_excel_informes, 13, 'VARIANTE TEXTO PLANO', style=header_style)
+                    
+                    wc.write(fila_excel_informes, 14, 'TAREA FECHA', style=header_style)
+
+                    wc.col(15).width = cell_with_unit * 6
+                    wc.write(fila_excel_informes, 15, 'TAREA ASUNTO', style=header_style)
+                    wc.write(fila_excel_informes, 16, 'TAREA ROL', style=header_style)
+                    
+                    wc.col(17).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 17, 'TAREA PERMISO', style=header_style)
+                    
+                    wc.col(18).width = cell_with_unit * 6
+                    wc.write(fila_excel_informes, 18, 'TAREA OBSERVACIONES', style=header_style)
+                    
+                    wc.write(fila_excel_informes, 19, 'TAREA INSPECTOR MDB', style=header_style)
+    
+
+                    for informe in informes:
+                        fila_excel_informes += 1
+                        wc.row(fila_excel_informes).height = 400
+
+                        wc.write(fila_excel_informes, 0, informe.id, style=body_style)
+                        wc.write(fila_excel_informes, 1, informe.inspector.gauser.__str__(), style=body_style)
+                        wc.write(fila_excel_informes, 2, informe.creado.__str__(), style=body_style)
+                        wc.write(fila_excel_informes, 3, informe.title.__str__(), style=body_style)
+                        wc.write(fila_excel_informes, 4, informe.asunto.strip(), style=body_style)
+
+                        inf_des = informe.destinatario.__str__().replace("<p>", " ").replace("</p>", "\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n")
+                        wc.write(fila_excel_informes, 5, BeautifulSoup(inf_des, "html.parser").get_text().strip(), style=body_style)
+                        
+                        
+                        # El texto suele ser grande y las celdas de excel tienen un límite de 32767 caracteres                             
+                        # Informe texto
+                        texto_troceado = [informe.texto[i:i+32767] for i in range(0,len(informe.texto), 32767)]
+                        fila_informe_texto = fila_excel_informes
+
+                        for trozo in texto_troceado:
+                            wc.write(fila_informe_texto, 6, trozo.strip(), style=body_style)
+                            fila_informe_texto += 1
+                        
+                        # Informe texto beautiful
+                        informe_texto_b = BeautifulSoup(informe.texto.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
+                        texto_troceado = [informe_texto_b[i:i+32767] for i in range(0,len(informe_texto_b), 32767)]
+                        fila_informe_texto_b = fila_excel_informes
+                        for trozo in texto_troceado:
+                            wc.write(fila_informe_texto_b, 7, trozo.strip(), style=body_style)
+                            fila_informe_texto_b += 1
+
+                        wc.write(fila_excel_informes, 8, informe.modificado.__str__(), style=body_style)
+
+                        # Variante
+                        if informe.variante:
+                            wc.write(fila_excel_informes, 9, informe.variante.nombre, style=body_style)
+
+                            if informe.variante.plantilla:
+                                wc.write(fila_excel_informes, 10, informe.variante.plantilla.asunto.strip(), style=body_style)
+                                
+                                plan_des = informe.variante.plantilla.destinatario.__str__().replace("<p>", " ").replace("</p>", "\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n")
+                                wc.write(fila_excel_informes, 11, BeautifulSoup(plan_des, "html.parser").get_text().strip(), style=body_style)
+                            
+                            # El texto suele ser grande y las celdas de excel tienen un límite de 32767 caracteres
+                            # Informe variante texto
+                            texto_troceado = [informe.variante.texto[i:i+32767] for i in range(0,len(informe.variante.texto), 32767)]
+                            fila_informe_variante_texto = fila_excel_informes
+                            
+                            for trozo in texto_troceado:
+                                wc.write(fila_informe_variante_texto, 12, trozo.strip(), style=body_style)
+                                fila_informe_variante_texto += 1
+                            
+                            # Informe variante texto beautiful
+                            informe_variante_texto_b = BeautifulSoup(informe.variante.texto.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
+                            texto_troceado = [informe_variante_texto_b[i:i+32767] for i in range(0,len(informe_variante_texto_b), 32767)]
+                            fila_informe_variante_texto_b = fila_excel_informes
+                            for trozo in texto_troceado:
+                                wc.write(fila_informe_variante_texto_b, 13, trozo.strip(), style=body_style)
+                                fila_informe_variante_texto_b += 1
+                        
+                        else:
+                            #Rellenamos en blanco por cuestiones de estilo
+                            wc.write(fila_excel_informes, 9, "", style=body_style)
+                            wc.write(fila_excel_informes, 10, "", style=body_style)
+                            wc.write(fila_excel_informes, 11, "", style=body_style)
+                            wc.write(fila_excel_informes, 12, "", style=body_style)
+                            wc.write(fila_excel_informes, 13, "", style=body_style)
+                            
+                        # Tarea
+                        if informe.instarea:
+                            wc.write(fila_excel_informes, 14, informe.instarea.tarea.fecha.__str__(), style=body_style)
+                            wc.write(fila_excel_informes, 15, informe.instarea.tarea.asunto.strip(), style=body_style)
+                            wc.write(fila_excel_informes, 16, informe.instarea.get_rol_display(), style=body_style)
+                            wc.write(fila_excel_informes, 17, informe.instarea.get_permiso_display(), style=body_style)
+                            wc.write(fila_excel_informes, 18, informe.instarea.tarea.observaciones.strip(), style=body_style)
+                            wc.write(fila_excel_informes, 19, informe.instarea.tarea.get_inspector_mdb_display(), style=body_style)
+                        else:
+                                                        #Rellenamos en blanco por cuestiones de estilo
+                            wc.write(fila_excel_informes, 14, "", style=body_style)
+                            wc.write(fila_excel_informes, 15, "", style=body_style)
+                            wc.write(fila_excel_informes, 16, "", style=body_style)
+                            wc.write(fila_excel_informes, 17, "", style=body_style)
+                            wc.write(fila_excel_informes, 18, "", style=body_style)
+                            wc.write(fila_excel_informes, 19, "", style=body_style)
+
+
+                        
+                        # Ajustamos el desplazamiento verital de filas en el caso de que haya habido trocedo en los text fields.
+                        # El -1 se debe a que el bucle ya suma al inicio 1 a fila excel_informes
+                        
+                        fila_excel_informes = max(fila_informe_texto, fila_informe_texto_b, fila_informe_variante_texto, fila_informe_variante_texto_b)-1
+                        
+                          
+                    wb.save(ruta + fichero_xls)
+                    xlsfile = open(ruta + fichero_xls, 'rb')
+                    response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
+                    response['Content-Disposition'] = 'attachment; filename=listado.xls'
+                    return response
+
+                except Exception as err:
+                    print(err)
+                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error. Acción: download_informes_ie'})
+
+        elif request.POST['action'] == 'pdf_ie':
             doc_ie = 'Configuración de informes de Inspección Educativa'
             dce = get_dce(g_e.ronda.entidad, doc_ie)
             ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
@@ -717,6 +944,9 @@ def informes_ie(request):
         'iconos':
             ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
               'title': 'Crear una nueva actuación de Inspección',
+              'permiso': 'crea_informes_ie'},
+             {'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Descargar Excel',
+              'title': 'Descargar listado en Excel',
               'permiso': 'crea_informes_ie'},
              {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'informe',
               'title': 'Generar informe con las reparaciones de la entidad',

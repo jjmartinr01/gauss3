@@ -13,6 +13,12 @@
             min-height: 100px;
         }
     </style>
+
+    <form action="" method="post" enctype="multipart/form-data" id="download_informes_ie" name="download_informes_ie">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="download_informes_ie">
+    </form>
+
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
@@ -67,6 +73,7 @@
             </dl>
         </div>
     </form>
+
 {% endblock %}
 
 {% block final %}
@@ -97,7 +104,7 @@
         }
 
         {% if g_e|has_permiso:"acceso_informes_ie" %}
-            habilita(['s_plus']);
+            habilita(['s_plus', 's_file-excel-o']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
                 $.post("/informes_ie/", {action: 'crea_informe_ie'}, function (data) {
@@ -110,6 +117,13 @@
                     $(document).scrollTop($('#title_page').offset().top - 150);
                 });
             });
+
+
+            $('body').on('click', '#file-excel-o_sign', function (e) {
+                e.preventDefault();
+                document.getElementById('download_informes_ie').submit();
+            });
+
         {% endif %}
 
         function destroyEditorInstances() {
