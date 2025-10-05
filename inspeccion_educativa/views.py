@@ -666,11 +666,9 @@ def informes_ie(request):
                 try:
                     informes = InformeInspeccion.objects.order_by('-creado').filter(inspector__gauser=g_e.gauser)
                     
-
                     ruta = MEDIA_INSPECCION + str(g_e.ronda.entidad.code) + '/'
                     if not os.path.exists(ruta):
                         os.makedirs(ruta)
-                    #fichero_xls = 'informes_inspeccion_%s.xls' % (g_e.gauser.id)
                     fichero_xls = 'informes_inspeccion.xls'
                     
                     # Preparamos fichero Excel
@@ -741,7 +739,7 @@ def informes_ie(request):
                     wc.write(fila_excel_informes, 0, 'ID', style=header_style)
                     wc.write(fila_excel_informes, 1, 'INSPECTOR', style=header_style)
                     wc.write(fila_excel_informes, 2, 'CREADO', style=header_style)
-                    wc.write(fila_excel_informes, 3, 'TITLE', style=header_style)
+                    wc.write(fila_excel_informes, 3, 'TÍTULO', style=header_style)
                     
                     wc.col(4).width = cell_with_unit * 6
                     wc.write(fila_excel_informes, 4, 'ASUNTO', style=header_style)
@@ -783,107 +781,127 @@ def informes_ie(request):
     
 
                     for informe in informes:
-                        fila_excel_informes += 1
-                        wc.row(fila_excel_informes).height = 400
+                        try:
+                            fila_excel_informes += 1
+                            wc.row(fila_excel_informes).height = 400
 
-                        wc.write(fila_excel_informes, 0, informe.id, style=body_style)
-                        wc.write(fila_excel_informes, 1, informe.inspector.gauser.__str__(), style=body_style)
-                        wc.write(fila_excel_informes, 2, informe.creado.__str__(), style=body_style)
-                        wc.write(fila_excel_informes, 3, informe.title.__str__(), style=body_style)
-                        wc.write(fila_excel_informes, 4, informe.asunto.strip(), style=body_style)
+                            wc.write(fila_excel_informes, 0, informe.id, style=body_style)
+                            wc.write(fila_excel_informes, 1, informe.inspector.gauser.__str__(), style=body_style)
+                            wc.write(fila_excel_informes, 2, informe.creado.__str__(), style=body_style)
+                            wc.write(fila_excel_informes, 3, informe.title.__str__(), style=body_style)
+                            wc.write(fila_excel_informes, 4, informe.asunto.strip(), style=body_style)
 
-                        inf_des = informe.destinatario.__str__().replace("<p>", " ").replace("</p>", "\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n")
-                        wc.write(fila_excel_informes, 5, BeautifulSoup(inf_des, "html.parser").get_text().strip(), style=body_style)
-                        
-                        
-                        # El texto suele ser grande y las celdas de excel tienen un límite de 32767 caracteres                             
-                        # Informe texto
-                        texto_troceado = [informe.texto[i:i+32767] for i in range(0,len(informe.texto), 32767)]
-                        fila_informe_texto = fila_excel_informes
+                            inf_des = informe.destinatario.__str__().replace("<p>", " ").replace("</p>", "\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n")
+                            wc.write(fila_excel_informes, 5, BeautifulSoup(inf_des, "html.parser").get_text().strip(), style=body_style)
 
-                        for trozo in texto_troceado:
-                            wc.write(fila_informe_texto, 6, trozo.strip(), style=body_style)
-                            fila_informe_texto += 1
-                        
-                        # Informe texto beautiful
-                        informe_texto_b = BeautifulSoup(informe.texto.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
-                        texto_troceado = [informe_texto_b[i:i+32767] for i in range(0,len(informe_texto_b), 32767)]
-                        fila_informe_texto_b = fila_excel_informes
-                        for trozo in texto_troceado:
-                            wc.write(fila_informe_texto_b, 7, trozo.strip(), style=body_style)
-                            fila_informe_texto_b += 1
-
-                        wc.write(fila_excel_informes, 8, informe.modificado.__str__(), style=body_style)
-
-                        # Variante
-                        if informe.variante:
-                            wc.write(fila_excel_informes, 9, informe.variante.nombre, style=body_style)
-
-                            if informe.variante.plantilla:
-                                wc.write(fila_excel_informes, 10, informe.variante.plantilla.asunto.strip(), style=body_style)
+                            # Interpolamos las variables en el texto
+                            # informe_texto = informe.texto
+                            # for variable in informe.get_variables:
+                            #     informe_texto = informe_texto.replace("{{"+ variable.nombre +"}}", variable.valor)
+                            #     informe_texto = informe_texto.replace("{{ "+ variable.nombre +" }}", variable.valor)
+                            #     informe_texto = informe_texto.replace("{{  "+ variable.nombre +"  }}", variable.valor)
+                            informe_texto = informe.texto_procesado
                                 
-                                plan_des = informe.variante.plantilla.destinatario.__str__().replace("<p>", " ").replace("</p>", "\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n")
-                                wc.write(fila_excel_informes, 11, BeautifulSoup(plan_des, "html.parser").get_text().strip(), style=body_style)
-                            
-                            # El texto suele ser grande y las celdas de excel tienen un límite de 32767 caracteres
-                            # Informe variante texto
-                            texto_troceado = [informe.variante.texto[i:i+32767] for i in range(0,len(informe.variante.texto), 32767)]
-                            fila_informe_variante_texto = fila_excel_informes
-                            
+                               
+                            # El texto suele ser grande y las celdas de excel tienen un límite de 32767 caracteres                             
+                            # Informe texto
+                            texto_troceado = [informe_texto[i:i+32767] for i in range(0,len(informe_texto), 32767)]
+                            fila_informe_texto = fila_excel_informes
+
                             for trozo in texto_troceado:
-                                wc.write(fila_informe_variante_texto, 12, trozo.strip(), style=body_style)
-                                fila_informe_variante_texto += 1
-                            
-                            # Informe variante texto beautiful
-                            informe_variante_texto_b = BeautifulSoup(informe.variante.texto.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
-                            texto_troceado = [informe_variante_texto_b[i:i+32767] for i in range(0,len(informe_variante_texto_b), 32767)]
-                            fila_informe_variante_texto_b = fila_excel_informes
+                                wc.write(fila_informe_texto, 6, trozo.strip(), style=body_style)
+                                fila_informe_texto += 1
+
+                            # Informe texto beautiful
+                            informe_texto_b = BeautifulSoup(informe_texto.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
+                            texto_troceado = [informe_texto_b[i:i+32767] for i in range(0,len(informe_texto_b), 32767)]
+                            fila_informe_texto_b = fila_excel_informes
                             for trozo in texto_troceado:
-                                wc.write(fila_informe_variante_texto_b, 13, trozo.strip(), style=body_style)
-                                fila_informe_variante_texto_b += 1
-                        
-                        else:
-                            #Rellenamos en blanco por cuestiones de estilo
-                            wc.write(fila_excel_informes, 9, "", style=body_style)
-                            wc.write(fila_excel_informes, 10, "", style=body_style)
-                            wc.write(fila_excel_informes, 11, "", style=body_style)
-                            wc.write(fila_excel_informes, 12, "", style=body_style)
-                            wc.write(fila_excel_informes, 13, "", style=body_style)
+                                wc.write(fila_informe_texto_b, 7, trozo.strip(), style=body_style)
+                                fila_informe_texto_b += 1
+
+                            wc.write(fila_excel_informes, 8, informe.modificado.__str__(), style=body_style)
+
+                            # Variante
+                            if informe.variante:
+                                wc.write(fila_excel_informes, 9, informe.variante.nombre, style=body_style)
+
+                                if informe.variante.plantilla:
+                                    wc.write(fila_excel_informes, 10, informe.variante.plantilla.asunto.strip(), style=body_style)
+
+                                    plan_des = informe.variante.plantilla.destinatario.__str__().replace("<p>", " ").replace("</p>", "\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n")
+                                    wc.write(fila_excel_informes, 11, BeautifulSoup(plan_des, "html.parser").get_text().strip(), style=body_style)
+
+                                # Interpolamos las variables en el texto
+                                informe_variante_texto = informe.variante.texto
+                                # No interpola porque las variables no corresponden. Preguntar a Juanjo
+                                for variable in informe.get_variables:
+                                    informe_variante_texto = informe_variante_texto.replace("{{"+ variable.nombre +"}}", variable.valor)
+                                    informe_variante_texto = informe_variante_texto.replace("{{ "+ variable.nombre +" }}", variable.valor)
+                                    informe_variante_texto = informe_variante_texto.replace("{{  "+ variable.nombre +"  }}", variable.valor)
+
+
+                                # El texto suele ser grande y las celdas de excel tienen un límite de 32767 caracteres
+                                # Informe variante texto
+                                texto_troceado = [informe_variante_texto[i:i+32767] for i in range(0,len(informe_variante_texto), 32767)]
+                                fila_informe_variante_texto = fila_excel_informes
+
+                                for trozo in texto_troceado:
+                                    wc.write(fila_informe_variante_texto, 12, trozo.strip(), style=body_style)
+                                    fila_informe_variante_texto += 1
+
+                                # Informe variante texto beautiful
+                                informe_variante_texto_b = BeautifulSoup(informe_variante_texto.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
+                                texto_troceado = [informe_variante_texto_b[i:i+32767] for i in range(0,len(informe_variante_texto_b), 32767)]
+                                fila_informe_variante_texto_b = fila_excel_informes
+                                for trozo in texto_troceado:
+                                    wc.write(fila_informe_variante_texto_b, 13, trozo.strip(), style=body_style)
+                                    fila_informe_variante_texto_b += 1
+
+                            else:
+                                #Rellenamos en blanco por cuestiones de estilo
+                                wc.write(fila_excel_informes, 9, "", style=body_style)
+                                wc.write(fila_excel_informes, 10, "", style=body_style)
+                                wc.write(fila_excel_informes, 11, "", style=body_style)
+                                wc.write(fila_excel_informes, 12, "", style=body_style)
+                                wc.write(fila_excel_informes, 13, "", style=body_style)
                             
-                        # Tarea
-                        if informe.instarea:
-                            wc.write(fila_excel_informes, 14, informe.instarea.tarea.fecha.__str__(), style=body_style)
-                            wc.write(fila_excel_informes, 15, informe.instarea.tarea.asunto.strip(), style=body_style)
-                            wc.write(fila_excel_informes, 16, informe.instarea.get_rol_display(), style=body_style)
-                            wc.write(fila_excel_informes, 17, informe.instarea.get_permiso_display(), style=body_style)
-                            wc.write(fila_excel_informes, 18, informe.instarea.tarea.observaciones.strip(), style=body_style)
-                            wc.write(fila_excel_informes, 19, informe.instarea.tarea.get_inspector_mdb_display(), style=body_style)
-                        else:
-                                                        #Rellenamos en blanco por cuestiones de estilo
-                            wc.write(fila_excel_informes, 14, "", style=body_style)
-                            wc.write(fila_excel_informes, 15, "", style=body_style)
-                            wc.write(fila_excel_informes, 16, "", style=body_style)
-                            wc.write(fila_excel_informes, 17, "", style=body_style)
-                            wc.write(fila_excel_informes, 18, "", style=body_style)
-                            wc.write(fila_excel_informes, 19, "", style=body_style)
+                            # Tarea
+                            if informe.instarea:
+                                wc.write(fila_excel_informes, 14, informe.instarea.tarea.fecha.__str__(), style=body_style)
+                                wc.write(fila_excel_informes, 15, informe.instarea.tarea.asunto.strip(), style=body_style)
+                                wc.write(fila_excel_informes, 16, informe.instarea.get_rol_display(), style=body_style)
+                                wc.write(fila_excel_informes, 17, informe.instarea.get_permiso_display(), style=body_style)
+                                wc.write(fila_excel_informes, 18, informe.instarea.tarea.observaciones.strip(), style=body_style)
+                                wc.write(fila_excel_informes, 19, informe.instarea.tarea.get_inspector_mdb_display(), style=body_style)
+                            else:
+                                                            #Rellenamos en blanco por cuestiones de estilo
+                                wc.write(fila_excel_informes, 14, "", style=body_style)
+                                wc.write(fila_excel_informes, 15, "", style=body_style)
+                                wc.write(fila_excel_informes, 16, "", style=body_style)
+                                wc.write(fila_excel_informes, 17, "", style=body_style)
+                                wc.write(fila_excel_informes, 18, "", style=body_style)
+                                wc.write(fila_excel_informes, 19, "", style=body_style)
 
 
                         
-                        # Ajustamos el desplazamiento verital de filas en el caso de que haya habido trocedo en los text fields.
-                        # El -1 se debe a que el bucle ya suma al inicio 1 a fila excel_informes
-                        
-                        fila_excel_informes = max(fila_informe_texto, fila_informe_texto_b, fila_informe_variante_texto, fila_informe_variante_texto_b)-1
-                        
+                            # Ajustamos el desplazamiento verital de filas en el caso de que haya habido trocedo en los text fields.
+                            # El -1 se debe a que el bucle ya suma al inicio 1 a fila excel_informes
+
+                            fila_excel_informes = max(fila_informe_texto, fila_informe_texto_b, fila_informe_variante_texto, fila_informe_variante_texto_b)-1
+                        except Exception as err:
+                            wc.write(fila_excel_informes, 20, "ERROR PROCESANDO ESTE REGISTRO", style=body_style)
+                            wc.write(fila_excel_informes, 21, str(err), style=body_style)
+
                           
                     wb.save(ruta + fichero_xls)
                     xlsfile = open(ruta + fichero_xls, 'rb')
                     response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
-                    response['Content-Disposition'] = 'attachment; filename=listado.xls'
+                    response['Content-Disposition'] = 'attachment; filename=informes_inspeccion_%s.xls' % datetime.now()
                     return response
 
                 except Exception as err:
-                    print(err)
-                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error. Acción: download_informes_ie'})
+                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error. Acción: download_informes_ie', 'error': str(err)})
 
         elif request.POST['action'] == 'pdf_ie':
             doc_ie = 'Configuración de informes de Inspección Educativa'
