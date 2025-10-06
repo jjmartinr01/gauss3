@@ -313,10 +313,13 @@
 </div>
 
 {% if not cuaderno.grupo and cuaderno.alumnos.all|length == 0 %}
-    <div class="row">
+    <div class="row panel callout">
         <div class="columns large-12">
-            <p>El cuaderno docente debe relacionarse con una programación didáctica y con un grupo de alumnos.</p>
-            <p>Por favor, comience haciendo esa relación.</p>
+            <p>El cuaderno docente debe relacionarse con una <b>programación didáctica</b> y con un <b>grupo de alumnos</b>.</p>
+            <p>Si al seleccionar la programación, no aparecen grupos para elegir, o no encuentras el tuyo,
+                será necesario realizar una <b>carga masiva de alumnos.</b> Para ello ponte en contacto con <b>Jefatura de Estudios</b> 
+                de tu centro o envía un correo Racima a <b>Soporte Gauss</b> indicando a qué centro perteneces.
+            </p>
         </div>
     </div>
     <div class="row">
