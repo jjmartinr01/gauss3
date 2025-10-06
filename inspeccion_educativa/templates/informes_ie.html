@@ -14,11 +14,6 @@
         }
     </style>
 
-    <form action="" method="post" enctype="multipart/form-data" id="download_informes_ie" name="download_informes_ie">
-        {% csrf_token %}
-        <input type="hidden" name="action" id="action" value="download_informes_ie">
-    </form>
-
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
@@ -121,7 +116,8 @@
 
             $('body').on('click', '#file-excel-o_sign', function (e) {
                 e.preventDefault();
-                document.getElementById('download_informes_ie').submit();
+                $('#action').val('download_informes_ie');
+                document.getElementById('{{formname}}').submit();
             });
 
         {% endif %}
