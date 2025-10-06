@@ -3464,7 +3464,7 @@ def cuadernodocente(request, id=None):
                     else:
                         DocProgSec.objects.get(gep__ge=g_e, psec=psec)
                     # grupos = psec.curso.grupos
-                    grupos = Grupo.objects.filter(ronda=g_e.ronda)
+                    grupos = Grupo.objects.filter(ronda=g_e.ronda).order_by("nombre")
                     html = render_to_string('cuadernodocente_accordion_content_grupos.html', {'grupos': grupos})
                     return JsonResponse({'ok': True, 'html': html})
                 except Exception as msg:
