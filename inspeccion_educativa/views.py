@@ -731,6 +731,8 @@ def informes_ie(request):
 
                     # Índice de filas
                     fila_excel_informes = 0
+                    #Inicializamos para evitar errores 
+                    fila_informe_texto, fila_informe_texto_b, fila_informe_variante_texto, fila_informe_variante_texto_b = 0, 0, 0, 0
 
                     # Cabeceras
                     wc.row(0).height = 500
