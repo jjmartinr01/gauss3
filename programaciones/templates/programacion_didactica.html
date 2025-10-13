@@ -737,7 +737,7 @@
 
 
         {% if ies or antigua %}
-            //Bloqueamos la edición en programaciones de rondas antinguas
+            //Bloqueamos la edición en programaciones de rondas antiguas
             $(".programacion_didactica_content_box").find('input').attr('disabled', 'disabled');
             $(".programacion_didactica_content_box").find('input').attr('readonly', 'readonly');
 
@@ -749,6 +749,10 @@
             $(".programacion_didactica_content_box").find('[contenteditable]').attr('contenteditable', 'false');
 
             $(".programacion_didactica_content_box").find('.ocultable').hide();
+
+            //Solo mostramos el select para enviar copias a otros docentes
+            $(".programacion_didactica_content_box").find('#lista_docentes').find('select').attr('disabled', false);
+            $(".programacion_didactica_content_box").find('#lista_docentes').find('select').attr('readonly', false);
             
         {% endif %}
     </script>
