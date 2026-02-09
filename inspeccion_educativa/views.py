@@ -323,7 +323,156 @@ def tareas_ie(request):
             except:
                 return JsonResponse({'ok': False})
     elif request.method == 'POST' and not request.is_ajax():
-        if request.POST['action'] == 'genera_informe':
+
+        if request.POST['action'] == 'download_tareas_ie':
+            if g_e.has_permiso('crea_tareas_ie') or True:  # El permiso da igual
+                
+                try:
+                    
+                    fecha_inicio = datetime.strptime(request.POST['tareas_excel_fecha_ini'], '%Y-%m-%d')
+                    fecha_fin = datetime.strptime(request.POST['tareas_excel_fecha_fin'], '%Y-%m-%d')
+                    
+                    q_inicio = Q(tarea__fecha__gte=fecha_inicio)
+                    q_fin = Q(tarea__fecha__lte=fecha_fin)
+                    q_entidad = Q(inspector__gauser=g_e.gauser)
+                    instareas = InspectorTarea.objects.filter(q_entidad, q_inicio, q_fin).order_by('-tarea__fecha')
+
+                    informes = InformeInspeccion.objects.order_by('-creado').filter(inspector__gauser=g_e.gauser)
+                    
+                    ruta = MEDIA_INSPECCION + str(g_e.ronda.entidad.code) + '/'
+                    if not os.path.exists(ruta):
+                        os.makedirs(ruta)
+                    fichero_xls = 'tareas_inspeccion.xls'
+                    
+                    # Preparamos fichero Excel
+                    wb = xlwt.Workbook()
+                    wc = wb.add_sheet('Tareas', cell_overwrite_ok=True)
+                    
+                    date_format = xlwt.XFStyle()
+                    date_format.num_format_str = 'dd/mm/yyyy'
+
+                    # cell_with_unit
+                    cell_with_unit = 2000
+
+                    # Estilo arial, bold, 180 
+                    font_bold = xlwt.Font()
+                    font_bold.name = 'Arial'
+                    font_bold.height = 180
+                    font_bold.bold = True
+
+                    # Estilo arial, normal, 170
+                    font_normal = xlwt.Font()
+                    font_normal.name = 'Arial'
+                    font_normal.height = 170
+                    font_normal.bold = False
+
+                    # Borders 1px 
+                    borders = xlwt.Borders()
+                    borders.left = 1
+                    borders.right = 1
+                    borders.top = 1
+                    borders.bottom = 1
+                    
+                    # Alineación izquierda/centrada
+                    alignment = xlwt.Alignment()
+                    alignment.horz = xlwt.Alignment.HORZ_LEFT
+                    alignment.vert = xlwt.Alignment.VERT_CENTER
+
+                    # Alineación izquierda/top
+                    alignment_left_top = xlwt.Alignment()
+                    alignment_left_top.horz = xlwt.Alignment.HORZ_LEFT
+                    alignment_left_top.vert = xlwt.Alignment.VERT_TOP
+                    
+                    # Color fondo dark_purple
+                    pattern = xlwt.Pattern()
+                    pattern.pattern = xlwt.Pattern.SOLID_PATTERN
+                    pattern.pattern_fore_colour = xlwt.Style.colour_map['dark_purple']
+
+                    
+                    #Estilo header
+                    header_style = xlwt.XFStyle()   
+                    header_style.borders = borders
+                    header_style.font = font_bold
+                    header_style.alignment = alignment
+                    header_style.pattern = pattern
+
+                    #Estilo body
+                    body_style = xlwt.XFStyle()
+                    body_style.font = font_normal
+                    body_style.alignment = alignment_left_top
+                    body_style.borders = borders
+
+                    # Índice de filas
+                    fila_excel_informes = 0
+    
+                    # Cabeceras
+                    wc.row(0).height = 500
+
+                    wc.col(0).width = cell_with_unit
+                    wc.write(fila_excel_informes, 0, 'ID', style=header_style)
+                    wc.col(1).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 1, 'INSPECTOR', style=header_style)
+                    wc.write(fila_excel_informes, 2, 'FECHA', style=header_style)
+                    wc.col(3).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 3, 'CENTRO', style=header_style)
+                    wc.write(fila_excel_informes, 4, 'LOCALIDAD', style=header_style)
+                    wc.col(5).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 5, 'LOCALIZACIÓN', style=header_style)
+                    wc.col(6).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 6, 'ACTUACIÓN', style=header_style)
+                    wc.col(7).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 7, 'OBJETO', style=header_style)
+                    wc.col(8).width = cell_with_unit * 10
+                    wc.write(fila_excel_informes, 8, 'ASUNTO', style=header_style)
+                    wc.write(fila_excel_informes, 9, 'TIPO', style=header_style)
+                    wc.col(10).width = cell_with_unit * 3
+                    wc.write(fila_excel_informes, 10, 'FUNCIÓN', style=header_style)
+                    wc.write(fila_excel_informes, 11, 'PARTICIPANTES', style=header_style)
+                    wc.col(12).width = cell_with_unit * 12
+                    wc.write(fila_excel_informes, 12, 'OBSERVACIONES', style=header_style)
+                    
+                    for instarea in instareas:
+                        try:
+                            fila_excel_informes += 1
+                            wc.row(fila_excel_informes).height = 400
+
+                            wc.write(fila_excel_informes, 0, instarea.id, style=body_style)
+                            wc.write(fila_excel_informes, 1, instarea.inspector.gauser.get_full_name(), style=body_style)
+                            wc.write(fila_excel_informes, 2, instarea.tarea.fecha.__str__(), style=body_style)
+
+                            if instarea.tarea.centro:
+                                wc.write(fila_excel_informes, 3, instarea.tarea.centro.name, style=body_style)
+                                wc.write(fila_excel_informes, 4, instarea.tarea.centro.localidad, style=body_style)
+                            else:
+                                wc.write(fila_excel_informes, 3, '', style=body_style)
+                                wc.write(fila_excel_informes, 4, '', style=body_style)
+                            wc.write(fila_excel_informes, 5, instarea.tarea.get_localizacion_display(), style=body_style)
+                            wc.write(fila_excel_informes, 6, instarea.tarea.get_actuacion_display(), style=body_style)
+                            wc.write(fila_excel_informes, 7, instarea.tarea.get_objeto_display(), style=body_style)
+                            wc.write(fila_excel_informes, 8, instarea.tarea.asunto, style=body_style)
+                            wc.write(fila_excel_informes, 9, instarea.tarea.get_tipo_display(), style=body_style)
+                            wc.write(fila_excel_informes, 10, instarea.tarea.get_funcion_display(), style=body_style)
+                            wc.write(fila_excel_informes, 11, instarea.tarea.colaboradores, style=body_style)
+                            
+                            # Quitamos etiquetas html y lo adecuamos
+                            texto_observaciones_b = BeautifulSoup(instarea.tarea.observaciones.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
+                            wc.write(fila_excel_informes, 12, texto_observaciones_b.strip(), style=body_style)
+
+
+                        except Exception as err:
+                            wc.write(fila_excel_informes, 13, "ERROR PROCESANDO ESTE REGISTRO", style=body_style)
+                            wc.write(fila_excel_informes, 14, str(err), style=body_style)
+      
+                    wb.save(ruta + fichero_xls)
+                    xlsfile = open(ruta + fichero_xls, 'rb')
+                    response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
+                    response['Content-Disposition'] = 'attachment; filename=tareas_inspeccion_%s.xls' % datetime.now()
+                    return response
+
+                except Exception as err:
+                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error. Acción: download_tareas_ie', 'error': str(err)})
+
+        elif request.POST['action'] == 'genera_informe':
             inf_semanal = 'Configuración informes semanales de actuaciones'
             dce = get_dce(g_e.ronda.entidad, inf_semanal)
             instareas = InspectorTarea.objects.all()
@@ -473,6 +622,9 @@ def tareas_ie(request):
              {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'Informe',
               'title': 'Generar informe con las tareas realizadas',
               'permiso': 'genera_informe_tareas_ie'},
+             {'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Descargar Excel',
+              'title': 'Descargar tareas en Excel',
+              'permiso': 'crea_tareas_ie'},
              {'tipo': 'button', 'nombre': 'filter', 'texto': 'Filtro',
               'title': 'Filtrar las tareas por inspector',
               'permiso': 've_cualquier_tarea_ie'},

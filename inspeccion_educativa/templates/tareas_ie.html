@@ -29,6 +29,8 @@
         <input type="hidden" id="id_ti" name="id_ti" value="">
         <input type="hidden" id="fecha_inicio_informe" name="fecha_inicio_informe" value="">
         <input type="hidden" id="fecha_fin_informe" name="fecha_fin_informe" value="">
+        <input type="hidden" id="tareas_excel_fecha_ini" name="tareas_excel_fecha_ini" value="">
+        <input type="hidden" id="tareas_excel_fecha_fin" name="tareas_excel_fecha_fin" value="">
 
         <div id="div_tareas_ie_seleccionados"></div>
 
@@ -36,6 +38,24 @@
             <h4 id="title_page"><strong>Actuaciones de Inspección Educativa</strong></h4>
         </div>
         <div id="formulario_add"></div>
+        <fieldset id="fieldset_download_tareas_ie" style="display: none;">
+            <legend>Descargar tareas en Excel</legend>
+            
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Desde</label>
+                    <input id="fieldset_download_tareas_fecha_ini" name="fecha_inicio" type="date" value="{% now "Y\-m\-d" %}">
+                </div>
+                <div class="columns large-4">
+                    <label>Hasta</label>
+                    <input id="fieldset_download_tareas_fecha_fin" name="fecha_fin" type="date" value="{% now "Y\-m\-d" %}">
+                </div>
+                <div class="columns large-2">
+                    <a id="download_tareas_ie"><i class="fa fa-file-excel-o"></i> <b>Descargar</b></a>
+                </div>
+            </div>
+            
+        </fieldset>
         <fieldset id="fieldset_buscar" style="display: none;">
             <legend>Búsqueda de actuaciones</legend>
             <div id="formulario_search">
@@ -357,7 +377,7 @@
         });
 
         {% if g_e|has_permiso:"crea_tareas_ie" %}
-            habilita(['s_plus']);
+            habilita(['s_plus', 's_file-excel-o']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
                 $.post("/tareas_ie/", {action: 'crea_tarea_ie'}, function (data) {
@@ -370,6 +390,25 @@
                     $(document).scrollTop($('#title_page').offset().top - 150);
                 });
             });
+
+            // Mostramos el panel de descarga para seleccionar fechas
+            $('body').on('click', '#file-excel-o_sign', function (e) {
+                e.preventDefault();
+                $("#fieldset_download_tareas_ie").slideToggle();
+            });
+
+            // Botón de acción para la descarga en excel de las tareas
+            $('body').on('click', '#download_tareas_ie', function (e) {
+                e.preventDefault();
+                $('#action').val('download_tareas_ie');
+                //Ponemos las fechas
+                $('#tareas_excel_fecha_ini').val($('#fieldset_download_tareas_fecha_ini').val());
+                $('#tareas_excel_fecha_fin').val($('#fieldset_download_tareas_fecha_fin').val());
+                document.getElementById('{{formname}}').submit();
+            });
+
+            
+
         {% endif %}
 
         habilita(['s_search']);
