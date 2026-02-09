@@ -328,7 +328,6 @@ def tareas_ie(request):
             if g_e.has_permiso('crea_tareas_ie') or True:  # El permiso da igual
                 
                 try:
-                    
                     fecha_inicio = datetime.strptime(request.POST['tareas_excel_fecha_ini'], '%Y-%m-%d')
                     fecha_fin = datetime.strptime(request.POST['tareas_excel_fecha_fin'], '%Y-%m-%d')
                     
@@ -457,7 +456,6 @@ def tareas_ie(request):
                             # Quitamos etiquetas html y lo adecuamos
                             texto_observaciones_b = BeautifulSoup(instarea.tarea.observaciones.__str__().replace("</p>", "</p>\n\n\n\n").replace("</h1>", "</h1>\n\n\n\n").replace("</h2>", "</h2>\n\n\n\n").replace("</h3>", "</h3>\n\n\n\n").replace(r'<\s*br\s*[^>]*>', "\n\n\n\n"), "html.parser").get_text()
                             wc.write(fila_excel_informes, 12, texto_observaciones_b.strip(), style=body_style)
-
 
                         except Exception as err:
                             wc.write(fila_excel_informes, 13, "ERROR PROCESANDO ESTE REGISTRO", style=body_style)
@@ -1037,8 +1035,6 @@ def informes_ie(request):
                                 wc.write(fila_excel_informes, 18, "", style=body_style)
                                 wc.write(fila_excel_informes, 19, "", style=body_style)
 
-
-                        
                             # Ajustamos el desplazamiento verital de filas en el caso de que haya habido trocedo en los text fields.
                             # El -1 se debe a que el bucle ya suma al inicio 1 a fila excel_informes
 
@@ -1047,7 +1043,6 @@ def informes_ie(request):
                             wc.write(fila_excel_informes, 20, "ERROR PROCESANDO ESTE REGISTRO", style=body_style)
                             wc.write(fila_excel_informes, 21, str(err), style=body_style)
 
-                          
                     wb.save(ruta + fichero_xls)
                     xlsfile = open(ruta + fichero_xls, 'rb')
                     response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
