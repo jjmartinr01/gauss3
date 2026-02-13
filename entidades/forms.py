@@ -30,7 +30,7 @@ class EntidadForm(ModelForm):
 
 
 class Gauser_mis_datos_Form(ModelForm):
-    nacimiento = DateField(input_formats=('%d/%m/%Y', '%d \d\e %B \d\e %Y',))
+    nacimiento = DateField(input_formats=('%d/%m/%Y', r'%d \d\e %B \d\e %Y',))
 
     class Meta:
         model = Gauser

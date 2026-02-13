@@ -11,7 +11,7 @@ from django.utils.text import slugify
 from django.utils.timezone import timedelta, datetime, now
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
 from cupo.models import PlantillaOrganica, PlantillaXLS
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula, Curso
@@ -55,10 +55,10 @@ def get_provincia(p):  # Devuelve el código de la provincia cuyo nombre se pare
 def crear_nombre_usuario(nombre, apellidos):
     # En primer lugar quitamos tildes, colocamos nombres en minúsculas y :
     nombre = ''.join(
-        (c for c in unicodedata.normalize('NFD', smart_text(nombre)) if
+        (c for c in unicodedata.normalize('NFD', smart_str(nombre)) if
          unicodedata.category(c) != 'Mn')).lower().split()
     apellidos = ''.join(
-        (c for c in unicodedata.normalize('NFD', smart_text(apellidos)) if
+        (c for c in unicodedata.normalize('NFD', smart_str(apellidos)) if
          unicodedata.category(c) != 'Mn')).lower().split()
     iniciales_nombre = ''
     for parte in nombre:

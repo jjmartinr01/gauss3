@@ -5,6 +5,7 @@ import csv
 import os
 import re
 import logging
+from gauss.settings import LANGUAGE_SESSION_KEY
 import xlwt
 from time import sleep
 from django.http import JsonResponse
@@ -2463,7 +2464,7 @@ def linkge(request, code):
         if user.is_active and enlace.usuario.activo:
             login(request, user)
             request.session["hoy"] = timezone.datetime.today().date()
-            request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+            request.session[LANGUAGE_SESSION_KEY] = user_language
             request.session["gauser_extra"] = enlace.usuario
             request.session["ronda"] = request.session["gauser_extra"].ronda
             request.session['num_items_page'] = 15

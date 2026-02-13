@@ -46,10 +46,25 @@ comando = {'/identificador': {'message_chat': 'Te he enviado tu identificador a 
              "new_chat_participant": {"id": 166888701, "first_name": "GAUSS Telegram", "username": "GAUSS_bot"}}}
 
 # El robot sólo recibe mensajes que comienzan por "/" (https://core.telegram.org/bots#privacy-mode)
-{"update_id": 618393598,
- "message": {"message_id": 141, "from": {"id": 43985100, "first_name": "Juanjo", "last_name": "Mart\u00edn"},
-             "chat": {"id": -91046669, "title": "Tropa Monte Clavijo", "type": "group"}, "date": 1451133962,
-             "text": "\/identificador"}}
+message = {
+    "update_id": 618393598,
+    "message": {
+        "message_id": 141,
+        "from": {
+            "id": 43985100,
+            "first_name": "Juanjo",
+            "last_name": "Martín"
+        },
+        "chat": {
+            "id": -91046669,
+            "title": "Tropa Monte Clavijo",
+            "type": "group"
+        },
+        "date": 1451133962,
+        "text": r"\/identificador"
+    }
+}
+
 
 
 def envia_telegram(g_e, texto, gausers=Gauser.objects.none(), gauser_extras=Gauser_extra.objects.none(),
